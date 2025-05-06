@@ -29,9 +29,12 @@ function ThemeScript() {
   const themeScript = `
     (function() {
       function getThemePreference() {
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-          return localStorage.getItem('theme');
+        const storedTheme = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
+        
+        if (storedTheme && storedTheme !== 'system') {
+          return storedTheme;
         }
+        
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       
@@ -55,7 +58,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <ThemeScript />
       </head>
       <body>
-        <ThemeProvider defaultTheme="light" storageKey="theme">
+        <ThemeProvider defaultTheme="system" storageKey="theme">
           {children}
         </ThemeProvider>
         <ScrollRestoration />
