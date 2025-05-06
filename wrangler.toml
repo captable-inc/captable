@@ -1,0 +1,15 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "starter"
+
+main = "./worker.ts"
+workers_dev = true
+# https://developers.cloudflare.com/workers/platform/compatibility-dates
+compatibility_date = "2025-03-05"
+compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
+
+[assets]
+# https://developers.cloudflare.com/workers/static-assets/binding/
+directory = "./build/client"
+
+[build]
+command = "bun run build"

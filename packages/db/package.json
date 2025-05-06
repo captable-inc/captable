@@ -1,0 +1,20 @@
+{
+  "name": "@captable/db",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "drizzle-orm": "^0.41.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.5",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.5"
+  }
+}
