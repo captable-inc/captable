@@ -1,7 +1,7 @@
 import { handleError, handleZodError } from "@/api/lib/error";
+import { auth } from "@captable/auth";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
-import { auth } from "@captable/auth";
 import type { Bindings } from "hono/types";
 
 const PUBLIC_ROUTES = ["/favicon", "/search", "/schema", "/docs"];

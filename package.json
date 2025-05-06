@@ -18,13 +18,13 @@
     "db:studio": "bun run --cwd packages/db drizzle-kit --config config.ts studio"
   },
   "dependencies": {
+    "@captable/db": "workspace:*",
+    "@captable/ui": "workspace:*",
     "@hono/zod-openapi": "^0.19.2",
     "@neondatabase/serverless": "^0.10.4",
     "@paralleldrive/cuid2": "^2.2.2",
     "@react-router/cloudflare": "7.4.0",
     "@scalar/hono-api-reference": "^0.7.2",
-    "@captable/db": "workspace:*",
-    "@captable/ui": "workspace:*",
     "drizzle-orm": "^0.41.0",
     "drizzle-zod": "^0.7.0",
     "hono": "^4.7.5",
@@ -32,7 +32,9 @@
     "isbot": "^5.1.25",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "7.4.0"
+    "react-router": "7.4.0",
+    "tailwind-scrollbar": "^4.0.2",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
