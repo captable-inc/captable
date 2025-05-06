@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from "react-router";
 
+import { ThemeProvider } from "./components/theme/provider";
 import styles from "./tailwind.css?url";
 
 export const links: LinksFunction = () => [
@@ -23,17 +24,40 @@ export const links: LinksFunction = () => [
   },
 ];
 
+// This script runs immediately before any React code to prevent flash of unstyled content
+function ThemeScript() {
+  const themeScript = `
+    (function() {
+      function getThemePreference() {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      
+      const theme = getThemePreference();
+      
+      document.documentElement.classList.add(theme);
+    })();
+  `;
+
+  return <script dangerouslySetInnerHTML={{ __html: themeScript }} />;
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <ThemeScript />
       </head>
       <body>
-        {children}
+        <ThemeProvider defaultTheme="light" storageKey="theme">
+          {children}
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

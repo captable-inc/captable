@@ -1,29 +1,30 @@
 import type { MetaFunction } from "react-router";
+import { Layout } from "../components/Layout";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "CapTable" },
+    { name: "description", content: "Welcome to CapTable!" },
   ];
 };
 
 export default function Index() {
   return (
-    <div className="flex h-screen items-center justify-center">
+    <Layout>
       <div className="flex flex-col items-center gap-16">
         <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">React Router</span>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            Welcome to <span>CapTable</span>
           </h1>
           <div className="aspect-[605/347] w-[450px] max-w-[100vw] p-4">
             <img
               src="/logo-light.svg"
-              alt="React Router"
+              alt="CapTable"
               className="block w-full dark:hidden"
             />
             <img
               src="/logo-dark.svg"
-              alt="React Router"
+              alt="CapTable"
               className="hidden w-full dark:block"
             />
           </div>
@@ -49,7 +50,7 @@ export default function Index() {
           </ul>
         </nav>
       </div>
-    </div>
+    </Layout>
   );
 }
 
