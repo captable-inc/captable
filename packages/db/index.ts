@@ -1,12 +1,18 @@
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/postgres-js";
+import * as schema from "./schema";
+import type { Env } from "@captable/lib";
 
-const db = async () => {
-  if (process.env.NODE_ENV === "development") {
+export const connection = async (env: Env) => {
+  if (env.NODE_ENV === "development") {
     const { pg } = await import("./dev");
     return pg;
   }
 
-  return drizzle(process.env.DATABASE_URL as string);
+  return drizzle({
+    connection: {
+      url: env.HYPERDRIVE.connectionString,
+      ssl: env.NODE_ENV === "development",
+    },
+    schema,
+  });
 };
-
-export default db;

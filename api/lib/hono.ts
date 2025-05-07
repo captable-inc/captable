@@ -1,17 +1,22 @@
 import { handleError, handleZodError } from "@/api/lib/error";
-import { auth } from "@captable/auth";
+import { initializeAuth } from "@captable/auth";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
-import type { Bindings } from "hono/types";
-
+// import type { Bindings } from "hono/types";
+import type { Env } from "@captable/lib";
 const PUBLIC_ROUTES = ["/favicon", "/search", "/schema", "/docs"];
+
+interface Bindings extends Env {}
+
+// Type from better-auth
+type Auth = Awaited<ReturnType<typeof initializeAuth>>;
 
 export function API() {
   const api = new OpenAPIHono<{
     Bindings: Bindings;
     Variables: {
-      user: typeof auth.$Infer.Session.user | null;
-      session: typeof auth.$Infer.Session.session | null;
+      user: NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["user"] | null;
+      session: NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["session"] | null;
     };
   }>({
     defaultHook: handleZodError,
@@ -69,6 +74,7 @@ export function API() {
   // });
 
   api.use("*", async (c, next) => {
+    const auth = await initializeAuth(c.env);
     const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
     if (!session) {
@@ -82,7 +88,8 @@ export function API() {
     return next();
   });
 
-  api.on(["POST", "GET"], "/api/auth/*", (c) => {
+  api.on(["POST", "GET"], "/api/auth/*", async (c) => {
+    const auth = await initializeAuth(c.env);
     return auth.handler(c.req.raw);
   });
 

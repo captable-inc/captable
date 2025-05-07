@@ -1,5 +1,5 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "starter"
+name = "captable-cloud"
 
 main = "./worker.ts"
 workers_dev = true
@@ -13,3 +13,11 @@ directory = "./build/client"
 
 [build]
 command = "bun run build"
+
+[env.staging]
+name = "captable-cloud-staging"
+
+[[env.staging.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "1aece2a80ac74b819949b3632372f5e4"
+localConnectionString = "postgresql://postgres:postgres@localhost:5432/captable"

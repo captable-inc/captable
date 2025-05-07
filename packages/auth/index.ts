@@ -1,13 +1,16 @@
-import db from "@captable/db";
+import { connection } from "@captable/db";
 import * as schema from "@captable/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { redirect } from "react-router";
+import type { Env } from "@captable/lib";
 
-const config = async () => {
+const config = async (env: Env) => {
+  const db = await connection(env);
+
   return {
     basePath: "/api/auth",
-    database: drizzleAdapter(await db(), {
+    database: drizzleAdapter(db, {
       provider: "pg",
       schema: {
         user: schema.users,
@@ -38,17 +41,22 @@ const config = async () => {
   } as const;
 };
 
-export const auth = betterAuth(await config());
+export const initializeAuth = async (env: Env) => {
+  return betterAuth(await config(env));
+};
 
-type getServerSideSessionProps = {
+type GetServerSideSessionProps = {
   request: Request;
   api?: boolean;
+  env: Env;
 };
 
 export const getServerSideSession = async ({
   request,
   api = false,
-}: getServerSideSessionProps) => {
+  env,
+}: GetServerSideSessionProps) => {
+  const auth = await initializeAuth(env);
   const headers = new Headers(request.headers);
   const session = await auth.api.getSession({
     headers,

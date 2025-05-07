@@ -6,6 +6,8 @@
   "scripts": {
     "build": "react-router build",
     "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+
     "dev": "react-router dev",
     "start": "wrangler dev",
     "typegen": "wrangler types",
@@ -19,9 +21,9 @@
   },
   "dependencies": {
     "@captable/db": "workspace:*",
-    "@captable/ui": "workspace:*",
+    "@captable/lib": "workspace:*",
+    "@captable/auth": "workspace:*",
     "@hono/zod-openapi": "^0.19.2",
-    "@neondatabase/serverless": "^0.10.4",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-label": "^2.1.6",
     "@radix-ui/react-slot": "^1.2.2",

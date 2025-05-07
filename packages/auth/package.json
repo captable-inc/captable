@@ -10,6 +10,7 @@
   "description": "",
   "dependencies": {
     "better-auth": "^1.2.4",
-    "@captable/db": "workspace:*"
+    "@captable/db": "workspace:*",
+    "@captable/lib": "workspace:*"
   }
 }
