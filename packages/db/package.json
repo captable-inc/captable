@@ -1,5 +1,5 @@
 {
-  "name": "@captable/db",
+  "name": "@cap/db",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
@@ -10,7 +10,7 @@
   "description": "",
   "dependencies": {
     "drizzle-orm": "^0.41.0",
-    "@captable/lib": "workspace:*"
+    "@cap/lib": "workspace:*"
   },
   "devDependencies": {
     "@types/bun": "^1.2.5",

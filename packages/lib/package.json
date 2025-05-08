@@ -1,5 +1,5 @@
 {
-  "name": "@captable/lib",
+  "name": "@cap/lib",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -7,5 +7,10 @@
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "react-router": "^7.5.3"
+  }
 }

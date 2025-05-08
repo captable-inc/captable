@@ -1,4 +1,4 @@
-import { signOut, useSession } from "@captable/auth/client";
+import { signOut, useSession } from "@cap/auth/client";
 import { useNavigate } from "react-router";
 import { Layout } from "../components/Layout";
 

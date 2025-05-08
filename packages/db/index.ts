@@ -1,17 +1,14 @@
-import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
-import type { Env } from "@captable/lib";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { logger, getEnv, type Env } from "@cap/lib";
 
 export const connection = async (env: Env) => {
-  if (env.NODE_ENV === "development") {
-    const { pg } = await import("./dev");
-    return pg;
-  }
+  const ev = getEnv({ env });
+  logger.debug(`Using ${ev.NODE_ENV} database`);
 
   return drizzle({
     connection: {
-      url: env.HYPERDRIVE.connectionString,
-      ssl: env.NODE_ENV === "development",
+      url: ev.NODE_ENV === "development" ? ev.DATABASE_URL : ev.HYPERDRIVE?.connectionString,
     },
     schema,
   });

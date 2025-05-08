@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { signIn, signUp } from "@captable/auth/client";
+import { signIn, signUp } from "@cap/auth/client";
 import { useState } from "react";
 import { Link } from "react-router";
 import { useNavigate } from "react-router";
@@ -38,9 +38,6 @@ export function SessionForm({
     email: "user@example.com",
     password: "password",
   });
-  const [socialSession, setSocialSession] = useState<SocialSession | null>(
-    null,
-  );
 
   async function handleEmailSession(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
@@ -63,6 +60,10 @@ export function SessionForm({
         password: user?.password,
         name: user?.email,
       });
+
+      if (error) {
+        debugger;
+      }
 
       error && toast.error(error.message);
       data && navigate("/");

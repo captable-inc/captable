@@ -1,9 +1,9 @@
 import { handleError, handleZodError } from "@/api/lib/error";
-import { initializeAuth } from "@captable/auth";
+import { initializeAuth } from "@cap/auth";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { apiReference } from "@scalar/hono-api-reference";
 // import type { Bindings } from "hono/types";
-import type { Env } from "@captable/lib";
+import type { Env } from "@cap/lib";
 const PUBLIC_ROUTES = ["/favicon", "/search", "/schema", "/docs"];
 
 interface Bindings extends Env {}

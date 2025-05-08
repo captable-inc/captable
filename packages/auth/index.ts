@@ -1,12 +1,12 @@
-import { connection } from "@captable/db";
-import * as schema from "@captable/db/schema";
+import { connection } from "@cap/db";
+import * as schema from "@cap/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { redirect } from "react-router";
-import type { Env } from "@captable/lib";
-
+import { getEnv, type Env } from "@cap/lib";
 const config = async (env: Env) => {
-  const db = await connection(env);
+  const ev = getEnv({ env });
+  const db = await connection(ev);
 
   return {
     basePath: "/api/auth",
@@ -56,7 +56,8 @@ export const getServerSideSession = async ({
   api = false,
   env,
 }: GetServerSideSessionProps) => {
-  const auth = await initializeAuth(env);
+  const ev = getEnv({ env });
+  const auth = await initializeAuth(ev);
   const headers = new Headers(request.headers);
   const session = await auth.api.getSession({
     headers,

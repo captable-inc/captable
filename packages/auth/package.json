@@ -1,5 +1,5 @@
 {
-  "name": "@captable/auth",
+  "name": "@cap/auth",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "description": "",
   "dependencies": {
     "better-auth": "^1.2.4",
-    "@captable/db": "workspace:*",
-    "@captable/lib": "workspace:*"
+    "@cap/db": "workspace:*",
+    "@cap/lib": "workspace:*"
   }
 }

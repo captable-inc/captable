@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { Toaster } from "sonner";
 
 import { ThemeProvider } from "./components/theme/provider";
 import styles from "./tailwind.css?url";
@@ -69,5 +70,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <Toaster />
+    </>
+  );
 }
