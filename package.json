@@ -7,7 +7,6 @@
     "build": "react-router build",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging --keep-vars",
-
     "dev": "NODE_ENV=development react-router dev",
     "start": "NODE_ENV=development wrangler dev --live-reload --port 3000",
     "typegen": "wrangler types",
@@ -20,14 +19,15 @@
     "db:studio": "bun run --cwd packages/db drizzle-kit --config config.ts studio"
   },
   "dependencies": {
+    "@cap/auth": "workspace:*",
     "@cap/db": "workspace:*",
     "@cap/lib": "workspace:*",
-    "@cap/auth": "workspace:*",
     "@hono/zod-openapi": "^0.19.2",
     "@paralleldrive/cuid2": "^2.2.2",
     "@radix-ui/react-label": "^2.1.6",
     "@radix-ui/react-slot": "^1.2.2",
     "@react-router/cloudflare": "7.4.0",
+    "@remixicon/react": "^4.6.0",
     "@scalar/hono-api-reference": "^0.7.2",
     "drizzle-orm": "^0.41.0",
     "drizzle-zod": "^0.7.0",

@@ -11,8 +11,9 @@
   --card-foreground: hsl(222 47% 11%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222 47% 11%);
-  --primary: hsl(222 47% 11%);
-  --primary-foreground: hsl(210 40% 98%);
+  --primary: hsl(217 100% 50%);
+  --primary-hover: hsl(217 100% 42%);
+  --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(210 40% 96.1%);
   --secondary-foreground: hsl(222 47% 11%);
   --muted: hsl(210 40% 96.1%);
@@ -23,7 +24,7 @@
   --destructive-foreground: hsl(210 40% 98%);
   --border: hsl(214.3 31.8% 91.4%);
   --input: hsl(214.3 31.8% 91.4%);
-  --ring: hsl(222 47% 11%);
+  --ring: hsl(217 100% 50%);
   --chart-1: hsl(230 65% 60%);
   --chart-2: hsl(170 75% 41%);
   --chart-3: hsl(271 70% 48%);
@@ -40,8 +41,9 @@
   --card-foreground: hsl(0 0% 98%);
   --popover: hsl(240 10% 3.9%);
   --popover-foreground: hsl(0 0% 98%);
-  --primary: hsl(0 0% 98%);
-  --primary-foreground: hsl(240 5.9% 10%);
+  --primary: hsl(217 100% 50%);
+  --primary-hover: hsl(217 100% 42%);
+  --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(240 3.7% 15.9%);
   --secondary-foreground: hsl(0 0% 98%);
   --muted: hsl(240 3.7% 15.9%);
@@ -52,7 +54,7 @@
   --destructive-foreground: hsl(0 0% 98%);
   --border: hsl(240 3.7% 15.9%);
   --input: hsl(240 3.7% 15.9%);
-  --ring: hsl(240 4.9% 83.9%);
+  --ring: hsl(217 100% 50%);
   --chart-1: hsl(220 70% 50%);
   --chart-2: hsl(160 60% 45%);
   --chart-3: hsl(30 80% 55%);
