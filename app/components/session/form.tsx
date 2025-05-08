@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { signIn, signUp } from "@cap/auth/client";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "@/components/ui/link";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { RiAppleFill, RiGoogleFill } from "@remixicon/react";
@@ -101,7 +101,7 @@ export function SessionForm({
               <div className="flex flex-col gap-4">
                 <Button
                   variant="outline"
-                  className="w-full rounded-md flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-hover"
+                  className="w-full rounded-lg flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary-hover"
                   onClick={(e) => handleSocialSignIn("google", e)}
                 >
                   <RiGoogleFill className="h-5 w-5" />
@@ -112,7 +112,7 @@ export function SessionForm({
 
                 <Button
                   variant="outline"
-                  className="w-full rounded-md flex items-center justify-center gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                  className="w-full rounded-lg flex items-center justify-center gap-2 bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
                   onClick={(e) => handleSocialSignIn("apple", e)}
                 >
                   <RiAppleFill className="h-6 w-6" />
@@ -128,6 +128,7 @@ export function SessionForm({
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
+                    className="rounded-lg"
                     id="email"
                     type="email"
                     placeholder="m@example.com"
@@ -144,14 +145,15 @@ export function SessionForm({
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
+                    <Link
+                      to="/forgot-password"
+                      className="ml-auto text-sm"
                     >
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
                   <Input
+                    className="rounded-lg"
                     id="password"
                     type="password"
                     required
@@ -166,7 +168,7 @@ export function SessionForm({
                 </div>
                 <Button
                   type="submit"
-                  className="w-full rounded-md bg-primary text-white hover:bg-primary-hover"
+                  className="w-full rounded-lg bg-primary text-white hover:bg-primary-hover"
                   onClick={(e) => handleEmailSession(e)}
                 >
                   {type === "login" ? "Login" : "Sign up"}
@@ -176,7 +178,6 @@ export function SessionForm({
                 Don&apos;t have an account?{" "}
                 <Link
                   to={type === "login" ? "/signup" : "/login"}
-                  className="underline underline-offset-4"
                 >
                   {type === "login" ? "Sign up" : "Login"}
                 </Link>
@@ -185,7 +186,7 @@ export function SessionForm({
           </form>
         </CardContent>
       </Card>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
+      <div className="text-balance text-center text-xs text-muted-foreground">
         By clicking continue, you agree to our{" "}
         <Link to="/terms">Terms of Service</Link> and{" "}
         <Link to="/privacy">Privacy Policy</Link>.
