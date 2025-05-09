@@ -16,11 +16,14 @@
     "validate": "pnpm run lint && pnpm run format && pnpm run typecheck",
     "db:generate": "bun run --cwd packages/db drizzle-kit --config config.ts generate",
     "db:migrate": "bun db:generate && bun run --cwd packages/db drizzle-kit --config config.ts migrate",
-    "db:studio": "bun run --cwd packages/db drizzle-kit --config config.ts studio"
+    "db:studio": "bun run --cwd packages/db drizzle-kit --config config.ts studio",
+    "email:build": "bun run --cwd packages/email build",
+    "email:dev": "bun run --cwd packages/email dev"
   },
   "dependencies": {
     "@cap/auth": "workspace:*",
     "@cap/db": "workspace:*",
+    "@cap/email": "workspace:*",
     "@cap/lib": "workspace:*",
     "@hono/zod-openapi": "^0.19.2",
     "@paralleldrive/cuid2": "^2.2.2",

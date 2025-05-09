@@ -1,0 +1,16 @@
+{
+  "name": "@cap/email",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "email preview ./templates --port 4000",
+    "build": "email build ./templates"
+  },
+  "dependencies": {
+    "jsx-email": "^2.7.2"
+  },
+  "devDependencies": {
+    "react": "^19.0.0",
+    "@types/react": "^19.0.12",
+    "typescript": "^5.2.2"
+  }
+}
