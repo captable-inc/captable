@@ -8,13 +8,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@/components/ui/link";
 import { cn } from "@/lib/utils";
 import { signIn, signUp } from "@cap/auth/client";
+import { RiAppleFill, RiGoogleFill } from "@remixicon/react";
 import { useState } from "react";
-import { Link } from "@/components/ui/link";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { RiAppleFill, RiGoogleFill } from "@remixicon/react";
 
 type User = {
   email: string;
@@ -145,10 +145,7 @@ export function SessionForm({
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <Link
-                      to="/forgot-password"
-                      className="ml-auto text-sm"
-                    >
+                    <Link to="/forgot-password" className="ml-auto text-sm">
                       Forgot your password?
                     </Link>
                   </div>
@@ -176,9 +173,7 @@ export function SessionForm({
               </div>
               <div className="text-center text-sm">
                 Don&apos;t have an account?{" "}
-                <Link
-                  to={type === "login" ? "/signup" : "/login"}
-                >
+                <Link to={type === "login" ? "/signup" : "/login"}>
                   {type === "login" ? "Sign up" : "Login"}
                 </Link>
               </div>

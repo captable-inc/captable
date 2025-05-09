@@ -9,6 +9,6 @@ export const getEnv = ({
   // Otherwise just use process.env, cast to the required type
   return {
     ...process.env,
-    ...env
+    ...env,
   } as unknown as Env;
 };

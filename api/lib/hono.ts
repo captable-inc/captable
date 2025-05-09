@@ -1,9 +1,9 @@
 import { handleError, handleZodError } from "@/api/lib/error";
 import { initializeAuth } from "@cap/auth";
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { apiReference } from "@scalar/hono-api-reference";
 // import type { Bindings } from "hono/types";
 import type { Env } from "@cap/lib";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { apiReference } from "@scalar/hono-api-reference";
 const PUBLIC_ROUTES = ["/favicon", "/search", "/schema", "/docs"];
 
 interface Bindings extends Env {}
@@ -15,8 +15,12 @@ export function API() {
   const api = new OpenAPIHono<{
     Bindings: Bindings;
     Variables: {
-      user: NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["user"] | null;
-      session: NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["session"] | null;
+      user:
+        | NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["user"]
+        | null;
+      session:
+        | NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>["session"]
+        | null;
     };
   }>({
     defaultHook: handleZodError,

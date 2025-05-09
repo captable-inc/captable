@@ -1,9 +1,11 @@
 import { connection } from "@cap/db";
 import * as schema from "@cap/db/schema";
+import { type Env, getEnv } from "@cap/lib";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { organization } from "better-auth/plugins";
 import { redirect } from "react-router";
-import { getEnv, type Env } from "@cap/lib";
+
 const config = async (env: Env) => {
   const ev = getEnv({ env });
   const db = await connection(ev);
@@ -17,8 +19,12 @@ const config = async (env: Env) => {
         session: schema.sessions,
         account: schema.accounts,
         verification: schema.verifications,
+        organization: schema.organizations,
+        member: schema.members,
+        invitation: schema.invitations,
       },
     }),
+    plugins: [organization()],
     emailAndPassword: {
       enabled: true,
     },

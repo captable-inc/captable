@@ -6,7 +6,7 @@ export interface Env {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   BETTER_AUTH_SECRET: string;
-  
+
   PRIVATE_BUCKET: R2Bucket;
   PUBLIC_BUCKET: R2Bucket;
   HYPERDRIVE: Hyperdrive;

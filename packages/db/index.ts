@@ -1,6 +1,6 @@
-import * as schema from "./schema";
+import { type Env, getEnv, logger } from "@cap/lib";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { logger, getEnv, type Env } from "@cap/lib";
+import * as schema from "./schema";
 
 export const connection = async (env: Env) => {
   const ev = getEnv({ env });
@@ -8,7 +8,10 @@ export const connection = async (env: Env) => {
 
   return drizzle({
     connection: {
-      url: ev.NODE_ENV === "development" ? ev.DATABASE_URL : ev.HYPERDRIVE?.connectionString,
+      url:
+        ev.NODE_ENV === "development"
+          ? ev.DATABASE_URL
+          : ev.HYPERDRIVE?.connectionString,
     },
     schema,
   });
