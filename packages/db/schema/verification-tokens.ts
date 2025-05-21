@@ -34,8 +34,8 @@ export const verificationTokens = createTable(
   },
 );
 
-export const verificationTokenSelectSchema =
-  createSelectSchema(verificationTokens);
+export const VerificationTokenSchema = createSelectSchema(verificationTokens);
+export type VerificationToken = typeof verificationTokens.$inferSelect;
 
 export const passkeyVerificationTokens = createTable(
   "passkey_verification_tokens",
@@ -49,9 +49,11 @@ export const passkeyVerificationTokens = createTable(
   },
 );
 
-export const passkeyVerificationTokenSelectSchema = createSelectSchema(
+export const PasskeyVerificationTokenSchema = createSelectSchema(
   passkeyVerificationTokens,
 );
+export type PasskeyVerificationToken =
+  typeof passkeyVerificationTokens.$inferSelect;
 
 export const passwordResetTokens = createTable(
   "password_reset_tokens",
@@ -71,5 +73,5 @@ export const passwordResetTokens = createTable(
   },
 );
 
-export const passwordResetTokenSelectSchema =
-  createSelectSchema(passwordResetTokens);
+export const PasswordResetTokenSchema = createSelectSchema(passwordResetTokens);
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;

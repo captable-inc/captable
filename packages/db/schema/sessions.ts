@@ -18,4 +18,5 @@ export const sessions = createTable(
   },
 );
 
-export const sessionSelectSchema = createSelectSchema(sessions);
+export const SessionSchema = createSelectSchema(sessions);
+export type Session = typeof sessions.$inferSelect;

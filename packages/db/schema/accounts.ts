@@ -32,4 +32,6 @@ export const accounts = createTable(
   },
 );
 
-export const accountSelectSchema = createSelectSchema(accounts);
+export const UaccountsSchema = createSelectSchema(accounts);
+export type Uaccounts = typeof accounts.$inferSelect;
+export type Account = typeof accounts.$inferSelect;

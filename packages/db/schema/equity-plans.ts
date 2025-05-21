@@ -39,4 +39,5 @@ export const equityPlans = createTable(
   },
 );
 
-export const equityPlanSelectSchema = createSelectSchema(equityPlans);
+export const EquityPlanSchema = createSelectSchema(equityPlans);
+export type EquityPlan = typeof equityPlans.$inferSelect;

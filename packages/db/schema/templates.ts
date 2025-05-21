@@ -46,7 +46,8 @@ export const templates = createTable(
   },
 );
 
-export const templateSelectSchema = createSelectSchema(templates);
+export const TemplateSchema = createSelectSchema(templates);
+export type Template = typeof templates.$inferSelect;
 
 export const templateFields = createTable(
   "template_fields",
@@ -91,7 +92,8 @@ export const templateFields = createTable(
   },
 );
 
-export const templateFieldSelectSchema = createSelectSchema(templateFields);
+export const TemplateFieldSchema = createSelectSchema(templateFields);
+export type TemplateField = typeof templateFields.$inferSelect;
 
 export const esignRecipients = createTable(
   "esign_recipients",
@@ -120,4 +122,5 @@ export const esignRecipients = createTable(
   },
 );
 
-export const esignRecipientSelectSchema = createSelectSchema(esignRecipients);
+export const EsignRecipientSchema = createSelectSchema(esignRecipients);
+export type EsignRecipient = typeof esignRecipients.$inferSelect;

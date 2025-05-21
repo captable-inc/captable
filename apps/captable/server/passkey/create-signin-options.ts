@@ -21,9 +21,10 @@ export const createPasskeySigninOptions = async ({
   const { challenge } = options;
 
   const expiryDate = new Date(new Date().getTime() + 2 * 60000); // 2 min expiry
-  
+
   // Use insert with onConflictDoUpdate for a cleaner upsert operation
-  await db.insert(passkeyVerificationTokens)
+  await db
+    .insert(passkeyVerificationTokens)
     .values({
       id: sessionId,
       token: challenge,
@@ -36,7 +37,7 @@ export const createPasskeySigninOptions = async ({
         token: challenge,
         expiresAt: expiryDate,
         createdAt: new Date(),
-      }
+      },
     });
 
   return options;

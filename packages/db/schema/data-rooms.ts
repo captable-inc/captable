@@ -38,7 +38,8 @@ export const dataRooms = createTable(
   },
 );
 
-export const dataRoomSelectSchema = createSelectSchema(dataRooms);
+export const DataRoomSchema = createSelectSchema(dataRooms);
+export type DataRoom = typeof dataRooms.$inferSelect;
 
 export const dataRoomDocuments = createTable(
   "data_room_documents",
@@ -67,8 +68,8 @@ export const dataRoomDocuments = createTable(
   },
 );
 
-export const dataRoomDocumentSelectSchema =
-  createSelectSchema(dataRoomDocuments);
+export const DataRoomDocumentSchema = createSelectSchema(dataRoomDocuments);
+export type DataRoomDocument = typeof dataRoomDocuments.$inferSelect;
 
 export const dataRoomRecipients = createTable(
   "data_room_recipients",
@@ -106,8 +107,8 @@ export const dataRoomRecipients = createTable(
   },
 );
 
-export const dataRoomRecipientSelectSchema =
-  createSelectSchema(dataRoomRecipients);
+export const DataRoomRecipientSchema = createSelectSchema(dataRoomRecipients);
+export type DataRoomRecipient = typeof dataRoomRecipients.$inferSelect;
 
 export const updateRecipients = createTable(
   "update_recipients",
@@ -142,4 +143,5 @@ export const updateRecipients = createTable(
   },
 );
 
-export const updateRecipientSelectSchema = createSelectSchema(updateRecipients);
+export const UpdateRecipientSchema = createSelectSchema(updateRecipients);
+export type UpdateRecipient = typeof updateRecipients.$inferSelect;

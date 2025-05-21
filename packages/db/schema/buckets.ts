@@ -17,4 +17,5 @@ export const buckets = createTable("buckets", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
 });
 
-export const bucketSelectSchema = createSelectSchema(buckets);
+export const BucketSchema = createSelectSchema(buckets);
+export type Bucket = typeof buckets.$inferSelect;

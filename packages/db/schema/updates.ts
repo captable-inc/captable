@@ -34,7 +34,8 @@ export const updates = createTable(
   },
 );
 
-export const updateSelectSchema = createSelectSchema(updates);
+export const UpdateSchema = createSelectSchema(updates);
+export type Update = typeof updates.$inferSelect;
 
 export const esignAudits = createTable(
   "esign_audits",
@@ -68,4 +69,5 @@ export const esignAudits = createTable(
   },
 );
 
-export const esignAuditSelectSchema = createSelectSchema(esignAudits);
+export const EsignAuditSchema = createSelectSchema(esignAudits);
+export type EsignAudit = typeof esignAudits.$inferSelect;

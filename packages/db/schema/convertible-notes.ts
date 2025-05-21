@@ -56,4 +56,5 @@ export const convertibleNotes = createTable(
   },
 );
 
-export const convertibleNoteSelectSchema = createSelectSchema(convertibleNotes);
+export const ConvertibleNoteSchema = createSelectSchema(convertibleNotes);
+export type ConvertibleNote = typeof convertibleNotes.$inferSelect;

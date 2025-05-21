@@ -22,7 +22,10 @@ export const createPasskey = async ({
   verificationResponse,
   auditMetaData,
 }: CreatePasskeyOptions) => {
-  const passKey = await db.select({ name: passkeys.name, count: count() }).from(passkeys).where(eq(passkeys.userId, userId));
+  const passKey = await db
+    .select({ name: passkeys.name, count: count() })
+    .from(passkeys)
+    .where(eq(passkeys.userId, userId));
 
   if (passKey.length >= MAXIMUM_PASSKEYS) {
     throw new Error("TOO_MANY_PASSKEYS");
@@ -37,7 +40,9 @@ export const createPasskey = async ({
     throw new Error("Challenge token not found");
   }
 
-  await db.delete(passkeyVerificationTokens).where(eq(passkeyVerificationTokens.userId, userId));
+  await db
+    .delete(passkeyVerificationTokens)
+    .where(eq(passkeyVerificationTokens.userId, userId));
 
   if (verificationToken.expiresAt < new Date()) {
     throw new Error("Challenge token expired");
@@ -68,20 +73,27 @@ export const createPasskey = async ({
   await db.transaction(async (tx) => {
     // Generate a random ID for the passkey
     const passkeyId = crypto.randomUUID();
-    
-    const passkeyRecords = await tx.insert(passkeys).values({
-      id: passkeyId,
-      userId: userId,
-      name: passkeyName,
-      credentialId: Buffer.from(credentialID).toString('base64'),
-      credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64'),
-      counter,
-      credentialDeviceType: credentialDeviceType === "singleDevice" ? "SINGLE_DEVICE" : "MULTI_DEVICE",
-      credentialBackedUp,
-      transports: verificationResponse.response.transports || [],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }).returning();
+
+    const passkeyRecords = await tx
+      .insert(passkeys)
+      .values({
+        id: passkeyId,
+        userId: userId,
+        name: passkeyName,
+        credentialId: Buffer.from(credentialID).toString("base64"),
+        credentialPublicKey:
+          Buffer.from(credentialPublicKey).toString("base64"),
+        counter,
+        credentialDeviceType:
+          credentialDeviceType === "singleDevice"
+            ? "SINGLE_DEVICE"
+            : "MULTI_DEVICE",
+        credentialBackedUp,
+        transports: verificationResponse.response.transports || [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
 
     const passkey = passkeyRecords[0] as Passkey;
 

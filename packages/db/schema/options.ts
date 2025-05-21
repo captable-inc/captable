@@ -50,4 +50,5 @@ export const options = createTable(
   },
 );
 
-export const optionSelectSchema = createSelectSchema(options);
+export const OptionSchema = createSelectSchema(options);
+export type Option = typeof options.$inferSelect;

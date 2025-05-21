@@ -7,7 +7,7 @@ import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 import { Audit } from "@/server/audit";
 import { eq } from "@captable/db/utils";
-import { users, passkeyVerificationTokens } from "@captable/db/schema";  
+import { users, passkeyVerificationTokens } from "@captable/db/schema";
 
 type CreatePasskeyRegistrationOptions = {
   userId: string;

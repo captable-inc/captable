@@ -54,4 +54,5 @@ export const shares = createTable(
   },
 );
 
-export const shareSelectSchema = createSelectSchema(shares);
+export const ShareSchema = createSelectSchema(shares);
+export type Share = typeof shares.$inferSelect;

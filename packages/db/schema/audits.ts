@@ -26,4 +26,5 @@ export const audits = createTable(
   },
 );
 
-export const auditSelectSchema = createSelectSchema(audits);
+export const AuditSchema = createSelectSchema(audits);
+export type Audit = typeof audits.$inferSelect;

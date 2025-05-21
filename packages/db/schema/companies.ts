@@ -39,4 +39,5 @@ export const companies = createTable(
   },
 );
 
-export const companySelectSchema = createSelectSchema(companies);
+export const CompanySchema = createSelectSchema(companies);
+export type Company = typeof companies.$inferSelect;

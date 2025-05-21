@@ -45,4 +45,5 @@ export const safes = createTable(
   },
 );
 
-export const safeSelectSchema = createSelectSchema(safes);
+export const SafeSchema = createSelectSchema(safes);
+export type Safe = typeof safes.$inferSelect;

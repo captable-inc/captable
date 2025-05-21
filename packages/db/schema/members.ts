@@ -48,7 +48,8 @@ export const members = createTable(
   },
 );
 
-export const memberSelectSchema = createSelectSchema(members);
+export const MemberSchema = createSelectSchema(members);
+export type Member = typeof members.$inferSelect;
 
 export const customRoles = createTable(
   "custom_roles",
@@ -70,4 +71,5 @@ export const customRoles = createTable(
   },
 );
 
-export const customRoleSelectSchema = createSelectSchema(customRoles);
+export const CustomRoleSchema = createSelectSchema(customRoles);
+export type CustomRole = typeof customRoles.$inferSelect;

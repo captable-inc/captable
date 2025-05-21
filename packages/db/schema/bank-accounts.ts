@@ -41,4 +41,5 @@ export const bankAccounts = createTable(
   },
 );
 
-export const bankAccountSelectSchema = createSelectSchema(bankAccounts);
+export const BankAccountSchema = createSelectSchema(bankAccounts);
+export type BankAccount = typeof bankAccounts.$inferSelect;

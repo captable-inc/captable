@@ -42,4 +42,5 @@ export const stakeholders = createTable(
   },
 );
 
-export const stakeholderSelectSchema = createSelectSchema(stakeholders);
+export const StakeholderSchema = createSelectSchema(stakeholders);
+export type Stakeholder = typeof stakeholders.$inferSelect;

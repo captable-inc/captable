@@ -35,10 +35,13 @@ export const updatePasskey = async ({
   const { requestIp, userAgent, companyId, userName } = auditMetaData;
 
   await db.transaction(async (tx) => {
-    await tx.update(passkeys).set({
-      name,
-      updatedAt: new Date(),
-    }).where(eq(passkeys.id, passkeyId));
+    await tx
+      .update(passkeys)
+      .set({
+        name,
+        updatedAt: new Date(),
+      })
+      .where(eq(passkeys.id, passkeyId));
 
     await Audit.create(
       {

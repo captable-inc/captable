@@ -68,4 +68,5 @@ export const shareClasses = createTable(
   },
 );
 
-export const shareClassSelectSchema = createSelectSchema(shareClasses);
+export const ShareClassSchema = createSelectSchema(shareClasses);
+export type ShareClass = typeof shareClasses.$inferSelect;

@@ -40,7 +40,8 @@ export const documents = createTable(
   },
 );
 
-export const documentSelectSchema = createSelectSchema(documents);
+export const DocumentSchema = createSelectSchema(documents);
+export type Document = typeof documents.$inferSelect;
 
 export const documentShares = createTable(
   "document_shares",
@@ -74,4 +75,5 @@ export const documentShares = createTable(
   },
 );
 
-export const documentShareSelectSchema = createSelectSchema(documentShares);
+export const DocumentShareSchema = createSelectSchema(documentShares);
+export type DocumentShare = typeof documentShares.$inferSelect;

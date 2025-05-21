@@ -23,7 +23,8 @@ export const billingProducts = createTable("billing_products", {
   metadata: jsonb("metadata"),
 });
 
-export const billingProductSelectSchema = createSelectSchema(billingProducts);
+export const BillingProductSchema = createSelectSchema(billingProducts);
+export type BillingProduct = typeof billingProducts.$inferSelect;
 
 export const billingPrices = createTable(
   "billing_prices",
@@ -48,7 +49,8 @@ export const billingPrices = createTable(
   },
 );
 
-export const billingPriceSelectSchema = createSelectSchema(billingPrices);
+export const BillingPriceSchema = createSelectSchema(billingPrices);
+export type BillingPrice = typeof billingPrices.$inferSelect;
 
 export const billingSubscriptions = createTable(
   "billing_subscriptions",
@@ -91,8 +93,9 @@ export const billingSubscriptions = createTable(
   },
 );
 
-export const billingSubscriptionSelectSchema =
+export const BillingSubscriptionSchema =
   createSelectSchema(billingSubscriptions);
+export type BillingSubscription = typeof billingSubscriptions.$inferSelect;
 
 export const billingCustomers = createTable(
   "billing_customers",
@@ -108,4 +111,5 @@ export const billingCustomers = createTable(
   },
 );
 
-export const billingCustomerSelectSchema = createSelectSchema(billingCustomers);
+export const BillingCustomerSchema = createSelectSchema(billingCustomers);
+export type BillingCustomer = typeof billingCustomers.$inferSelect;

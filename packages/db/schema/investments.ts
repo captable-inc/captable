@@ -32,4 +32,5 @@ export const investments = createTable(
   },
 );
 
-export const investmentSelectSchema = createSelectSchema(investments);
+export const InvestmentSchema = createSelectSchema(investments);
+export type Investment = typeof investments.$inferSelect;

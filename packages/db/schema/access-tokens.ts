@@ -35,4 +35,5 @@ export const accessTokens = createTable(
   },
 );
 
-export const accessTokenSelectSchema = createSelectSchema(accessTokens);
+export const AccessTokenSchema = createSelectSchema(accessTokens);
+export type AccessToken = typeof accessTokens.$inferSelect;

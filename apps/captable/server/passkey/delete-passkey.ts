@@ -16,10 +16,7 @@ export const deletePasskey = async ({
   auditMetaData,
 }: DeletePasskeyOptions) => {
   const passkey = await db.query.passkeys.findFirst({
-    where: and(
-      eq(passkeys.id, passkeyId),
-      eq(passkeys.userId, userId),
-    ),
+    where: and(eq(passkeys.id, passkeyId), eq(passkeys.userId, userId)),
     with: {
       user: true,
     },

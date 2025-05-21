@@ -19,4 +19,5 @@ export const users = createTable(
   },
 );
 
-export const userSelectSchema = createSelectSchema(users);
+export const UserSchema = createSelectSchema(users);
+export type User = typeof users.$inferSelect;
