@@ -1,11 +1,13 @@
 import { MAXIMUM_PASSKEYS } from "@/lib/constants/passkey";
 import { getAuthenticatorOptions } from "@/lib/authenticator";
-import { CredentialDeviceTypeEnum } from "@/prisma/enums";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
 import { verifyRegistrationResponse } from "@simplewebauthn/server";
 import type { RegistrationResponseJSON } from "@simplewebauthn/types";
-import { Audit } from "../audit";
+import { Audit } from "@/server/audit";
+import { eq, count, desc, sql } from "@captable/db/utils";
+import { passkeys, passkeyVerificationTokens } from "@captable/db/schema";
+import type { Passkey } from "@captable/db/schema/passkeys";
 
 type CreatePasskeyOptions = {
   userId: string;
@@ -20,45 +22,24 @@ export const createPasskey = async ({
   verificationResponse,
   auditMetaData,
 }: CreatePasskeyOptions) => {
-  const { _count, name } = await db.user.findFirstOrThrow({
-    where: {
-      id: userId,
-    },
-    include: {
-      _count: {
-        select: {
-          passkeys: true,
-        },
-      },
-    },
-  });
+  const passKey = await db.select({ name: passkeys.name, count: count() }).from(passkeys).where(eq(passkeys.userId, userId));
 
-  if (_count.passkeys >= MAXIMUM_PASSKEYS) {
+  if (passKey.length >= MAXIMUM_PASSKEYS) {
     throw new Error("TOO_MANY_PASSKEYS");
   }
 
-  const verificationToken = await db.verificationToken.findFirst({
-    where: {
-      userId,
-      identifier: "PASSKEY_CHALLENGE",
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+  const verificationToken = await db.query.passkeyVerificationTokens.findFirst({
+    orderBy: desc(passkeyVerificationTokens.createdAt),
+    where: eq(passkeyVerificationTokens.id, userId),
   });
 
   if (!verificationToken) {
     throw new Error("Challenge token not found");
   }
 
-  await db.verificationToken.deleteMany({
-    where: {
-      userId,
-      identifier: "PASSKEY_CHALLENGE",
-    },
-  });
+  await db.delete(passkeyVerificationTokens).where(eq(passkeyVerificationTokens.userId, userId));
 
-  if (verificationToken.expires < new Date()) {
+  if (verificationToken.expiresAt < new Date()) {
     throw new Error("Challenge token expired");
   }
 
@@ -84,22 +65,25 @@ export const createPasskey = async ({
     credentialBackedUp,
   } = verification.registrationInfo;
 
-  await db.$transaction(async (tx) => {
-    const passkey = await tx.passkey.create({
-      data: {
-        userId,
-        name: passkeyName,
-        credentialId: Buffer.from(credentialID),
-        credentialPublicKey: Buffer.from(credentialPublicKey),
-        counter,
-        credentialDeviceType:
-          credentialDeviceType === "singleDevice"
-            ? CredentialDeviceTypeEnum.SINGLE_DEVICE
-            : CredentialDeviceTypeEnum.MULTI_DEVICE,
-        credentialBackedUp,
-        transports: verificationResponse.response.transports,
-      },
-    });
+  await db.transaction(async (tx) => {
+    // Generate a random ID for the passkey
+    const passkeyId = crypto.randomUUID();
+    
+    const passkeyRecords = await tx.insert(passkeys).values({
+      id: passkeyId,
+      userId: userId,
+      name: passkeyName,
+      credentialId: Buffer.from(credentialID).toString('base64'),
+      credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64'),
+      counter,
+      credentialDeviceType: credentialDeviceType === "singleDevice" ? "SINGLE_DEVICE" : "MULTI_DEVICE",
+      credentialBackedUp,
+      transports: verificationResponse.response.transports || [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+
+    const passkey = passkeyRecords[0] as Passkey;
 
     const { requestIp, userAgent, companyId } = auditMetaData;
 

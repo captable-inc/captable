@@ -1,6 +1,8 @@
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
-import { Audit } from "../audit";
+import { Audit } from "@/server/audit";
+import { eq } from "@captable/db/utils";
+import { passkeys } from "@captable/db/schema";
 
 export interface UpdateAuthenticatorsOptions {
   userId: string;
@@ -15,12 +17,16 @@ export const updatePasskey = async ({
   name,
   auditMetaData,
 }: UpdateAuthenticatorsOptions) => {
-  const passkey = await db.passkey.findFirstOrThrow({
-    where: {
-      id: passkeyId,
-      userId,
+  const passkey = await db.query.passkeys.findFirst({
+    where: eq(passkeys.id, passkeyId),
+    with: {
+      user: true,
     },
   });
+
+  if (!passkey) {
+    throw new Error("Passkey not found");
+  }
 
   if (passkey.name === name) {
     return;
@@ -28,17 +34,11 @@ export const updatePasskey = async ({
 
   const { requestIp, userAgent, companyId, userName } = auditMetaData;
 
-  await db.$transaction(async (tx) => {
-    await tx.passkey.update({
-      where: {
-        id: passkeyId,
-        userId,
-      },
-      data: {
-        name,
-        updatedAt: new Date(),
-      },
-    });
+  await db.transaction(async (tx) => {
+    await tx.update(passkeys).set({
+      name,
+      updatedAt: new Date(),
+    }).where(eq(passkeys.id, passkeyId));
 
     await Audit.create(
       {
@@ -52,7 +52,7 @@ export const updatePasskey = async ({
         target: [{ type: "passkey", id: passkey.id }],
         summary: `${userName} updated the Passkey ${passkey.name}`,
       },
-      db,
+      tx,
     );
   });
 };

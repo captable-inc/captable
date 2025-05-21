@@ -1,4 +1,4 @@
-import { PayloadType } from "@/lib/constants";
+import { PayloadType } from "@/lib/types";
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
 import { ZodUpdateProfileMutationSchema } from "../schema";

@@ -1,6 +1,8 @@
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
-import { Audit } from "../audit";
+import { Audit } from "@/server/audit";
+import { eq, and } from "@captable/db/utils";
+import { passkeys } from "@captable/db/schema";
 
 export interface DeletePasskeyOptions {
   userId: string;
@@ -13,22 +15,24 @@ export const deletePasskey = async ({
   passkeyId,
   auditMetaData,
 }: DeletePasskeyOptions) => {
-  const passkey = await db.passkey.findFirstOrThrow({
-    where: {
-      id: passkeyId,
-      userId,
+  const passkey = await db.query.passkeys.findFirst({
+    where: and(
+      eq(passkeys.id, passkeyId),
+      eq(passkeys.userId, userId),
+    ),
+    with: {
+      user: true,
     },
   });
 
+  if (!passkey) {
+    throw new Error("Passkey not found");
+  }
+
   const { requestIp, userAgent, companyId, userName } = auditMetaData;
 
-  await db.$transaction(async (tx) => {
-    await tx.passkey.delete({
-      where: {
-        id: passkeyId,
-        userId,
-      },
-    });
+  await db.transaction(async (tx) => {
+    await tx.delete(passkeys).where(eq(passkeys.id, passkeyId));
 
     await Audit.create(
       {
@@ -42,7 +46,7 @@ export const deletePasskey = async ({
         target: [{ type: "passkey", id: passkey.id }],
         summary: `${userName} deleted the Passkey ${passkey.name}`,
       },
-      db,
+      tx,
     );
   });
 };

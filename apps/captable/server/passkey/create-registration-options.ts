@@ -1,11 +1,13 @@
 import { PASSKEY_TIMEOUT } from "@/lib/constants/passkey";
 import { getAuthenticatorOptions } from "@/lib/authenticator";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
 import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
-import { Audit } from "../audit";
+import { Audit } from "@/server/audit";
+import { eq } from "@captable/db/utils";
+import { users, passkeyVerificationTokens } from "@captable/db/schema";  
 
 type CreatePasskeyRegistrationOptions = {
   userId: string;
@@ -16,16 +18,16 @@ export const createPasskeyRegistrationOptions = async ({
   userId,
   auditMetaData,
 }: CreatePasskeyRegistrationOptions) => {
-  const user = await db.user.findFirstOrThrow({
-    where: {
-      id: userId,
-    },
-    select: {
-      name: true,
-      email: true,
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    with: {
       passkeys: true,
     },
   });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
 
   const { passkeys } = user;
   const { rpName, rpId: rpID } = getAuthenticatorOptions();
@@ -38,8 +40,7 @@ export const createPasskeyRegistrationOptions = async ({
     timeout: PASSKEY_TIMEOUT,
     attestationType: "none",
     excludeCredentials: passkeys.map((passkey) => ({
-      id: passkey.credentialId.toString("utf8"),
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      id: passkey.credentialId.toString(),
       transports: passkey.transports as AuthenticatorTransportFuture[],
     })),
   });
@@ -62,13 +63,11 @@ export const createPasskeyRegistrationOptions = async ({
     );
   });
 
-  await db.verificationToken.create({
-    data: {
-      userId,
-      token: options.challenge,
-      expires: new Date(new Date().getTime() + 2 * 60000), // 2 min expiry
-      identifier: "PASSKEY_CHALLENGE",
-    },
+  await db.insert(passkeyVerificationTokens).values({
+    id: userId,
+    token: options.challenge,
+    expiresAt: new Date(new Date().getTime() + 2 * 60000), // 2 min expiry
+    createdAt: new Date(),
   });
 
   return options;

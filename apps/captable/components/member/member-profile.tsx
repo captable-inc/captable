@@ -7,7 +7,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Form, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { PayloadType } from "@/lib/constants";
+import { PayloadType } from "@/lib/types";
 import type { RootPayload } from "@/lib/types";
 import {
   compareFormDataWithInitial,

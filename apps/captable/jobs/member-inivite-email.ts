@@ -1,7 +1,7 @@
 import MemberInviteEmail from "@/emails/MemberInviteEmail";
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
-import { constants } from "@/lib/constants";
+import { META } from "@/lib/constants/meta";
 import { sendMail } from "@/server/mailer";
 import { renderAsync } from "@react-email/components";
 import type { Job } from "pg-boss";
@@ -38,7 +38,7 @@ export const sendMemberInviteEmail = async (
 
   await sendMail({
     to: email,
-    subject: `Join ${company.name} on ${constants.title}`,
+    subject: `Join ${company.name} on ${META.title}`,
     html: await renderAsync(
       MemberInviteEmail({
         inviteLink,

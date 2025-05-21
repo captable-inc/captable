@@ -44,4 +44,5 @@ export const passkeys = createTable(
   },
 );
 
-export const passkeySelectSchema = createSelectSchema(passkeys);
+export const PassKeySchema = createSelectSchema(passkeys);
+export type Passkey = typeof passkeys.$inferSelect;

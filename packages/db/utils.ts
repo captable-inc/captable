@@ -18,6 +18,7 @@ import {
   desc,
   asc,
   sql,
+  count,
   type AnyColumn,
   type SQLWrapper,
 } from "drizzle-orm";
@@ -42,6 +43,7 @@ export {
   desc, // Sort in descending order
   asc, // Sort in ascending order
   sql, // Raw SQL expression
+  count, // Count the number of rows
 };
 
 /**

@@ -1,5 +1,6 @@
 import { getAuthenticatorOptions } from "@/lib/authenticator";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
+import { passkeyVerificationTokens } from "@captable/db/schema";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 
 type CreatePasskeySigninOptions = {
@@ -19,22 +20,24 @@ export const createPasskeySigninOptions = async ({
 
   const { challenge } = options;
 
-  await db.passkeyVerificationToken.upsert({
-    where: {
-      id: sessionId,
-    },
-    update: {
-      token: challenge,
-      expiresAt: new Date(new Date().getTime() + 2 * 60000), // 2 min expiry
-      createdAt: new Date(),
-    },
-    create: {
+  const expiryDate = new Date(new Date().getTime() + 2 * 60000); // 2 min expiry
+  
+  // Use insert with onConflictDoUpdate for a cleaner upsert operation
+  await db.insert(passkeyVerificationTokens)
+    .values({
       id: sessionId,
       token: challenge,
-      expiresAt: new Date(new Date().getTime() + 2 * 60000), // 2 min expiry
+      expiresAt: expiryDate,
       createdAt: new Date(),
-    },
-  });
+    })
+    .onConflictDoUpdate({
+      target: passkeyVerificationTokens.id,
+      set: {
+        token: challenge,
+        expiresAt: expiryDate,
+        createdAt: new Date(),
+      }
+    });
 
   return options;
 };
