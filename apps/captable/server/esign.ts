@@ -1,5 +1,9 @@
 import { dayjsExt } from "@/lib/common/dayjs";
-import { type TUploadFile, getFileFromS3, uploadFile } from "@/lib/common/uploads";
+import {
+  type TUploadFile,
+  getFileFromS3,
+  uploadFile,
+} from "@/lib/common/uploads";
 import { TAG } from "@/lib/tags";
 import { AuditLogTemplate } from "@/lib/pdf-templates/audit-log-template";
 import { createBucketHandler } from "@/trpc/routers/bucket-router/procedures/create-bucket";
@@ -9,7 +13,15 @@ import { PDFDocument, StandardFonts } from "pdf-lib";
 import { EsignAudit } from "./audit";
 import type { DBTransaction } from "@captable/db";
 import { eq } from "@captable/db/utils";
-import { esignAudits, templates, templateFields, buckets, companies, members, users } from "@captable/db/schema";
+import {
+  esignAudits,
+  templates,
+  templateFields,
+  buckets,
+  companies,
+  members,
+  users,
+} from "@captable/db/schema";
 
 interface getEsignAuditsOptions {
   templateId: string;
@@ -20,12 +32,15 @@ export async function getEsignAudits({
   templateId,
   tx,
 }: getEsignAuditsOptions) {
-  const audits = await tx.select({
-    id: esignAudits.id,
-    summary: esignAudits.summary,
-    occurredAt: esignAudits.occurredAt,
-    action: esignAudits.action,
-  }).from(esignAudits).where(eq(esignAudits.templateId, templateId));
+  const audits = await tx
+    .select({
+      id: esignAudits.id,
+      summary: esignAudits.summary,
+      occurredAt: esignAudits.occurredAt,
+      action: esignAudits.action,
+    })
+    .from(esignAudits)
+    .where(eq(esignAudits.templateId, templateId));
 
   return audits;
 }
@@ -37,54 +52,62 @@ interface getEsignTemplateOptions {
   tx: DBTransaction;
 }
 
-export async function getEsignTemplate({ tx, templateId }: getEsignTemplateOptions) {
+export async function getEsignTemplate({
+  tx,
+  templateId,
+}: getEsignTemplateOptions) {
   // Get template
-  const [template] = await tx.select({
-    id: templates.id,
-    name: templates.name,
-    orderedDelivery: templates.orderedDelivery,
-    message: templates.message,
-    companyId: templates.companyId,
-    bucketId: templates.bucketId,
-    uploaderId: templates.uploaderId,
-  })
-  .from(templates)
-  .where(eq(templates.id, templateId))
-  .limit(1);
+  const [template] = await tx
+    .select({
+      id: templates.id,
+      name: templates.name,
+      orderedDelivery: templates.orderedDelivery,
+      message: templates.message,
+      companyId: templates.companyId,
+      bucketId: templates.bucketId,
+      uploaderId: templates.uploaderId,
+    })
+    .from(templates)
+    .where(eq(templates.id, templateId))
+    .limit(1);
 
   if (!template) {
     throw new Error("Template not found");
   }
 
   // Get fields with ordering
-  const fields = await tx.select()
+  const fields = await tx
+    .select()
     .from(templateFields)
     .where(eq(templateFields.templateId, templateId))
     .orderBy(templateFields.top);
 
   // Get bucket information
-  const [bucket] = await tx.select()
+  const [bucket] = await tx
+    .select()
     .from(buckets)
     .where(eq(buckets.id, template.bucketId));
 
   // Get company information
-  const [company] = await tx.select({
-    name: companies.name,
-    logo: companies.logo,
-  })
-  .from(companies)
-  .where(eq(companies.id, template.companyId));
+  const [company] = await tx
+    .select({
+      name: companies.name,
+      logo: companies.logo,
+    })
+    .from(companies)
+    .where(eq(companies.id, template.companyId));
 
   // Get uploader information
-  const [uploader] = await tx.select({
-    user: {
-      name: users.name,
-      email: users.email,
-    },
-  })
-  .from(members)
-  .innerJoin(users, eq(members.userId, users.id))
-  .where(eq(members.id, template.uploaderId));
+  const [uploader] = await tx
+    .select({
+      user: {
+        name: users.name,
+        email: users.email,
+      },
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(eq(members.id, template.uploaderId));
 
   return {
     ...template,
@@ -114,7 +137,7 @@ interface TGetFieldValue {
 
 export const getFieldValue = ({ type, id, data, meta }: TGetFieldValue) => {
   const value = data?.[id];
-  
+
   const selectValue = meta?.options
     ? meta.options.find((val) => val.id === value)?.value
     : undefined;
@@ -271,9 +294,12 @@ export async function completeEsignDocuments({
   userAgent,
   bucketData,
 }: CompleteEsignDocumentsOptionsType) {
-  await db.update(templates).set({
-    completedOn: new Date(),
-  }).where(eq(templates.id, templateId));
+  await db
+    .update(templates)
+    .set({
+      completedOn: new Date(),
+    })
+    .where(eq(templates.id, templateId));
 
   await EsignAudit.create(
     {

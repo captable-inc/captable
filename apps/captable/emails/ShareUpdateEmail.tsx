@@ -47,8 +47,7 @@ export const ShareUpdateEmail = ({
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
               <strong>{senderName}</strong> has shared an update{" "}
-              <strong>{updateTitle}</strong> on{" "}
-              <strong>{META.title}</strong>
+              <strong>{updateTitle}</strong> on <strong>{META.title}</strong>
             </Text>
 
             <Section className="mb-[32px] mt-[32px]">

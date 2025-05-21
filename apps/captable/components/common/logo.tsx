@@ -5,15 +5,15 @@ export const CaptableLogo = ({ className }: { className?: string }) => {
     <svg
       className={cn(className)}
       width="1200"
-			height="1200"
-			viewBox="0 0 1200 1200"
-			fill="none"
-			xmlns="http://www.w3.org/2000/svg"
-			aria-label="Captable Logo"
-		>
-			<title>Captable Logo</title>
-			<rect width="1200" height="1200" rx="24" fill="#18181B" />
-			<path
+      height="1200"
+      viewBox="0 0 1200 1200"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Captable Logo"
+    >
+      <title>Captable Logo</title>
+      <rect width="1200" height="1200" rx="24" fill="#18181B" />
+      <path
         d="M200 599.561C200 387.376 364.852 213.737 573.333 200V414.583C482.872 427.536 413.333 505.419 413.333 599.561C413.333 702.767 496.907 786.434 600 786.434C641.93 786.434 680.63 772.589 711.792 749.225L863.36 900.964C793.003 962.626 700.86 1000 600 1000C379.086 1000 200 820.716 200 599.561Z"
         fill="white"
       />

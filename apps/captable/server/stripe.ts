@@ -2,7 +2,12 @@ import { env } from "@/env";
 import { invariant } from "@/lib/error";
 import Stripe from "stripe";
 import { db, type DBTransaction } from "@captable/db";
-import { billingProducts, billingPrices, billingCustomers, billingSubscriptions } from "@captable/db/schema";
+import {
+  billingProducts,
+  billingPrices,
+  billingCustomers,
+  billingSubscriptions,
+} from "@captable/db/schema";
 import { eq } from "@captable/db/utils";
 
 const toDateTime = (secs: number) => {
@@ -27,10 +32,13 @@ export async function upsertProductRecord(product: Stripe.Product) {
     metadata: product.metadata,
   };
 
-  await db.insert(billingProducts).values(productData).onConflictDoUpdate({
-    target: [billingProducts.id],
-    set: productData,
-  });
+  await db
+    .insert(billingProducts)
+    .values(productData)
+    .onConflictDoUpdate({
+      target: [billingProducts.id],
+      set: productData,
+    });
 }
 
 export async function deleteProductRecord(product: Stripe.Product) {
@@ -56,10 +64,13 @@ export async function upsertPriceRecord(price: Stripe.Price) {
     trialPeriodDays: price.recurring?.trial_period_days ?? TRIAL_PERIOD_DAYS,
   };
 
-  await db.insert(billingPrices).values(priceData).onConflictDoUpdate({
-    target: [billingPrices.id],
-    set: priceData,
-  });
+  await db
+    .insert(billingPrices)
+    .values(priceData)
+    .onConflictDoUpdate({
+      target: [billingPrices.id],
+      set: priceData,
+    });
 }
 
 export const manageSubscriptionStatusChange = async (
@@ -114,10 +125,13 @@ export const manageSubscriptionStatusChange = async (
       : undefined,
   };
 
-  await db.insert(billingSubscriptions).values({ ...data, id }).onConflictDoUpdate({
-    target: [billingSubscriptions.id],
-    set: data,
-  });
+  await db
+    .insert(billingSubscriptions)
+    .values({ ...data, id })
+    .onConflictDoUpdate({
+      target: [billingSubscriptions.id],
+      set: data,
+    });
 };
 
 interface upsertCustomerOptions {
@@ -132,10 +146,14 @@ async function upsertCustomer({
   customerId,
 }: upsertCustomerOptions) {
   const data = { companyId, id: customerId };
-  const customer = await tx.insert(billingCustomers).values(data).onConflictDoUpdate({
-    target: [billingCustomers.id],
-    set: data,
-  }).returning();
+  const customer = await tx
+    .insert(billingCustomers)
+    .values(data)
+    .onConflictDoUpdate({
+      target: [billingCustomers.id],
+      set: data,
+    })
+    .returning();
 
   return customer.id;
 }
@@ -191,9 +209,12 @@ export async function createOrRetrieveCustomer({
     : await createCustomerInStripe({ email, companyId });
 
   if (existingCustomer && stripeCustomerId) {
-    await tx.update(billingCustomers).set({
-      id: stripeCustomerId,
-    }).where(eq(billingCustomers.id, existingCustomer.id));
+    await tx
+      .update(billingCustomers)
+      .set({
+        id: stripeCustomerId,
+      })
+      .where(eq(billingCustomers.id, existingCustomer.id));
 
     return stripeCustomerId;
   }

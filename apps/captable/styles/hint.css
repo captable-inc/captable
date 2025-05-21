@@ -23,7 +23,7 @@
  * Classes added:
  * 	1) hint
  */
-[class*=hint--] {
+[class*="hint--"] {
   position: relative;
   display: inline-block;
   /**
@@ -34,8 +34,8 @@
    */
 }
 
-[class*=hint--]:before,
-[class*=hint--]:after {
+[class*="hint--"]:before,
+[class*="hint--"]:after {
   position: absolute;
   transform: translate3d(0, 0, 0);
   visibility: hidden;
@@ -46,18 +46,18 @@
   transition-delay: 0ms;
 }
 
-[class*=hint--]:hover:before,
-[class*=hint--]:hover:after {
+[class*="hint--"]:hover:before,
+[class*="hint--"]:hover:after {
   visibility: visible;
   opacity: 1;
 }
 
-[class*=hint--]:hover:before,
-[class*=hint--]:hover:after {
+[class*="hint--"]:hover:before,
+[class*="hint--"]:hover:after {
   transition-delay: 100ms;
 }
 
-[class*=hint--]:before {
+[class*="hint--"]:before {
   content: "";
   position: absolute;
   background: transparent;
@@ -67,7 +67,7 @@
   z-index: 1000001;
 }
 
-[class*=hint--]:after {
+[class*="hint--"]:after {
   background: hsl(0, 0%, 22%);
   color: white;
   padding: 8px 10px;
@@ -77,11 +77,11 @@
   white-space: nowrap;
 }
 
-[class*=hint--][aria-label]:after {
+[class*="hint--"][aria-label]:after {
   content: attr(aria-label);
 }
 
-[class*=hint--][data-hint]:after {
+[class*="hint--"][data-hint]:after {
   content: attr(data-hint);
 }
 
@@ -430,13 +430,13 @@
  * Defines basic theme for tooltips.
  *
  */
-[class*=hint--] {
+[class*="hint--"] {
   /**
    * tooltip body
    */
 }
 
-[class*=hint--]:after {
+[class*="hint--"]:after {
   text-shadow: 0 1px 0px black;
   box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -614,14 +614,15 @@
 
 .hint--bounce:before,
 .hint--bounce:after {
-  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s cubic-bezier(0.71, 1.7, 0.77, 1.24);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s
+    cubic-bezier(0.71, 1.7, 0.77, 1.24);
 }
 
 @supports (transition-timing-function: linear(0, 1)) {
-
   .hint--bounce:before,
   .hint--bounce:after {
-    --spring-easing: linear(0,
+    --spring-easing: linear(
+      0,
       0.009,
       0.035 2.1%,
       0.141 4.4%,
@@ -641,8 +642,10 @@
       0.975 57.1%,
       0.997 69.8%,
       1.003 76.9%,
-      1);
-    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.5s var(--spring-easing);
+      1
+    );
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.5s
+      var(--spring-easing);
   }
 }
 

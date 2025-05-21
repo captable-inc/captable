@@ -59,9 +59,9 @@ export async function generateInviteToken() {
 }
 
 interface revokeExistingInviteTokensOptions {
-	memberId: string;
-	email: string;
-	tx?: DBTransaction;
+  memberId: string;
+  email: string;
+  tx?: DBTransaction;
 }
 
 export async function revokeExistingInviteTokens({
@@ -81,6 +81,9 @@ export async function revokeExistingInviteTokens({
   });
 
   await dbClient.delete(verificationTokens).where(
-    inArray(verificationTokens.token, verificationToken.map((item) => item.token)),
+    inArray(
+      verificationTokens.token,
+      verificationToken.map((item) => item.token),
+    ),
   );
 }
