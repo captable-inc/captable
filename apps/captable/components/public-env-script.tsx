@@ -1,5 +1,4 @@
-import { PUBLIC_ENV_KEY } from "@/constants/env";
-import { getPublicEnv } from "@/lib/env";
+import { PUBLIC_ENV_KEY, getPublicEnv } from "@/env";
 import { unstable_noStore as noStore } from "next/cache";
 import Script from "next/script";
 

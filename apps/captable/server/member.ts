@@ -1,17 +1,18 @@
 import { createHash } from "@/lib/crypto";
 import { nanoid } from "nanoid";
-import { type TPrismaOrTransaction, db } from "./db";
+import { db, type DBTransaction } from "@captable/db";
+import { eq, inArray } from "@captable/db/utils";
+import { verificationTokens } from "@captable/db/schema";
 
 export const checkVerificationToken = async (
   token: string,
   userEmail: string | null | undefined,
 ) => {
   // based on https://github.com/nextauthjs/next-auth/blob/46264fb42af4c3ef7137a5694875eaa1309462ea/packages/core/src/lib/actions/callback/index.ts#L200
-  const invite = await db.verificationToken.findFirst({
-    where: {
-      token,
-    },
+  const invite = await db.query.verificationTokens.findFirst({
+    where: eq(verificationTokens.token, token),
   });
+
   const hasInvite = !!invite;
   const expired = invite ? invite.expires.valueOf() < Date.now() : undefined;
   const invalidInvite = !hasInvite || expired;
@@ -58,9 +59,9 @@ export async function generateInviteToken() {
 }
 
 interface revokeExistingInviteTokensOptions {
-  memberId: string;
-  email: string;
-  tx?: TPrismaOrTransaction;
+	memberId: string;
+	email: string;
+	tx?: DBTransaction;
 }
 
 export async function revokeExistingInviteTokens({
@@ -75,16 +76,11 @@ export async function revokeExistingInviteTokens({
     memberId,
   });
 
-  const verificationToken = await dbClient.verificationToken.findMany({
-    where: {
-      identifier,
-    },
+  const verificationToken = await dbClient.query.verificationTokens.findMany({
+    where: eq(verificationTokens.identifier, identifier),
   });
-  await dbClient.verificationToken.deleteMany({
-    where: {
-      token: {
-        in: verificationToken.map((item) => item.token),
-      },
-    },
-  });
+
+  await dbClient.delete(verificationTokens).where(
+    inArray(verificationTokens.token, verificationToken.map((item) => item.token)),
+  );
 }

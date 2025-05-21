@@ -13,7 +13,7 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { constants } from "../lib/constants";
+import { META } from "@/lib/constants/meta";
 
 interface AccountVerificationEmailProps {
   verifyLink: string;
@@ -24,12 +24,12 @@ export const AccountVerificationEmail = ({
 }: AccountVerificationEmailProps) => (
   <Html>
     <Head />
-    <Preview>Your email verification link for {constants.title}</Preview>
+    <Preview>Your email verification link for {META.title}</Preview>
     <Tailwind>
       <Body className="mx-auto my-auto bg-white font-sans">
         <Container className="mx-auto my-[40px] w-[465px] border-separate rounded border border-solid border-neutral-200 p-[20px]">
           <Heading className="mx-0 my-[30px] p-0  text-[24px] font-normal text-black">
-            Your verification email link for {constants.title}
+            Your verification email link for {META.title}
           </Heading>
           <Section>
             <Section className="mb-[5px] mt-[10px] ">
@@ -52,10 +52,10 @@ export const AccountVerificationEmail = ({
           </Text>
           <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
           <Link
-            href={constants.url}
+            href={META.url}
             className="text-sm !text-gray-400 no-underline"
           >
-            {constants.title}
+            {META.title}
           </Link>
         </Container>
       </Body>

@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { PricingPlanInterval, PricingType } from "@/prisma/enums";
+import type { PricingPlanIntervalEnum, PricingTypeEnum } from "@captable/db/schema/enums";
 import { api } from "@/trpc/react";
 import type { TypeZodStripePortalMutationSchema } from "@/trpc/routers/billing-router/schema";
 import type { RouterOutputs } from "@/trpc/shared";
@@ -29,22 +29,22 @@ interface PricingProps {
 
 interface handleStripeCheckoutOptions {
   priceId: string;
-  priceType: PricingType;
+  priceType: PricingTypeEnum;
 }
 
 function Plans({ products, subscription }: PricingProps) {
   const router = useRouter();
   const intervals = Array.from(
     new Set(
-      products.flatMap((product) =>
-        product?.prices?.map((price) => price?.interval),
+      products.flatMap((product: Products) =>
+        product?.prices?.map((price: Products["prices"]) => price?.interval),
       ),
     ),
   );
   const [billingInterval, setBillingInterval] =
-    useState<PricingPlanInterval>("month");
+    useState<PricingPlanIntervalEnum>("month");
 
-  const { mutateAsync: checkoutWithStripe, isLoading: checkoutLoading } =
+  const { mutateAsync: checkoutWithStripe, isPending: checkoutLoading } =
     api.billing.checkout.useMutation({
       onSuccess: async ({ stripeSessionId }) => {
         const stripe = await getStripeClient();
@@ -52,14 +52,14 @@ function Plans({ products, subscription }: PricingProps) {
       },
     });
 
-  const { mutateAsync: stripePortal, isLoading: stripePortalLoading } =
+  const { mutateAsync: stripePortal, isPending: stripePortalLoading } =
     api.billing.stripePortal.useMutation({
       onSuccess: ({ url }) => {
         router.push(url);
       },
     });
 
-  const handleBilling = (interval: PricingPlanInterval) => {
+  const handleBilling = (interval: PricingPlanIntervalEnum) => {
     setBillingInterval(interval);
   };
 
@@ -112,9 +112,9 @@ function Plans({ products, subscription }: PricingProps) {
             },
           })}
         />
-        {products.map((product) => {
+        {products.map((product: Products[number]) => {
           const price = product?.prices?.find(
-            (price) => price.interval === billingInterval,
+            (price: Products[number]['prices'][number]) => price.interval === billingInterval,
           );
           if (!price) return null;
 

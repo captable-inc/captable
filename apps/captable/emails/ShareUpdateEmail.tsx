@@ -12,7 +12,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { constants } from "../lib/constants";
+import { META } from "@/lib/constants/meta";
 
 interface ShareUpdateEmailProps {
   senderName: string;
@@ -48,7 +48,7 @@ export const ShareUpdateEmail = ({
             <Text className="text-[14px] leading-[24px] text-black">
               <strong>{senderName}</strong> has shared an update{" "}
               <strong>{updateTitle}</strong> on{" "}
-              <strong>{constants.title}</strong>
+              <strong>{META.title}</strong>
             </Text>
 
             <Section className="mb-[32px] mt-[32px]">
@@ -71,9 +71,9 @@ export const ShareUpdateEmail = ({
             </Text>
 
             <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
-            <Link href={constants.url} className="text-sm no-underline">
+            <Link href={META.url} className="text-sm no-underline">
               <span className="text-xs !text-gray-400">Powered by</span>
-              <span>{` ${constants.title}`}</span>
+              <span>{` ${META.title}`}</span>
             </Link>
           </Container>
         </Body>

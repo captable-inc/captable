@@ -13,6 +13,7 @@
 		"db:studio": "dotenv -- turbo run db:studio"
 	},
 	"devDependencies": {
+		"@types/nodemailer": "^6.4.17",
 		"dotenv": "^16.5.0",
 		"dotenv-cli": "^8.0.0",
 		"turbo": "^2.5.3",
@@ -26,8 +27,14 @@
 	"dependencies": {
 		"@auth/drizzle-adapter": "^1.9.1",
 		"@biomejs/biome": "^1.9.4",
+		"@react-email/components": "^0.0.41",
+		"@react-pdf/renderer": "^4.3.0",
+		"@sentry/nextjs": "^9.22.0",
 		"@tanstack/react-table": "^8.21.3",
 		"autoprefixer": "^10.4.21",
-		"lefthook": "^1.11.13"
+		"lefthook": "^1.11.13",
+		"nodemailer": "^7.0.3",
+		"pdf-lib": "^1.17.1",
+		"stripe": "^18.1.1"
 	}
 }

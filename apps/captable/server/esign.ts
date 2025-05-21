@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/prefer-for-of */
 import { dayjsExt } from "@/lib/common/dayjs";
 import { type TUploadFile, getFileFromS3, uploadFile } from "@/lib/common/uploads";
 import { TAG } from "@/lib/tags";
@@ -8,28 +7,26 @@ import { createDocumentHandler } from "@/trpc/routers/document-router/procedures
 import { renderToBuffer } from "@react-pdf/renderer";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { EsignAudit } from "./audit";
-import type { PrismaTransactionalClient } from "./db";
+import type { DBTransaction } from "@captable/db";
+import { eq } from "@captable/db/utils";
+import { esignAudits, templates, templateFields, buckets, companies, members, users } from "@captable/db/schema";
 
 interface getEsignAuditsOptions {
   templateId: string;
-  tx: PrismaTransactionalClient;
+  tx: DBTransaction;
 }
 
 export async function getEsignAudits({
   templateId,
   tx,
 }: getEsignAuditsOptions) {
-  const audits = await tx.esignAudit.findMany({
-    where: {
-      templateId,
-    },
-    select: {
-      id: true,
-      summary: true,
-      occurredAt: true,
-      action: true,
-    },
-  });
+  const audits = await tx.select({
+    id: esignAudits.id,
+    summary: esignAudits.summary,
+    occurredAt: esignAudits.occurredAt,
+    action: esignAudits.action,
+  }).from(esignAudits).where(eq(esignAudits.templateId, templateId));
+
   return audits;
 }
 
@@ -37,57 +34,87 @@ export type TGetEsignAudits = Awaited<ReturnType<typeof getEsignAudits>>;
 
 interface getEsignTemplateOptions {
   templateId: string;
-  tx: PrismaTransactionalClient;
+  tx: DBTransaction;
 }
 
-export function getEsignTemplate({ tx, templateId }: getEsignTemplateOptions) {
-  return tx.template.findFirstOrThrow({
-    where: { id: templateId },
-    select: {
-      bucket: true,
-      fields: {
-        orderBy: {
-          top: "asc",
-        },
-      },
-      companyId: true,
-      id: true,
-      name: true,
-      orderedDelivery: true,
-      uploader: {
-        select: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
-      },
-      message: true,
-      company: {
-        select: {
-          name: true,
-          logo: true,
-        },
-      },
+export async function getEsignTemplate({ tx, templateId }: getEsignTemplateOptions) {
+  // Get template
+  const [template] = await tx.select({
+    id: templates.id,
+    name: templates.name,
+    orderedDelivery: templates.orderedDelivery,
+    message: templates.message,
+    companyId: templates.companyId,
+    bucketId: templates.bucketId,
+    uploaderId: templates.uploaderId,
+  })
+  .from(templates)
+  .where(eq(templates.id, templateId))
+  .limit(1);
+
+  if (!template) {
+    throw new Error("Template not found");
+  }
+
+  // Get fields with ordering
+  const fields = await tx.select()
+    .from(templateFields)
+    .where(eq(templateFields.templateId, templateId))
+    .orderBy(templateFields.top);
+
+  // Get bucket information
+  const [bucket] = await tx.select()
+    .from(buckets)
+    .where(eq(buckets.id, template.bucketId));
+
+  // Get company information
+  const [company] = await tx.select({
+    name: companies.name,
+    logo: companies.logo,
+  })
+  .from(companies)
+  .where(eq(companies.id, template.companyId));
+
+  // Get uploader information
+  const [uploader] = await tx.select({
+    user: {
+      name: users.name,
+      email: users.email,
     },
-  });
+  })
+  .from(members)
+  .innerJoin(users, eq(members.userId, users.id))
+  .where(eq(members.id, template.uploaderId));
+
+  return {
+    ...template,
+    fields,
+    bucket,
+    company,
+    uploader,
+  };
 }
 
 export type EsignGetTemplateType = Awaited<ReturnType<typeof getEsignTemplate>>;
 
 type Field = EsignGetTemplateType["fields"][number];
+
+// Define the expected structure of the meta JSON field
+interface FieldMeta {
+  options?: Array<{ id: string; value: string }>;
+  [key: string]: unknown;
+}
+
 interface TGetFieldValue {
   type: Field["type"];
   id: Field["id"];
   data: Record<string, string>;
-  meta: Field["meta"];
+  meta: FieldMeta;
 }
 
 export const getFieldValue = ({ type, id, data, meta }: TGetFieldValue) => {
   const value = data?.[id];
-
+  
   const selectValue = meta?.options
     ? meta.options.find((val) => val.id === value)?.value
     : undefined;
@@ -129,7 +156,7 @@ export async function generateEsignPdf({
     const value = getFieldValue({
       data,
       id: field.id,
-      meta: field.meta,
+      meta: field.meta as unknown as FieldMeta,
       type: field.type,
     });
 
@@ -226,7 +253,7 @@ export async function uploadEsignDocuments({
 export interface CompleteEsignDocumentsOptionsType {
   templateName: string;
   companyId: string;
-  db: PrismaTransactionalClient;
+  db: DBTransaction;
   requestIp: string;
   userAgent: string;
   uploaderName: string;
@@ -244,14 +271,9 @@ export async function completeEsignDocuments({
   userAgent,
   bucketData,
 }: CompleteEsignDocumentsOptionsType) {
-  await db.template.update({
-    where: {
-      id: templateId,
-    },
-    data: {
-      completedOn: new Date(),
-    },
-  });
+  await db.update(templates).set({
+    completedOn: new Date(),
+  }).where(eq(templates.id, templateId));
 
   await EsignAudit.create(
     {

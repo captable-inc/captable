@@ -1,5 +1,5 @@
+import { PayloadType } from "@/lib/types";
 import { z } from "zod";
-import { PayloadType } from "./constants";
 
 export const profileSettingsSchema = z.object({
   fullName: z.string().min(2).max(40),

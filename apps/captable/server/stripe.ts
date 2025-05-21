@@ -1,7 +1,9 @@
 import { env } from "@/env";
 import { invariant } from "@/lib/error";
 import Stripe from "stripe";
-import { type TPrismaOrTransaction, db } from "./db";
+import { db, type DBTransaction } from "@captable/db";
+import { billingProducts, billingPrices, billingCustomers, billingSubscriptions } from "@captable/db/schema";
+import { eq } from "@captable/db/utils";
 
 const toDateTime = (secs: number) => {
   const t = new Date(+0); // Unix epoch start.
@@ -11,7 +13,7 @@ const toDateTime = (secs: number) => {
 
 export const stripe = new Stripe(env.STRIPE_API_KEY ?? "", {
   typescript: true,
-  apiVersion: "2024-04-10",
+  apiVersion: "2025-04-30.basil",
 });
 
 export { Stripe };
@@ -25,29 +27,18 @@ export async function upsertProductRecord(product: Stripe.Product) {
     metadata: product.metadata,
   };
 
-  await db.billingProduct.upsert({
-    create: productData,
-    update: productData,
-    where: {
-      id: product.id,
-    },
+  await db.insert(billingProducts).values(productData).onConflictDoUpdate({
+    target: [billingProducts.id],
+    set: productData,
   });
 }
 
 export async function deleteProductRecord(product: Stripe.Product) {
-  await db.billingProduct.delete({
-    where: {
-      id: product.id,
-    },
-  });
+  await db.delete(billingProducts).where(eq(billingProducts.id, product.id));
 }
 
 export async function deletePriceRecord(price: Stripe.Price) {
-  await db.billingPrice.delete({
-    where: {
-      id: price.id,
-    },
-  });
+  await db.delete(billingPrices).where(eq(billingPrices.id, price.id));
 }
 
 const TRIAL_PERIOD_DAYS = 0;
@@ -65,12 +56,9 @@ export async function upsertPriceRecord(price: Stripe.Price) {
     trialPeriodDays: price.recurring?.trial_period_days ?? TRIAL_PERIOD_DAYS,
   };
 
-  await db.billingPrice.upsert({
-    create: priceData,
-    update: priceData,
-    where: {
-      id: price.id,
-    },
+  await db.insert(billingPrices).values(priceData).onConflictDoUpdate({
+    target: [billingPrices.id],
+    set: priceData,
   });
 }
 
@@ -79,8 +67,8 @@ export const manageSubscriptionStatusChange = async (
   customerId: string,
   createAction = false,
 ) => {
-  const customer = await db.billingCustomer.findFirst({
-    where: { id: customerId },
+  const customer = await db.query.billingCustomers.findFirst({
+    where: eq(billingCustomers.id, customerId),
   });
 
   invariant(customer?.id, "Customer lookup failed");
@@ -126,19 +114,16 @@ export const manageSubscriptionStatusChange = async (
       : undefined,
   };
 
-  await db.billingSubscription.upsert({
-    create: { ...data, id },
-    update: data,
-    where: {
-      id,
-    },
+  await db.insert(billingSubscriptions).values({ ...data, id }).onConflictDoUpdate({
+    target: [billingSubscriptions.id],
+    set: data,
   });
 };
 
 interface upsertCustomerOptions {
   customerId: string;
   companyId: string;
-  tx: TPrismaOrTransaction;
+  tx: DBTransaction;
 }
 
 async function upsertCustomer({
@@ -147,11 +132,10 @@ async function upsertCustomer({
   customerId,
 }: upsertCustomerOptions) {
   const data = { companyId, id: customerId };
-  const customer = await tx.billingCustomer.upsert({
-    where: data,
-    update: data,
-    create: data,
-  });
+  const customer = await tx.insert(billingCustomers).values(data).onConflictDoUpdate({
+    target: [billingCustomers.id],
+    set: data,
+  }).returning();
 
   return customer.id;
 }
@@ -175,7 +159,7 @@ const createCustomerInStripe = async ({
 
 interface createOrRetrieveCustomerOptions {
   companyId: string;
-  tx: TPrismaOrTransaction;
+  tx: DBTransaction;
   email: string;
 }
 
@@ -184,8 +168,8 @@ export async function createOrRetrieveCustomer({
   tx,
   email,
 }: createOrRetrieveCustomerOptions) {
-  const existingCustomer = await tx.billingCustomer.findFirst({
-    where: { companyId },
+  const existingCustomer = await tx.query.billingCustomers.findFirst({
+    where: eq(billingCustomers.companyId, companyId),
   });
   let stripeCustomerId: string | undefined;
 
@@ -207,14 +191,9 @@ export async function createOrRetrieveCustomer({
     : await createCustomerInStripe({ email, companyId });
 
   if (existingCustomer && stripeCustomerId) {
-    await tx.billingCustomer.update({
-      where: {
-        id: existingCustomer.id,
-      },
-      data: {
-        id: stripeCustomerId,
-      },
-    });
+    await tx.update(billingCustomers).set({
+      id: stripeCustomerId,
+    }).where(eq(billingCustomers.id, existingCustomer.id));
 
     return stripeCustomerId;
   }

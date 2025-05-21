@@ -7,14 +7,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { PricingPlanInterval } from "@/prisma/enums";
+import type { PricingPlanIntervalEnum } from "@captable/db/schema/enums";
 import { useState } from "react";
 
 interface PricingCardProps {
   title: string;
   description?: string | null;
   price: string;
-  interval: PricingPlanInterval;
+  interval: PricingPlanIntervalEnum;
   subscribedUnitAmount?: bigint | null;
   unitAmount: number;
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -22,7 +22,7 @@ interface PricingCardProps {
   isSubmitting: boolean;
 }
 
-const humanizedInterval: Record<PricingPlanInterval, string> = {
+const humanizedInterval: Record<PricingPlanIntervalEnum, string> = {
   day: "Daily",
   month: "Monthly",
   week: "Weekly",

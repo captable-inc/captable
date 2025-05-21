@@ -1,9 +1,11 @@
-import { db } from "./db";
+import { db } from "@captable/db";
+import { eq } from "@captable/db/utils";
+import { verificationTokens } from "@captable/db/schema";
 
 export const getVerificationTokenByToken = async (token: string) => {
   try {
-    const verificationToken = await db.verificationToken.findUnique({
-      where: { token },
+    const verificationToken = await db.query.verificationTokens.findFirst({
+      where: eq(verificationTokens.token, token),
     });
 
     return verificationToken;
@@ -14,8 +16,8 @@ export const getVerificationTokenByToken = async (token: string) => {
 
 export const getVerificationTokenByEmail = async (email: string) => {
   try {
-    const verificationToken = await db.verificationToken.findFirst({
-      where: { identifier: email },
+    const verificationToken = await db.query.verificationTokens.findFirst({
+      where: eq(verificationTokens.identifier, email),
     });
 
     return verificationToken;
