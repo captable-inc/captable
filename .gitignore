@@ -39,3 +39,4 @@ yarn-error.log*
 
 packages/prisma/*
 git-new
+notes.md

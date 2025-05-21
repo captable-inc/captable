@@ -32,7 +32,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SecuritiesStatusEnum, ShareLegendsEnum } from "@captable/db/schema/enums";
+import {
+  SecuritiesStatusEnum,
+  ShareLegendsEnum,
+} from "@captable/db/schema/enums";
 import { useAddShareFormValues } from "@/providers/add-share-form-provider";
 import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";

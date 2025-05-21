@@ -22,7 +22,7 @@ import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/db";
 import * as Sentry from "@sentry/nextjs";
 
-interface Meta {
+export interface Meta {
   policies: addPolicyOption;
 }
 
