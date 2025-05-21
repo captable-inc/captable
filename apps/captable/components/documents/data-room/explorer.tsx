@@ -1,7 +1,7 @@
 import FileIcon from "@/components/common/file-icon";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Bucket } from "@prisma/client";
+import type { Bucket } from "@captable/db/schema";
 import Link from "next/link";
 
 type DocumentExplorerProps = {

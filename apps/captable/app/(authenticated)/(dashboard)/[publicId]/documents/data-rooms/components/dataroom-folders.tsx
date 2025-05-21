@@ -2,7 +2,7 @@ import { PageLayout } from "@/components/dashboard/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { DataRoom } from "@prisma/client";
+import type { DataRoom } from "@captable/db/schema";
 import {
   RiFolder3Fill as FolderIcon,
   RiMore2Fill as MoreIcon,

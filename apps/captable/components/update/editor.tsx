@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { DropdownButton } from "@/components/ui/dropdown-button";
 import { api } from "@/trpc/react";
 import type { Block, PartialBlock } from "@blocknote/core";
-import type { Update } from "@prisma/client";
+import type { Update } from "@captable/db/schema";
 import { RiArrowDownSLine } from "@remixicon/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import "@/styles/editor.css";
 import { BlockNoteView, useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/react/style.css";
-import { UpdateStatusEnum } from "@/prisma/enums";
+import { UpdateStatusEnum } from "@captable/db/schema/enums";
 import { pushModal } from "../modals";
 import { ChangeUpdateVisibilityAlertDialog } from "./change-update-visibility-alert-dialog";
 

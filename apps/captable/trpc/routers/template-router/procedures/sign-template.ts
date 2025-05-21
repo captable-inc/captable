@@ -3,7 +3,7 @@
 import { dayjsExt } from "@/lib/common/dayjs";
 import { EsignNotificationEmailJob } from "@/jobs/esign-email";
 import { EsignPdfJob } from "@/jobs/esign-pdf";
-import type { TemplateStatus } from "@/prisma/enums";
+import type { TemplateStatus } from "@captable/db/schema/enums";
 import { EsignAudit } from "@/server/audit";
 import {
   type CompleteEsignDocumentsOptionsType,

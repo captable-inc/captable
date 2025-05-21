@@ -1,5 +1,5 @@
 import { ADMIN_ROLE_ID } from "@/lib/rbac/constants";
-import type { Roles } from "@/prisma/enums";
+import type { Roles } from "@captable/db/schema/enums";
 import { invariant } from "../error";
 
 interface getRoleIdOption {

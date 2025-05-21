@@ -1,4 +1,4 @@
-import type { BankAccount } from "@prisma/client";
+import type { BankAccount } from "@captable/db/schema";
 
 const BankAccountsTable = () => {
   return <>Table</>;

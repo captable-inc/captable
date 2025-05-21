@@ -2,7 +2,7 @@
 
 import { Form } from "@/components/ui/form";
 import { COLORS } from "@/lib/constants/esign";
-import { FieldTypes, TemplateStatus } from "@/prisma/enums";
+import { FieldTypes, TemplateStatus } from "@captable/db/schema/enums";
 import { type RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ReactNode } from "react";

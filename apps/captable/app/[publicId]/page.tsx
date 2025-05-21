@@ -5,7 +5,7 @@ import { SharePageLayout } from "@/components/share/page-layout";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import UpdateRenderer from "@/components/update/renderer";
 import { type JWTVerifyResult, decode } from "@/lib/jwt";
-import { UpdateStatusEnum } from "@/prisma/enums";
+import { UpdateStatusEnum } from "@captable/db/schema/enums";
 import { db } from "@/server/db";
 import { renderAsync } from "@react-email/components";
 import { RiLock2Line } from "@remixicon/react";

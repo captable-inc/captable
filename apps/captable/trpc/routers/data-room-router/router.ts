@@ -9,7 +9,7 @@ import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
-import type { DataRoom } from "@prisma/client";
+import type { DataRoom } from "@captable/db/schema";
 import { z } from "zod";
 import { DataRoomSchema } from "./schema";
 

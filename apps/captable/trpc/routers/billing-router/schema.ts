@@ -1,4 +1,4 @@
-import { PricingType } from "@/prisma/enums";
+import { PricingType } from "@captable/db/schema/enums";
 import { z } from "zod";
 
 export const ZodCheckoutMutationSchema = z.object({

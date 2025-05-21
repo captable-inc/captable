@@ -1,7 +1,7 @@
 "use server";
 
 import { api } from "@/trpc/server";
-import type { Bucket, DataRoom } from "@prisma/client";
+import type { Bucket, DataRoom } from "@captable/db/schema";
 import { notFound } from "next/navigation";
 import DataRoomFiles from "../components/data-room-files";
 

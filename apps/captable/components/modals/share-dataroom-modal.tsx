@@ -6,7 +6,7 @@ import ShareModal, {
 import { env } from "@/env";
 import type { ShareContactType, ShareRecipientType } from "@/schema/contacts";
 import { api } from "@/trpc/react";
-import type { DataRoom } from "@prisma/client";
+import type { DataRoom } from "@captable/db/schema";
 import { toast } from "sonner";
 
 type ShareDataRoomModalProps = {

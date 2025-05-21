@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { COLORS } from "@/lib/constants/esign";
-import type { FieldTypes } from "@/prisma/enums";
+import type { FieldTypes } from "@captable/db/schema/enums";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { FieldTypeData } from "../field-type-data";
 

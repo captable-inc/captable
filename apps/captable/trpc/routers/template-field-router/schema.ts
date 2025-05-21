@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { FieldTypes, TemplateStatus } from "@/prisma/enums";
+import { FieldTypes, TemplateStatus } from "@captable/db/schema/enums";
 
 const TemplateFieldMetaType = z.object({
   options: z

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import MultipleSelector, { type Option } from "@/components/ui/multi-selector";
 
 import type { ShareContactType } from "@/schema/contacts";
-import type { DataRoomRecipient, UpdateRecipient } from "@prisma/client";
+import type { DataRoomRecipient, UpdateRecipient } from "@captable/db/schema";
 import {
   RiCheckLine as CheckIcon,
   RiDeleteBin2Line as DeleteIcon,

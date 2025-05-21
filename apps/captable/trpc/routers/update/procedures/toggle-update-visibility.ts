@@ -1,4 +1,4 @@
-import { UpdateStatusEnum } from "@/prisma/enums";
+import { UpdateStatusEnum } from "@captable/db/schema/enums";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";

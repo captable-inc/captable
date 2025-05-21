@@ -7,11 +7,10 @@ import { TAG } from "@/lib/tags";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import type { Prisma } from "@prisma/client";
 import { createBucketHandler } from "../../bucket-router/procedures/create-bucket";
 import { createTemplateHandler } from "../../template-router/procedures/create-template";
 import { ZodCreateSafeMutationSchema } from "../schema";
-
+import type { Safe } from "@captable/db/schema";
 export const createSafeProcedure = withAuth
   .input(ZodCreateSafeMutationSchema)
   .mutation(async ({ ctx, input }) => {
@@ -96,9 +95,7 @@ export const createSafeProcedure = withAuth
           },
         });
 
-        type SafeCreateBody = Prisma.Args<typeof ctx.db.safe, "create">["data"];
-
-        let safeData: null | SafeCreateBody;
+        let safeData: Safe;
 
         if (inputRest.safeTemplate === "CUSTOM") {
           const { document, ...rest } = inputRest;

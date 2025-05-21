@@ -22,7 +22,7 @@ import { camelCase } from "@/lib/utils";
 import {
   StakeholderRelationshipEnum,
   StakeholderTypeEnum,
-} from "@/prisma/enums";
+} from "@captable/db/schema/enums";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
 import { useRouter } from "next/navigation";

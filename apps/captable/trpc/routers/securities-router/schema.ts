@@ -1,9 +1,9 @@
 import {
   OptionStatusEnum,
   OptionTypeEnum,
+  SecuritiesStatusEnum,
   ShareLegendsEnum,
-} from "@/prisma/enums";
-import { SecuritiesStatusEnum } from "@prisma/client";
+} from "@captable/db/schema/enums";
 import { z } from "zod";
 
 // OPTIONS

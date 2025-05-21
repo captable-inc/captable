@@ -1,7 +1,7 @@
 import {
   StakeholderRelationshipEnum,
   StakeholderTypeEnum,
-} from "@/prisma/enums";
+} from "@captable/db/schema/enums";
 import { z } from "zod";
 
 export const ZodAddStakeholderMutationSchema = z.object({

@@ -4,7 +4,7 @@ import {
   type UpdateSharePayloadType,
 } from "@/jobs/share-update-email";
 import { encode } from "@/lib/jwt";
-import { UpdateStatusEnum } from "@/prisma/enums";
+import { UpdateStatusEnum } from "@captable/db/schema/enums";
 import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
