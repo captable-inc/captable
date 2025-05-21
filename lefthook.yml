@@ -1,0 +1,7 @@
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.{js,jsx,ts,tsx,json,md,css,jsonc,yml,yaml,md}"
+      run: bun run format
+      stage_fixed: true
