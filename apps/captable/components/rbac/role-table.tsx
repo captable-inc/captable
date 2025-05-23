@@ -20,17 +20,17 @@ import {
 } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { pushModal } from "../modals";
-import { defaultInputPermissionInputs } from "../modals/role-create-update-modal";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { Checkbox } from "../ui/checkbox";
-import { DataTable } from "../ui/data-table/data-table";
-import { DataTableBody } from "../ui/data-table/data-table-body";
-import { SortButton } from "../ui/data-table/data-table-buttons";
-import { DataTableContent } from "../ui/data-table/data-table-content";
-import { DataTableHeader } from "../ui/data-table/data-table-header";
-import { DataTablePagination } from "../ui/data-table/data-table-pagination";
+import { pushModal } from "@/components/modals";
+import { defaultInputPermissionInputs } from "@/components/modals/role-create-update-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DataTable } from "@/components/ui/data-table/data-table";
+import { DataTableBody } from "@/components/ui/data-table/data-table-body";
+import { SortButton } from "@/components/ui/data-table/data-table-buttons";
+import { DataTableContent } from "@/components/ui/data-table/data-table-content";
+import { DataTableHeader } from "@/components/ui/data-table/data-table-header";
+import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +38,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Allow } from "./allow";
+} from "@/components/ui/dropdown-menu";
+import { Allow } from "@/components/rbac/allow";
 
 type Role = RouterOutputs["rbac"]["listRoles"]["rolesList"][number];
 

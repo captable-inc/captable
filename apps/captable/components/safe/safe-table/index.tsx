@@ -40,7 +40,7 @@ import type { RouterOutputs } from "@/trpc/shared";
 import { RiFileDownloadLine, RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { SafeTableToolbar } from "./safe-table-toolbar";
+import { SafeTableToolbar } from "@/components/safe/safe-table/safe-table-toolbar";
 
 type Safe = RouterOutputs["safe"]["getSafes"]["data"];
 
