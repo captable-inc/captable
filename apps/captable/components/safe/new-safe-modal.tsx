@@ -4,10 +4,10 @@ import {
   StepperModalContent,
   type StepperModalProps,
   StepperStep,
-} from "../ui/stepper";
-import { GeneralDetails } from "./steps/general-details";
-import { InvestorDetails } from "./steps/investor-details";
-import { SafeTemplate } from "./steps/safe-template";
+} from "@/components/ui/stepper";
+import { GeneralDetails } from "@/components/safe/steps/general-details";
+import { InvestorDetails } from "@/components/safe/steps/investor-details";
+import { SafeTemplate } from "@/components/safe/steps/safe-template";
 
 export function NewSafeModal(props: Omit<StepperModalProps, "children">) {
   return (

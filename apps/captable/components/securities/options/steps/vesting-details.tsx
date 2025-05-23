@@ -64,12 +64,12 @@ export const VestingDetails = (props: VestingDetailsProps) => {
   //   label: VestingSchedule[vKey] || "",
   // }));
 
-  const equityPlansOpts = equityPlans?.map(({ id, name }) => ({
+  const equityPlansOpts = equityPlans?.map(({ id, name }: NonNullable<typeof equityPlans>[number]) => ({
     value: id,
     label: name,
   }));
 
-  const stakeHolderOpts = stakeholders?.map((stake) => ({
+  const stakeHolderOpts = stakeholders?.map((stake: NonNullable<typeof stakeholders>[number]) => ({
     value: stake.id,
     label: stake.name,
   }));

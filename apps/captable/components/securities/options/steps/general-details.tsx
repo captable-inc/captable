@@ -12,13 +12,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   StepperModalFooter,
   StepperPrev,
   useStepper,
@@ -31,17 +24,17 @@ import { useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { z } from "zod";
 
-const STATUSES = Object.values(OptionStatusEnum).map((val) => ({
+const STATUSES = Object.values(OptionStatusEnum).map((val: string) => ({
   label: toTitleCase(val),
   value: val,
 }));
-const TYPES = Object.values(OptionTypeEnum);
+const TYPES = Object.values(OptionTypeEnum) as [string, ...string[]];
 const typesOpts = TYPES.map((type) => ({ value: type, label: type }));
 const formSchema = z.object({
   grantId: z.string(),
-  type: z.nativeEnum(OptionTypeEnum),
-  quantity: z.coerce.number(),
-  status: z.nativeEnum(OptionStatusEnum),
+  quantity: z.coerce.number().min(0),
+  type: z.enum(OptionTypeEnum.enumValues as [string, ...string[]]),
+  status: z.enum(OptionStatusEnum.enumValues as [string, ...string[]]),
 });
 
 type TFormSchema = z.infer<typeof formSchema>;
