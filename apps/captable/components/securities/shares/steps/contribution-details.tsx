@@ -11,13 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   StepperModalFooter,
   StepperPrev,
@@ -29,7 +23,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { z } from "zod";
-import { EmptySelect } from "../../shared/EmptySelect";
+import { EmptySelect } from "@/components/securities/shared/EmptySelect";
 
 interface ContributionDetailsProps {
   stakeholders: RouterOutputs["stakeholder"]["getStakeholders"] | [];
@@ -58,10 +52,12 @@ export const ContributionDetails = ({
     next();
   };
 
-  const stakeHoldersOpts = stakeholders.map((stakeHolder) => ({
-    value: stakeHolder.id,
-    label: `${stakeHolder.company.name} - ${stakeHolder.name}`,
-  }));
+  const stakeHoldersOpts = stakeholders.map(
+    (stakeHolder: NonNullable<typeof stakeholders>[number]) => ({
+      value: stakeHolder.id,
+      label: `${stakeHolder.company.name} - ${stakeHolder.name}`,
+    }),
+  );
 
   return (
     <Form {...form}>

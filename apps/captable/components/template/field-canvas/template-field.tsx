@@ -20,8 +20,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { type TemplateFieldForm } from "@/providers/template-field-provider";
-import { type RouterOutputs } from "@/trpc/shared";
+import type { TemplateFieldForm } from "@/providers/template-field-provider";
+import type { RouterOutputs } from "@/trpc/shared";
 import { useFormContext, useWatch } from "react-hook-form";
 import { CustomFieldRenderer } from "./custom-field-renderer";
 import { TemplateFieldContainer } from "./template-field-container";
@@ -169,7 +169,7 @@ function RecipientSelect({ index, recipients }: RecipientSelectProps) {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {recipients.map((recipient) => (
+              {recipients.map((recipient: Recipients[number]) => (
                 <SelectItem key={recipient.id} value={recipient.id}>
                   <span className="flex items-center">
                     <span

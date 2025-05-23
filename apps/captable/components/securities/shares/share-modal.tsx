@@ -6,10 +6,10 @@ import {
 } from "@/components/ui/stepper";
 import { AddShareFormProvider } from "@/providers/add-share-form-provider";
 import { api } from "@/trpc/server";
-import { ContributionDetails } from "./steps/contribution-details";
-import { Documents } from "./steps/documents";
-import { GeneralDetails } from "./steps/general-details";
-import { RelevantDates } from "./steps/relevant-dates";
+import { ContributionDetails } from "@/components/securities/shares/steps/contribution-details";
+import { Documents } from "@/components/securities/shares/steps/documents";
+import { GeneralDetails } from "@/components/securities/shares/steps/general-details";
+import { RelevantDates } from "@/components/securities/shares/steps/relevant-dates";
 
 async function ContributionDetailsStep() {
   const stakeholders = await api.stakeholder.getStakeholders.query();

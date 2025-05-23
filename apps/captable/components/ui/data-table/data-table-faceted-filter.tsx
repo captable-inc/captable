@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 import { RiAddCircleLine, RiCheckLine } from "@remixicon/react";
-import { type Column } from "@tanstack/react-table";
-import * as React from "react";
-import { Badge } from "../badge";
-import { Button } from "../button";
+import type { Column } from "@tanstack/react-table";
+import type * as React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -12,9 +12,13 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from "../command";
-import { Popover, PopoverContent, PopoverTrigger } from "../popover";
-import { Separator } from "../separator";
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
@@ -59,8 +63,8 @@ export function DataTableFacetedFilter<TData, TValue>({
                   </Badge>
                 ) : (
                   options
-                    .filter((option) => selectedValues.has(option.value))
-                    .map((option) => (
+                    .filter((option: NonNullable<typeof options>[number]) => selectedValues.has(option.value))
+                    .map((option: NonNullable<typeof options>[number]) => (
                       <Badge
                         variant="secondary"
                         key={option.value}
@@ -81,7 +85,7 @@ export function DataTableFacetedFilter<TData, TValue>({
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => {
+              {options.map((option: NonNullable<typeof options>[number]) => {
                 const isSelected = selectedValues.has(option.value);
                 return (
                   <CommandItem

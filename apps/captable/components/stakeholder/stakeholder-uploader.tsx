@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { popModal } from "../modals";
+import { popModal } from "@/components/modals";
 
 const StakeholderUploader = () => {
   const [csvFile, setCSVFile] = useState<File[]>([]);

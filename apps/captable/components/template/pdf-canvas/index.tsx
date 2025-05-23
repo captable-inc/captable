@@ -7,8 +7,8 @@ import {
 } from "@/components/ui/pdf-viewer";
 import type { RouterOutputs } from "@/trpc/shared";
 
-import { FieldCanvas } from "../field-canvas";
-import { ReadOnlyFieldCanvas } from "../field-canvas/readonly-field-canvas";
+import { FieldCanvas } from "@/components/template/field-canvas";
+import { ReadOnlyFieldCanvas } from "@/components/template/field-canvas/readonly-field-canvas";
 
 type Recipients = RouterOutputs["template"]["get"]["recipients"];
 

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { type RouterOutputs } from "@/trpc/shared";
+import type { RouterOutputs } from "@/trpc/shared";
 import { SigningFieldForm } from "../signing-field-form";
 import { FieldRenderer } from "./field-renderer";
 
@@ -24,7 +24,7 @@ export function SigningFields({
       templateId={templateId}
       companyPublicId={companyPublicId}
     >
-      {fields.map((item) => (
+      {fields.map((item: NonNullable<typeof fields>[number]) => (
         <FieldRenderer
           name={item.name}
           key={item.id}

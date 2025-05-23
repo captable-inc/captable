@@ -29,7 +29,7 @@ import { api } from "@/trpc/react";
 import { RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "../../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,9 +37,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { PasskeyTableToolbar } from "./passkey-table-toolbar";
-import UpdatePasskeyNameModal from "./update-passkey-name-modal";
+} from "@/components/ui/dropdown-menu";
+import { PasskeyTableToolbar } from "@/components/security/passkey/passkey-table-toolbar";
+import UpdatePasskeyNameModal from "@/components/security/passkey/update-passkey-name-modal";
 
 type Passkey = RouterOutputs["passkey"]["find"]["data"];
 

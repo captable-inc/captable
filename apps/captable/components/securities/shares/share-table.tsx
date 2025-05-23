@@ -44,7 +44,7 @@ import {
 import { RiFileDownloadLine, RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ShareTableToolbar } from "./share-table-toolbar";
+import { ShareTableToolbar } from "@/components/securities/shares/share-table-toolbar";
 
 type Share = RouterOutputs["securities"]["getShares"]["data"];
 
@@ -265,7 +265,7 @@ export const columns: ColumnDef<Share[number]>[] = [
           </div>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Documents</DropdownMenuLabel>
-            {documents?.map((doc) => (
+            {documents?.map((doc: NonNullable<typeof documents>[number]) => (
               <DropdownMenuItem
                 key={doc.id}
                 className="hover:cursor-pointer"

@@ -1,7 +1,7 @@
 import { flexRender } from "@tanstack/react-table";
-import { TableHead, TableHeader, TableRow } from "../table";
+import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-import { useDataTable } from "./data-table";
+import { useDataTable } from "@/components/ui/data-table/data-table";
 
 export function DataTableHeader() {
   const { table } = useDataTable();

@@ -187,7 +187,9 @@ function StakeholderDataDisplay({ stakeholders }: StakeholderDataDisplayProps) {
     | string
     | null;
 
-  const stakeholder = stakeholders.find((item: TStakeholders[number]) => item.id === stakeholderId);
+  const stakeholder = stakeholders.find(
+    (item: TStakeholders[number]) => item.id === stakeholderId,
+  );
 
   return stakeholderId ? (
     <>

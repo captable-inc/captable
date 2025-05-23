@@ -40,7 +40,7 @@ import type { RouterOutputs } from "@/trpc/shared";
 import { RiFileDownloadLine, RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { OptionTableToolbar } from "./option-table-toolbar";
+import { OptionTableToolbar } from "@/components/securities/options/option-table-toolbar";
 
 type Option = RouterOutputs["securities"]["getOptions"]["data"];
 
@@ -205,24 +205,26 @@ export const columns: ColumnDef<Option[number]>[] = [
           </div>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Documents</DropdownMenuLabel>
-            {row?.original?.documents?.map((doc) => (
-              <DropdownMenuItem
-                key={doc.id}
-                className="hover:cursor-pointer"
-                onClick={async () => {
-                  await openFileOnTab(doc.bucket.key);
-                }}
-              >
-                <RiFileDownloadLine
-                  type={doc.bucket.mimeType}
-                  className="mx-3 cursor-pointer text-muted-foreground hover:text-primary/80"
-                />
-                {doc.name.slice(0, 12)}
-                <p className="mx-4 rounded-full bg-slate-100 text-xs text-slate-500">
-                  {doc?.uploader?.user?.name}
-                </p>
-              </DropdownMenuItem>
-            ))}
+            {row?.original?.documents?.map(
+              (doc: NonNullable<typeof row.original.documents>[number]) => (
+                <DropdownMenuItem
+                  key={doc.id}
+                  className="hover:cursor-pointer"
+                  onClick={async () => {
+                    await openFileOnTab(doc.bucket.key);
+                  }}
+                >
+                  <RiFileDownloadLine
+                    type={doc.bucket.mimeType}
+                    className="mx-3 cursor-pointer text-muted-foreground hover:text-primary/80"
+                  />
+                  {doc.name.slice(0, 12)}
+                  <p className="mx-4 rounded-full bg-slate-100 text-xs text-slate-500">
+                    {doc?.uploader?.user?.name}
+                  </p>
+                </DropdownMenuItem>
+              ),
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       );

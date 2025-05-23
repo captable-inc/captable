@@ -25,8 +25,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import React from "react";
-import { Allow } from "../rbac/allow";
-import { Button } from "../ui/button";
+import { Allow } from "@/components/rbac/allow";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +34,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { StakeholderTableToolbar } from "./stakeholder-table-toolbar";
+} from "@/components/ui/dropdown-menu";
+import { StakeholderTableToolbar } from "@/components/stakeholder/stakeholder-table-toolbar";
 
 type Stakeholder = RouterOutputs["stakeholder"]["getStakeholders"];
 

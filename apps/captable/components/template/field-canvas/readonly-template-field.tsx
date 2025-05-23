@@ -5,7 +5,7 @@ import {
   type ReadOnlyTemplateFieldContainerProps,
 } from "./template-field-container";
 
-import { type TemplateSigningFieldForm } from "@/providers/template-signing-field-provider";
+import type { TemplateSigningFieldForm } from "@/providers/template-signing-field-provider";
 
 type ReadOnlyTemplateFieldProps = Omit<
   ReadOnlyTemplateFieldContainerProps,
@@ -37,7 +37,9 @@ export const ReadOnlyTemplateField = ({
 
   const selectValue =
     type === "SELECT" && meta?.options
-      ? meta.options.find((item) => item.id === value)?.value || undefined
+      ? meta.options.find(
+          (item: NonNullable<typeof meta.options>[number]) => item.id === value,
+        )?.value || undefined
       : undefined;
 
   return (

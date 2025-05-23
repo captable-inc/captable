@@ -1,7 +1,6 @@
 "use client";
 import Tldr from "@/components/common/tldr";
 import { pushModal } from "@/components/modals";
-// import { EmptySelect } from "@/components/securities/shared/EmptySelect";
 import { Button } from "@/components/ui/button";
 import { LinearCombobox } from "@/components/ui/combobox";
 import {
@@ -93,10 +92,12 @@ export const GeneralDetails = ({ shareClasses = [] }: GeneralDetailsProps) => {
     next();
   };
 
-  const shareClassOpts = shareClasses.map((share) => ({
-    value: share.id,
-    label: share.name,
-  }));
+  const shareClassOpts = shareClasses.map(
+    (share: NonNullable<typeof shareClasses>[number]) => ({
+      value: share.id,
+      label: share.name,
+    }),
+  );
 
   // const vestingScheduleOpts = vestingSchedule.map((vs) => ({
   //   value: vs,
@@ -364,11 +365,13 @@ export const GeneralDetails = ({ shareClasses = [] }: GeneralDetailsProps) => {
                   </MultiSelectorTrigger>
                   <MultiSelectorContent>
                     <MultiSelectorList>
-                      {companyLegends.map((cl) => (
-                        <MultiSelectorItem key={cl} value={cl}>
-                          {humanizeCompanyLegends(cl)}
-                        </MultiSelectorItem>
-                      ))}
+                      {companyLegends.map(
+                        (cl: NonNullable<typeof companyLegends>[number]) => (
+                          <MultiSelectorItem key={cl} value={cl}>
+                            {humanizeCompanyLegends(cl)}
+                          </MultiSelectorItem>
+                        ),
+                      )}
                     </MultiSelectorList>
                   </MultiSelectorContent>
                 </MultiSelector>
