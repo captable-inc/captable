@@ -208,7 +208,7 @@ export const columns: ColumnDef<Safe[number]>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Documents</DropdownMenuLabel>
             {documents?.length ? (
-              documents.map((doc) => (
+              documents.map((doc: NonNullable<typeof documents>[number]) => (
                 <DropdownMenuItem
                   key={doc.id}
                   className="hover:cursor-pointer"
