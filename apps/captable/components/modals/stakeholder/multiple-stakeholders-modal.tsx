@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "@/components/common/push-modal";
-import StakeholderUploader from "../../stakeholder/stakeholder-uploader";
+import StakeholderUploader from "@/components/stakeholder/stakeholder-uploader";
 
 type StakeholderType = {
   title: string | React.ReactNode;

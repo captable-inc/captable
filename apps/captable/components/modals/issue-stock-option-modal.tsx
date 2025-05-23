@@ -10,10 +10,10 @@ import { StockOptionFormProvider } from "@/providers/stock-option-form-provider"
 
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
-import { Documents } from "../securities/options/steps/documents";
-import { GeneralDetails } from "../securities/options/steps/general-details";
-import { RelevantDates } from "../securities/options/steps/relevant-dates";
-import { VestingDetails } from "../securities/options/steps/vesting-details";
+import { Documents } from "@/components/securities/options/steps/documents";
+import { GeneralDetails } from "@/components/securities/options/steps/general-details";
+import { RelevantDates } from "@/components/securities/options/steps/relevant-dates";
+import { VestingDetails } from "@/components/securities/options/steps/vesting-details";
 import type { TStakeholders } from "./issue-share-modal";
 
 export type TEquityPlans = RouterOutputs["equityPlan"]["getPlans"]["data"];
@@ -39,22 +39,26 @@ type IssueStockOptionModalProps = Omit<StepperModalProps, "children"> & {
 };
 
 export const IssueStockOptionModal = ({
-  shouldClientFetch,
+  shouldClientFetch = false,
   equityPlans,
   stakeholders,
   ...rest
 }: IssueStockOptionModalProps) => {
-  const _stakeholders = api.stakeholder.getStakeholders.useQuery(undefined, {
-    enabled: shouldClientFetch,
-  }).data;
+  // const _stakeholders = api.stakeholder.getStakeholders.useQuery(undefined, {
+  //   enabled: shouldClientFetch,
+  // }).data;
+  const _stakeholders =
+    api.stakeholder.getStakeholders.useQuery(undefined).data;
 
-  const _equityPlans = api.equityPlan.getPlans.useQuery(undefined, {
-    enabled: shouldClientFetch,
-  }).data?.data;
+  // const _equityPlans = api.equityPlan.getPlans.useQuery(undefined, {
+  //   enabled: shouldClientFetch,
+  // }).data?.data;
+  const _equityPlans = api.equityPlan.getPlans.useQuery(undefined).data?.data;
 
   const __stakeholders = stakeholders.length
     ? stakeholders
     : (_stakeholders as unknown as TStakeholders);
+
   const __equityPlans = equityPlans.length
     ? equityPlans
     : (_equityPlans as unknown as TEquityPlans);

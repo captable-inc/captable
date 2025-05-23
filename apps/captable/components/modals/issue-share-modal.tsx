@@ -9,10 +9,10 @@ import {
 import { AddShareFormProvider } from "@/providers/add-share-form-provider";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
-import { ContributionDetails } from "../securities/shares/steps/contribution-details";
-import { Documents } from "../securities/shares/steps/documents";
-import { GeneralDetails } from "../securities/shares/steps/general-details";
-import { RelevantDates } from "../securities/shares/steps/relevant-dates";
+import { ContributionDetails } from "@/components/securities/shares/steps/contribution-details";
+import { Documents } from "@/components/securities/shares/steps/documents";
+import { GeneralDetails } from "@/components/securities/shares/steps/general-details";
+import { RelevantDates } from "@/components/securities/shares/steps/relevant-dates";
 
 export type TShareClasses = RouterOutputs["shareClass"]["get"];
 export type TStakeholders = RouterOutputs["stakeholder"]["getStakeholders"];
@@ -36,22 +36,26 @@ type IssueShareModalProps = Omit<StepperModalProps, "children"> & {
 };
 
 export const IssueShareModal = ({
-  shouldClientFetch,
+  shouldClientFetch = false,
   stakeholders,
   shareClasses,
   ...rest
 }: IssueShareModalProps) => {
-  const _stakeholders = api.stakeholder.getStakeholders.useQuery(undefined, {
-    enabled: shouldClientFetch,
-  })?.data;
+  // const _stakeholders = api.stakeholder.getStakeholders.useQuery(undefined, {
+  //   enabled: shouldClientFetch,
+  // })?.data;
+  const _stakeholders =
+    api.stakeholder.getStakeholders.useQuery(undefined).data;
 
-  const _shareClasses = api.shareClass.get.useQuery(undefined, {
-    enabled: shouldClientFetch,
-  })?.data;
+  // const _shareClasses = api.shareClass.get.useQuery(undefined, {
+  //   enabled: shouldClientFetch,
+  // })?.data;
+  const _shareClasses = api.shareClass.get.useQuery(undefined).data;
 
   const __stakeholders = stakeholders.length
     ? stakeholders
     : (_stakeholders as unknown as TStakeholders);
+
   const __shareClasses = shareClasses.length
     ? shareClasses
     : (_shareClasses as unknown as TShareClasses);
