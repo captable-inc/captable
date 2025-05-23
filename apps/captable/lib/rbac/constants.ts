@@ -1,5 +1,5 @@
 import type { TPermission } from "@/lib/rbac/schema";
-import type { Roles } from "@captable/db/schema/enums";
+import type { RoleEnum } from "@captable/db/schema/enums";
 import type { TActions } from "./actions";
 import { SUBJECTS } from "./subjects";
 
@@ -38,4 +38,4 @@ export type RoleList = {
     }
 );
 
-type DefaultRoles = Exclude<Roles, "CUSTOM">;
+type DefaultRoles = Exclude<RoleEnum, "CUSTOM">;

@@ -5,7 +5,7 @@ import {
   ADMIN_ROLE_ID,
   DEFAULT_PERMISSION,
 } from "@/lib/rbac/constants";
-import { Roles } from "@captable/db/schema/enums";
+import type { RoleEnum } from "@captable/db/schema/enums";
 import { checkMembership, withServerComponentSession } from "@/server/auth";
 import { type TPrismaOrTransaction, db } from "@/server/db";
 import type { Session } from "next-auth";
@@ -39,7 +39,7 @@ export async function checkAccessControlMembership({
 }
 
 interface getPermissionsForRoleOptions {
-  role: Roles | null;
+  role: RoleEnum | null;
   tx: TPrismaOrTransaction;
   companyId: string;
   customRoleId: string | null;
@@ -142,7 +142,7 @@ export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
   }
 
   if (id === ADMIN_ROLE_ID) {
-    return { role: Roles.ADMIN, customRoleId: null };
+    return { role: "ADMIN", customRoleId: null };
   }
 
   const { id: customRoleId } = await tx.customRole.findFirstOrThrow({
@@ -150,7 +150,7 @@ export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
     select: { id: true },
   });
 
-  return { role: Roles.CUSTOM, customRoleId };
+  return { role: "CUSTOM", customRoleId };
 };
 
 export const getServerPermissions = cache(async () => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { FieldTypes, TemplateStatus } from "@captable/db/schema/enums";
+import { FieldTypesEnum, TemplateStatusEnum } from "@captable/db/schema/enums";
 
 const TemplateFieldMetaType = z.object({
   options: z
@@ -12,7 +12,7 @@ const TemplateFieldMetaType = z.object({
 export type TTemplateFieldMetaType = z.infer<typeof TemplateFieldMetaType>;
 
 export const ZodAddFieldMutationSchema = z.object({
-  status: z.nativeEnum(TemplateStatus),
+  status: z.enum(TemplateStatusEnum.enumValues as [string, ...string[]]),
   templatePublicId: z.string(),
   data: z.array(
     z.object({
@@ -23,7 +23,7 @@ export const ZodAddFieldMutationSchema = z.object({
       top: z.number(),
       left: z.number(),
       required: z.boolean(),
-      type: z.nativeEnum(FieldTypes),
+      type: z.enum(FieldTypesEnum.enumValues as [string, ...string[]]),
       viewportHeight: z.number(),
       viewportWidth: z.number(),
       page: z.number(),

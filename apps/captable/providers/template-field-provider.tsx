@@ -2,10 +2,10 @@
 
 import { Form } from "@/components/ui/form";
 import { COLORS } from "@/lib/constants/esign";
-import { FieldTypes, TemplateStatus } from "@captable/db/schema/enums";
-import { type RouterOutputs } from "@/trpc/shared";
+import { FieldTypesEnum, TemplateStatusEnum } from "@captable/db/schema/enums";
+import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -19,8 +19,10 @@ interface TemplateFieldProviderProps {
 }
 
 const formSchema = z.object({
-  status: z.nativeEnum(TemplateStatus),
-  fieldType: z.nativeEnum(FieldTypes).optional(),
+  status: z.enum(TemplateStatusEnum.enumValues as [string, ...string[]]),
+  fieldType: z
+    .enum(FieldTypesEnum.enumValues as [string, ...string[]])
+    .optional(),
   fields: z
     .array(
       z.object({
@@ -31,7 +33,7 @@ const formSchema = z.object({
         top: z.number(),
         left: z.number(),
         required: z.boolean(),
-        type: z.nativeEnum(FieldTypes),
+        type: z.enum(FieldTypesEnum.enumValues as [string, ...string[]]),
         viewportHeight: z.number(),
         viewportWidth: z.number(),
         page: z.number(),

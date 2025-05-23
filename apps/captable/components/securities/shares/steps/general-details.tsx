@@ -46,11 +46,11 @@ import { z } from "zod";
 
 export const humanizeCompanyLegends = (type: string): string => {
   switch (type) {
-    case ShareLegendsEnum.US_SECURITIES_ACT:
+    case "US_SECURITIES_ACT":
       return "US Securities Act";
-    case ShareLegendsEnum.TRANSFER_RESTRICTIONS:
+    case "TRANSFER_RESTRICTIONS":
       return "Transfer Restrictions";
-    case ShareLegendsEnum.SALE_AND_ROFR:
+    case "SALE_AND_ROFR":
       return "Sale and ROFR";
     default:
       return "";
@@ -60,11 +60,13 @@ export const humanizeCompanyLegends = (type: string): string => {
 const formSchema = z.object({
   shareClassId: z.string(),
   certificateId: z.string(),
-  status: z.nativeEnum(SecuritiesStatusEnum),
+  status: z.enum(SecuritiesStatusEnum.enumValues as [string, ...string[]]),
   quantity: z.coerce.number().min(0),
   cliffYears: z.coerce.number().min(0),
   vestingYears: z.coerce.number().min(0),
-  companyLegends: z.nativeEnum(ShareLegendsEnum).array(),
+  companyLegends: z
+    .enum(ShareLegendsEnum.enumValues as [string, ...string[]])
+    .array(),
   pricePerShare: z.coerce.number().min(0),
 });
 

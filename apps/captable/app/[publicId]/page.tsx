@@ -4,8 +4,8 @@ import { dayjsExt } from "@/lib/common/dayjs";
 import { SharePageLayout } from "@/components/share/page-layout";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import UpdateRenderer from "@/components/update/renderer";
-import { type JWTVerifyResult, decode } from "@/lib/jwt";
-import { UpdateStatusEnum } from "@captable/db/schema/enums";
+import type { JWTVerifyResult } from "@/lib/jwt";
+import { decode } from "@/lib/jwt";
 import { db } from "@/server/db";
 import { renderAsync } from "@react-email/components";
 import { RiLock2Line } from "@remixicon/react";
@@ -71,8 +71,7 @@ const PublicUpdatePage = async ({
     return notFound();
   }
 
-  const canRenderInPublic =
-    update.status === UpdateStatusEnum.PUBLIC && update.public;
+  const canRenderInPublic = update.status === "PUBLIC" && update.public;
 
   if (!canRenderInPublic) {
     return (

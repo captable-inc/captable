@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { COLORS } from "@/lib/constants/esign";
-import type { FieldTypes } from "@captable/db/schema/enums";
+import type { FieldTypesEnum } from "@captable/db/schema/enums";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { FieldTypeData } from "../field-type-data";
 
@@ -130,7 +130,7 @@ export function CanvasToolbar({ recipients }: CanvasToolbarProps) {
             render={({ field }) => (
               <Toolbar.ToggleGroup
                 onValueChange={(value) => {
-                  field.onChange(value as FieldTypes);
+                  field.onChange(value as FieldTypesEnum);
                 }}
                 value={field.value}
                 className="flex gap-x-2"

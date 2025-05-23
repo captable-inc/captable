@@ -1,4 +1,4 @@
-import { type FieldTypes } from "@captable/db/schema/enums";
+import type { FieldTypesEnum } from "@captable/db/schema/enums";
 import {
   RiCalendar2Line,
   RiListCheck3,
@@ -9,7 +9,7 @@ import {
 interface OptionsItems {
   label: string;
   icon: typeof RiSketching;
-  value: FieldTypes;
+  value: FieldTypesEnum;
 }
 
 export const FieldTypeData: OptionsItems[] = [

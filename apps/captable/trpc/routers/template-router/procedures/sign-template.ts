@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/prefer-for-of */
-
 import { dayjsExt } from "@/lib/common/dayjs";
 import { EsignNotificationEmailJob } from "@/jobs/esign-email";
 import { EsignPdfJob } from "@/jobs/esign-pdf";
-import type { TemplateStatus } from "@captable/db/schema/enums";
+import type { TemplateStatusEnum } from "@captable/db/schema/enums";
 import { EsignAudit } from "@/server/audit";
 import {
   type CompleteEsignDocumentsOptionsType,
@@ -31,7 +29,7 @@ export const signTemplateProcedure = withoutAuth
       const templateName = template.name;
       const sender = template.uploader.user;
 
-      let templateStatus: TemplateStatus = "WAITING";
+      let templateStatus: TemplateStatusEnum = "WAITING";
 
       const totalGroups = new Set(
         template.fields.map((item) => item.recipientId),

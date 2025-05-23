@@ -1,5 +1,5 @@
 import { createSecureHash, initializeAccessToken } from "@/lib/crypto";
-import { AccessTokenType } from "@captable/db/schema/enums";
+import { AccessTokenTypeEnum } from "@captable/db/schema/enums";
 import { Audit } from "@/server/audit";
 
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";
@@ -8,7 +8,13 @@ import z from "zod";
 
 export const accessTokenRouter = createTRPCRouter({
   listAll: withAccessControl
-    .input(z.object({ typeEnum: z.nativeEnum(AccessTokenType) }))
+    .input(
+      z.object({
+        typeEnum: z.enum(
+          AccessTokenTypeEnum.enumValues as [string, ...string[]],
+        ),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const {
         db,
@@ -42,7 +48,7 @@ export const accessTokenRouter = createTRPCRouter({
     }),
 
   create: withAccessControl
-    .input(z.object({ typeEnum: z.nativeEnum(AccessTokenType) }))
+    .input(z.object({ typeEnum: z.nativeEnum(AccessTokenTypeEnum) }))
     .mutation(async ({ ctx, input }) => {
       const {
         db,
