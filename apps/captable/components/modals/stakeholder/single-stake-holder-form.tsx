@@ -171,7 +171,10 @@ export const SingleStakeholderForm = ({
                   <FormLabel>Type</FormLabel>
                   <div>
                     <LinearCombobox
-                      defaultOption={{ value: field.value, label: field.value }}
+                      defaultOption={{
+                        value: field.value as string,
+                        label: field.value as string,
+                      }}
                       options={stakeHolderTypeOpts}
                       onValueChange={(option) => {
                         field.onChange(option.value);
@@ -192,7 +195,10 @@ export const SingleStakeholderForm = ({
                   <FormLabel>Group</FormLabel>
                   <div>
                     <LinearCombobox
-                      defaultOption={{ value: field.value, label: field.value }}
+                      defaultOption={{
+                        value: field.value as string,
+                        label: field.value as string,
+                      }}
                       options={groupTypeOpts}
                       onValueChange={(option) => field.onChange(option.value)}
                     />

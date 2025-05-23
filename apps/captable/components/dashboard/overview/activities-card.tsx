@@ -16,7 +16,13 @@ type Props = {
 };
 
 const ActivityCard = async ({ className, publicId }: Props) => {
-  const activity = await api.audit.getAudits.query({ take: 4 });
+  const activity = (await api.audit.getAudits.query({ take: 4 })) as {
+    data: {
+      id: string;
+      summary: string;
+      occurredAt: string;
+    }[];
+  };
 
   return (
     <Card className={className}>

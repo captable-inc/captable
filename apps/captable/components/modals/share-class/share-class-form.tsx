@@ -35,8 +35,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { popModal } from "..";
-import { type ComboBoxOption, LinearCombobox } from "../../ui/combobox";
+import { type ComboBoxOption, LinearCombobox } from "@/components/ui/combobox";
+import { popModal } from "@/components/modals";
 
 const formSchema = ShareClassMutationSchema;
 

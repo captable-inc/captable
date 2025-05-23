@@ -131,8 +131,8 @@ export const InvestorForm = ({ investor }: InvestorFormProps) => {
                   <div>
                     <LinearCombobox
                       defaultOption={{
-                        value: field.value,
-                        label: camelCase(field.value),
+                        value: field.value as string,
+                        label: camelCase(field.value as string),
                       }}
                       options={investorTypeOpts}
                       onValueChange={(option) => {

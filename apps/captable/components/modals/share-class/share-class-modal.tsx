@@ -3,7 +3,6 @@
 import Modal from "@/components/common/push-modal";
 import { api } from "@/trpc/react";
 import type { ShareClassMutationType } from "@/trpc/routers/share-class/schema";
-import { Button } from "@tremor/react";
 import ShareClassForm from "./share-class-form";
 
 type ShareClassType = {
@@ -17,15 +16,17 @@ type ShareClassType = {
 
 export const ShareClassModal = ({
   type = "create",
-  shouldClientFetch,
+  shouldClientFetch = false,
   title,
   subtitle,
   shareClass,
   shareClasses = [] as ShareClassMutationType[],
 }: ShareClassType) => {
-  const _shareClasses = api.shareClass.get.useQuery(undefined, {
-    enabled: shouldClientFetch,
-  })?.data;
+  // const _shareClasses = api.shareClass.get.useQuery(undefined, {
+  //   enabled: shouldClientFetch,
+  // })?.data;
+
+  const _shareClasses = api.shareClass.get.useQuery(undefined).data;
   const __shareClasses = shareClasses.length
     ? shareClasses
     : (_shareClasses as unknown as ShareClassMutationType[]);
