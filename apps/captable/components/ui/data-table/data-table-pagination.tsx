@@ -1,5 +1,5 @@
-import { Button } from "../button";
-import { useDataTable } from "./data-table";
+import { Button } from "@/components/ui/button";
+import { useDataTable } from "@/components/ui/data-table/data-table";
 
 export function DataTablePagination() {
   const { table } = useDataTable();

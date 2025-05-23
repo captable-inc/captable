@@ -63,7 +63,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                   </Badge>
                 ) : (
                   options
-                    .filter((option: NonNullable<typeof options>[number]) => selectedValues.has(option.value))
+                    .filter((option: NonNullable<typeof options>[number]) =>
+                      selectedValues.has(option.value),
+                    )
                     .map((option: NonNullable<typeof options>[number]) => (
                       <Badge
                         variant="secondary"

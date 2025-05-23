@@ -1,4 +1,4 @@
-import { Button } from "../button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -6,10 +6,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 
 import { RiArrowDownSLine } from "@remixicon/react";
-import { useDataTable } from "./data-table";
+import { useDataTable } from "@/components/ui/data-table/data-table";
 
 export function DataTableViewOptions() {
   const { table } = useDataTable();
