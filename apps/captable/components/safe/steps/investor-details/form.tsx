@@ -60,7 +60,7 @@ export function InvestorDetailsForm({ stakeholders }: InvestorsDetailsProps) {
     setValue(data);
   };
 
-  const stakeHolderOpts = stakeholders.map((sh) => {
+  const stakeHolderOpts = stakeholders.map((sh: TStakeholders[number]) => {
     let label = "";
     if (sh.institutionName) {
       label = `${sh.institutionName} - ${sh.name}`;
@@ -187,7 +187,7 @@ function StakeholderDataDisplay({ stakeholders }: StakeholderDataDisplayProps) {
     | string
     | null;
 
-  const stakeholder = stakeholders.find((item) => item.id === stakeholderId);
+  const stakeholder = stakeholders.find((item: TStakeholders[number]) => item.id === stakeholderId);
 
   return stakeholderId ? (
     <>
