@@ -42,7 +42,7 @@ const VerifyEmail = ({ token }: { token: string }) => {
       setLoading(false);
       setError("Something went wrong! Please try again.");
     }
-  }, [token, success, error]);
+  }, [token, success, error, mutateAsync]);
 
   useEffect(() => {
     void onSubmit();

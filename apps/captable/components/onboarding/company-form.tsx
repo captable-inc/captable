@@ -23,7 +23,7 @@ import {
 } from "@/trpc/routers/onboarding-router/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiArrowRightLine } from "@remixicon/react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 
 import { dayjsExt } from "@/lib/common/dayjs";
 import { uploadFile } from "@/lib/common/uploads";
@@ -36,8 +36,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import Loading from "../common/loading";
-import { LinearCombobox } from "../ui/combobox";
+import Loading from "@/components/common/loading";
+import { LinearCombobox } from "@/components/ui/combobox";
 
 const formSchema = ZodOnboardingMutationSchema;
 
@@ -63,12 +63,14 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<TypeZodOnboardingMutationSchema>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(
+      formSchema,
+    ) as Resolver<TypeZodOnboardingMutationSchema>,
     defaultValues: {
       user: {
         email: user?.user.email ?? "",
         name: user?.user.name ?? "",
-        title: data?.title ?? "",
+        title: data?.title,
       },
       company: {
         city: data?.company.city ?? "",
@@ -79,11 +81,12 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
         incorporationState: data?.company.incorporationState ?? "",
         incorporationType: data?.company.incorporationType ?? "",
         name: data?.company.name ?? "",
-        website: data?.company.website ?? "",
+        website: data?.company.website,
         state: data?.company.state ?? "",
         streetAddress: data?.company.streetAddress ?? "",
         zipcode: data?.company.zipcode ?? "",
-        country: data?.company.country ?? "",
+        country: data?.company.country ?? "US",
+        logo: data?.company.logo,
       },
     },
   });
