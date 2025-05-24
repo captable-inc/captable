@@ -1,7 +1,7 @@
 import EsignEmail from "@/emails/EsignEmail";
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
-import { db } from "@/server/db";
+import { db, esignRecipients, templates, eq } from "@captable/db";
 import { sendMail } from "@/server/mailer";
 import { renderAsync } from "@react-email/components";
 import type { Job } from "pg-boss";
@@ -57,24 +57,21 @@ export class EsignNotificationEmailJob extends BaseJob<ExtendedEsignPayloadType>
   readonly type = "email.esign-notification";
 
   async work(job: Job<ExtendedEsignPayloadType>): Promise<void> {
-    await db.$transaction(async (tx) => {
-      const recipient = await tx.esignRecipient.update({
-        where: {
-          id: job.data.recipient.id,
-        },
-        data: {
-          status: "SENT",
-        },
-      });
+    await db.transaction(async (tx) => {
+      const [recipient] = await tx
+        .update(esignRecipients)
+        .set({ status: "SENT" })
+        .where(eq(esignRecipients.id, job.data.recipient.id))
+        .returning();
 
-      await tx.template.update({
-        where: {
-          id: recipient.templateId,
-        },
-        data: {
-          status: "SENT",
-        },
-      });
+      if (!recipient) {
+        throw new Error(`Recipient with id ${job.data.recipient.id} not found`);
+      }
+
+      await tx
+        .update(templates)
+        .set({ status: "SENT" })
+        .where(eq(templates.id, recipient.templateId));
     });
 
     await sendEsignEmail(job.data);

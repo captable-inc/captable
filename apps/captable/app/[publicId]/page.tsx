@@ -6,7 +6,16 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import UpdateRenderer from "@/components/update/renderer";
 import type { JWTVerifyResult } from "@/lib/jwt";
 import { decode } from "@/lib/jwt";
-import { db } from "@/server/db";
+import {
+  db,
+  updates,
+  companies,
+  members,
+  users,
+  updateRecipients,
+  eq,
+  and,
+} from "@captable/db";
 import { renderAsync } from "@react-email/components";
 import { RiLock2Line } from "@remixicon/react";
 import { notFound } from "next/navigation";
@@ -38,34 +47,60 @@ const PublicUpdatePage = async ({
     return notFound();
   }
 
-  const update = await db.update.findFirst({
-    where: {
-      publicId,
-      companyId: payload.companyId,
-    },
+  // Extract payload values to ensure proper typing
+  const companyId = payload.companyId as string;
+  const recipientId = payload.recipientId as string;
 
-    include: {
-      company: {
-        select: {
-          name: true,
-          logo: true,
+  const [result] = await db
+    .select({
+      // Update fields
+      id: updates.id,
+      publicId: updates.publicId,
+      title: updates.title,
+      content: updates.content,
+      html: updates.html,
+      public: updates.public,
+      status: updates.status,
+      authorId: updates.authorId,
+      companyId: updates.companyId,
+      createdAt: updates.createdAt,
+      updatedAt: updates.updatedAt,
+      // Company fields
+      companyName: companies.name,
+      companyLogo: companies.logo,
+      // Member fields
+      authorTitle: members.title,
+      // User fields
+      authorName: users.name,
+      authorEmail: users.email,
+      authorImage: users.image,
+    })
+    .from(updates)
+    .innerJoin(companies, eq(updates.companyId, companies.id))
+    .innerJoin(members, eq(updates.authorId, members.id))
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(
+      and(eq(updates.publicId, publicId), eq(updates.companyId, companyId)),
+    )
+    .limit(1);
+
+  const update = result
+    ? {
+        ...result,
+        company: {
+          name: result.companyName,
+          logo: result.companyLogo,
         },
-      },
-
-      author: {
-        select: {
-          title: true,
+        author: {
+          title: result.authorTitle,
           user: {
-            select: {
-              name: true,
-              email: true,
-              image: true,
-            },
+            name: result.authorName,
+            email: result.authorEmail,
+            image: result.authorImage,
           },
         },
-      },
-    },
-  });
+      }
+    : null;
 
   if (!update) {
     return notFound();
@@ -86,12 +121,16 @@ const PublicUpdatePage = async ({
     );
   }
 
-  const recipients = await db.updateRecipient.findFirst({
-    where: {
-      id: payload.recipientId,
-      updateId: update.id,
-    },
-  });
+  const [recipients] = await db
+    .select()
+    .from(updateRecipients)
+    .where(
+      and(
+        eq(updateRecipients.id, recipientId),
+        eq(updateRecipients.updateId, update.id),
+      ),
+    )
+    .limit(1);
 
   if (!recipients) {
     return notFound();
