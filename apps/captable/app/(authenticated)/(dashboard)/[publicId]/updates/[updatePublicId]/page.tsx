@@ -1,11 +1,7 @@
 "use server";
-import { db, updates, eq } from "@captable/db";
-import dynamic from "next/dynamic";
 
-const Editor = dynamic(
-  () => import("../../../../../../components/update/editor"),
-  { ssr: false },
-);
+import { db, updates, eq } from "@captable/db";
+import EditorWrapper from "./editor-wrapper";
 
 const getUpdate = async (publicId: string) => {
   const result = await db.query.updates.findFirst({
@@ -25,11 +21,13 @@ const UpdatePage = async ({
   params: { publicId: string; updatePublicId: string };
 }) => {
   if (updatePublicId === "new") {
-    return <Editor companyPublicId={publicId} mode="new" />;
+    return <EditorWrapper companyPublicId={publicId} mode="new" />;
   }
   const update = await getUpdate(updatePublicId);
 
-  return <Editor companyPublicId={publicId} update={update} mode="edit" />;
+  return (
+    <EditorWrapper companyPublicId={publicId} update={update} mode="edit" />
+  );
 };
 
 export default UpdatePage;
