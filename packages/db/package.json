@@ -2,6 +2,25 @@
   "name": "@captable/db",
   "module": "index.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "types": "./index.ts"
+    },
+    "./schema": {
+      "import": "./schema/index.ts",
+      "types": "./schema/index.ts"
+    },
+    "./utils": {
+      "import": "./utils.ts",
+      "types": "./utils.ts"
+    },
+    "./config": {
+      "import": "./config.ts",
+      "types": "./config.ts"
+    }
+  },
+  "sideEffects": false,
   "scripts": {
     "lint": "biome check",
     "format": "biome format --write",
