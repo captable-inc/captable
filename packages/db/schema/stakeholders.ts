@@ -2,7 +2,7 @@ import { index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { StakeholderRelationshipEnum, StakeholderTypeEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const stakeholders = createTable(
   "stakeholders",
@@ -10,7 +10,7 @@ export const stakeholders = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
     email: varchar("email", { length: 191 }).notNull().unique(),
     institutionName: varchar("institution_name", { length: 191 }),

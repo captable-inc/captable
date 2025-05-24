@@ -10,7 +10,7 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { ConversionRightsEnum, SharePrefixEnum, ShareTypeEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const shareClasses = createTable(
   "share_classes",
@@ -18,7 +18,7 @@ export const shareClasses = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     idx: integer("idx").notNull(),
     name: varchar("name", { length: 191 }).notNull(),
     classType: ShareTypeEnum("class_type").notNull().default("COMMON"),

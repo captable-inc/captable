@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const dataRooms = createTable(
   "data_rooms",
@@ -15,7 +15,7 @@ export const dataRooms = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     public: boolean("public").notNull().default(false),
@@ -51,7 +51,7 @@ export const dataRoomDocuments = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
 
     // Foreign key references
     dataRoomId: varchar("data_room_id", { length: 191 }).notNull(),
@@ -84,7 +84,7 @@ export const dataRoomRecipients = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }),
     email: varchar("email", { length: 191 }).notNull(),
 
@@ -126,7 +126,7 @@ export const updateRecipients = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }),
     email: varchar("email", { length: 191 }).notNull(),
 

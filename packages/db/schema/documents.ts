@@ -1,7 +1,7 @@
 import { boolean, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const documents = createTable(
   "documents",
@@ -9,7 +9,7 @@ export const documents = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     name: varchar("name", { length: 191 }).notNull(),
 
@@ -53,7 +53,7 @@ export const documentShares = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     link: varchar("link", { length: 191 }).notNull(),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     linkExpiresAt: timestamp("link_expires_at", {

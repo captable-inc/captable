@@ -8,7 +8,7 @@ import {
   ConvertibleTypeEnum,
 } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const convertibleNotes = createTable(
   "convertible_notes",
@@ -16,7 +16,7 @@ export const convertibleNotes = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     status: ConvertibleStatusEnum("status").notNull().default("DRAFT"),
     type: ConvertibleTypeEnum("type").notNull().default("NOTE"),

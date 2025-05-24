@@ -8,7 +8,7 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { MemberStatusEnum, RolesEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const members = createTable(
   "members",
@@ -16,7 +16,7 @@ export const members = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     title: varchar("title", { length: 191 }),
     status: MemberStatusEnum("status").notNull().default("PENDING"),
     isOnboarded: boolean("is_onboarded").notNull().default(false),
@@ -61,7 +61,7 @@ export const customRoles = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
 
     // Foreign key reference

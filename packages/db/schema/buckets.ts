@@ -1,13 +1,13 @@
 import { integer, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const buckets = createTable("buckets", {
   id: varchar("id", { length: 191 })
     .primaryKey()
     .notNull()
-    .$defaultFn(() => generateId()),
+    .$defaultFn(() => createId()),
   name: varchar("name", { length: 191 }).notNull(),
   key: varchar("key", { length: 191 }).notNull(),
   mimeType: varchar("mime_type", { length: 191 }).notNull(),

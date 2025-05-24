@@ -2,7 +2,7 @@ import { index, integer, real, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { SecuritiesStatusEnum, ShareLegendsEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const shares = createTable(
   "shares",
@@ -10,7 +10,7 @@ export const shares = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     status: SecuritiesStatusEnum("status").notNull().default("DRAFT"),
 
     certificateId: varchar("certificate_id", { length: 191 }).notNull(),

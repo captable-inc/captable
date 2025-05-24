@@ -14,13 +14,13 @@ import {
   SubscriptionStatusEnum,
 } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const billingProducts = createTable("billing_products", {
   id: varchar("id", { length: 191 })
     .primaryKey()
     .notNull()
-    .$defaultFn(() => generateId()),
+    .$defaultFn(() => createId()),
   active: boolean("active").notNull(),
   name: varchar("name", { length: 191 }).notNull(),
   description: varchar("description", { length: 191 }),
@@ -36,7 +36,7 @@ export const billingPrices = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     productId: varchar("product_id", { length: 191 }).notNull(),
     active: boolean("active").notNull(),
     description: varchar("description", { length: 191 }),
@@ -65,7 +65,7 @@ export const billingSubscriptions = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     priceId: varchar("price_id", { length: 191 }).notNull(),
     quantity: integer("quantity").notNull(),
     status: SubscriptionStatusEnum("status").notNull(),
@@ -113,7 +113,7 @@ export const billingCustomers = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     companyId: varchar("company_id", { length: 191 }),
   },
   (table) => {

@@ -2,7 +2,7 @@ import { boolean, index, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { UpdateStatusEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const updates = createTable(
   "updates",
@@ -10,7 +10,7 @@ export const updates = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     title: varchar("title", { length: 191 }).notNull(),
     content: jsonb("content").notNull(),
@@ -47,7 +47,7 @@ export const esignAudits = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
 
     // Foreign key references
     companyId: varchar("company_id", { length: 191 }).notNull(),

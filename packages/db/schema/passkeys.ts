@@ -8,7 +8,7 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { CredentialDeviceTypeEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const passkeys = createTable(
   "passkeys",
@@ -16,7 +16,7 @@ export const passkeys = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

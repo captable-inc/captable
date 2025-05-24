@@ -2,7 +2,7 @@ import { boolean, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { BankAccountTypeEnum } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const bankAccounts = createTable(
   "bank_accounts",
@@ -10,7 +10,7 @@ export const bankAccounts = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     beneficiaryName: varchar("beneficiary_name", { length: 191 }).notNull(),
     beneficiaryAddress: varchar("beneficiary_address", {
       length: 191,

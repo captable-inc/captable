@@ -1,7 +1,7 @@
 import { index, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const sessions = createTable(
   "sessions",
@@ -9,7 +9,7 @@ export const sessions = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     sessionToken: varchar("session_token", { length: 191 }).notNull(),
     userId: varchar("user_id", { length: 191 }).notNull(),
     expires: timestamp("expires", { withTimezone: true }).notNull(),

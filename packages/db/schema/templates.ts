@@ -13,7 +13,7 @@ import {
   TemplateStatusEnum,
 } from "./enums";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const templates = createTable(
   "templates",
@@ -21,7 +21,7 @@ export const templates = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     name: varchar("name", { length: 191 }).notNull(),
     status: TemplateStatusEnum("status").notNull().default("DRAFT"),
@@ -59,7 +59,7 @@ export const templateFields = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
     type: FieldTypesEnum("type").notNull().default("TEXT"),
     defaultValue: varchar("default_value", { length: 191 })
@@ -108,7 +108,7 @@ export const esignRecipients = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     email: varchar("email", { length: 191 }).notNull(),
     name: varchar("name", { length: 191 }),
 

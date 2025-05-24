@@ -1,7 +1,7 @@
 import { timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const companies = createTable(
   "companies",
@@ -9,7 +9,7 @@ export const companies = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     name: varchar("name", { length: 191 }).notNull(),
     logo: varchar("logo", { length: 191 }),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),

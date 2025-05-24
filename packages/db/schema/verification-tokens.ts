@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
-import { generateId } from "@/utils";
+import { createId } from "@paralleldrive/cuid2";
 
 export const verificationTokens = createTable(
   "verification_tokens",
@@ -15,7 +15,7 @@ export const verificationTokens = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     secondaryId: varchar("secondary_id", { length: 191 }).notNull().unique(),
     identifier: varchar("identifier", { length: 191 }).notNull(),
     token: varchar("token", { length: 191 }).notNull().unique(),
@@ -47,7 +47,7 @@ export const passkeyVerificationTokens = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     token: varchar("token", { length: 191 }).notNull().unique(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -68,7 +68,7 @@ export const passwordResetTokens = createTable(
     id: varchar("id", { length: 191 })
       .primaryKey()
       .notNull()
-      .$defaultFn(() => generateId()),
+      .$defaultFn(() => createId()),
     email: varchar("email", { length: 191 }).notNull(),
     token: varchar("token", { length: 191 }).notNull().unique(),
     expires: timestamp("expires", { withTimezone: true }).notNull(),
