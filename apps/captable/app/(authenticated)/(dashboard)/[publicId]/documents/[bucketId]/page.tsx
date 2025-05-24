@@ -3,7 +3,7 @@ import FilePreview from "@/components/file/preview";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { withServerComponentSession } from "@/server/auth";
-import { db } from "@/server/db";
+import { db, documents, buckets, eq, and } from "@captable/db";
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { RiArrowLeftSLine } from "@remixicon/react";
 import Link from "next/link";
@@ -17,14 +17,38 @@ const DocumentPreview = async ({
 }) => {
   const session = await withServerComponentSession();
   const companyId = session?.user?.companyId;
-  const document = await db.document.findFirst({
-    where: {
-      bucketId,
-      companyId,
-    },
-
-    include: { bucket: true },
-  });
+  const document = await db
+    .select({
+      id: documents.id,
+      publicId: documents.publicId,
+      name: documents.name,
+      bucketId: documents.bucketId,
+      uploaderId: documents.uploaderId,
+      companyId: documents.companyId,
+      shareId: documents.shareId,
+      optionId: documents.optionId,
+      safeId: documents.safeId,
+      convertibleNoteId: documents.convertibleNoteId,
+      createdAt: documents.createdAt,
+      updatedAt: documents.updatedAt,
+      bucket: {
+        id: buckets.id,
+        name: buckets.name,
+        key: buckets.key,
+        mimeType: buckets.mimeType,
+        size: buckets.size,
+        tags: buckets.tags,
+        createdAt: buckets.createdAt,
+        updatedAt: buckets.updatedAt,
+      },
+    })
+    .from(documents)
+    .innerJoin(buckets, eq(documents.bucketId, buckets.id))
+    .where(
+      and(eq(documents.bucketId, bucketId), eq(documents.companyId, companyId)),
+    )
+    .limit(1)
+    .then((results) => results[0] || null);
 
   if (!document || !document.bucket) {
     return notFound();

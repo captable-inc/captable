@@ -1,5 +1,5 @@
 "use server";
-import { db } from "@/server/db";
+import { db, updates, eq } from "@captable/db";
 import dynamic from "next/dynamic";
 
 const Editor = dynamic(
@@ -8,9 +8,15 @@ const Editor = dynamic(
 );
 
 const getUpdate = async (publicId: string) => {
-  return await db.update.findFirstOrThrow({
-    where: { publicId },
+  const result = await db.query.updates.findFirst({
+    where: eq(updates.publicId, publicId),
   });
+
+  if (!result) {
+    throw new Error(`Update with publicId ${publicId} not found`);
+  }
+
+  return result;
 };
 
 const UpdatePage = async ({

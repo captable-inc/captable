@@ -2,10 +2,10 @@ import EmptyState from "@/components/common/empty-state";
 import Tldr from "@/components/common/tldr";
 import { Card } from "@/components/ui/card";
 import { withServerComponentSession } from "@/server/auth";
-import { db } from "@/server/db";
+import { db, equityPlans, shareClasses, eq } from "@captable/db";
 import type { EquityPlanMutationType } from "@/trpc/routers/equity-plan/schema";
 import type { ShareClassMutationType } from "@/trpc/routers/share-class/schema";
-import { RiAddFill, RiPieChart2Line } from "@remixicon/react";
+import { RiPieChart2Line } from "@remixicon/react";
 import type { Metadata } from "next";
 import { CreateEquityPlanButton } from "./create-equity-plan-button";
 import EquityPlanTable from "./table";
@@ -15,15 +15,17 @@ export const metadata: Metadata = {
 };
 
 const getEquityPlans = async (companyId: string) => {
-  return await db.equityPlan.findMany({
-    where: { companyId },
-  });
+  return await db
+    .select()
+    .from(equityPlans)
+    .where(eq(equityPlans.companyId, companyId));
 };
 
 const getShareClasses = async (companyId: string) => {
-  return await db.shareClass.findMany({
-    where: { companyId },
-  });
+  return await db
+    .select()
+    .from(shareClasses)
+    .where(eq(shareClasses.companyId, companyId));
 };
 
 const EquityPlanPage = async () => {

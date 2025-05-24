@@ -3,28 +3,46 @@
 import EmptyState from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
 import { getServerComponentAuthSession } from "@/server/auth";
-import { db } from "@/server/db";
+import {
+  db,
+  dataRooms,
+  dataRoomDocuments,
+  eq,
+  desc,
+  count,
+} from "@captable/db";
 import { RiAddFill, RiFolderCheckFill } from "@remixicon/react";
 import { Fragment } from "react";
 import DataRoomPopover from "./components/data-room-popover";
 import Folders from "./components/dataroom-folders";
 
-const getDataRooms = (companyId: string) => {
-  return db.dataRoom.findMany({
-    where: {
-      companyId,
-    },
-
-    include: {
+const getDataRooms = async (companyId: string) => {
+  return await db
+    .select({
+      id: dataRooms.id,
+      name: dataRooms.name,
+      publicId: dataRooms.publicId,
+      public: dataRooms.public,
+      companyId: dataRooms.companyId,
+      createdAt: dataRooms.createdAt,
+      updatedAt: dataRooms.updatedAt,
       _count: {
-        select: { documents: true },
+        documents: count(dataRoomDocuments.documentId),
       },
-    },
-
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    })
+    .from(dataRooms)
+    .leftJoin(dataRoomDocuments, eq(dataRooms.id, dataRoomDocuments.dataRoomId))
+    .where(eq(dataRooms.companyId, companyId))
+    .groupBy(
+      dataRooms.id,
+      dataRooms.name,
+      dataRooms.publicId,
+      dataRooms.public,
+      dataRooms.companyId,
+      dataRooms.createdAt,
+      dataRooms.updatedAt,
+    )
+    .orderBy(desc(dataRooms.createdAt));
 };
 
 const DataRoomPage = async () => {

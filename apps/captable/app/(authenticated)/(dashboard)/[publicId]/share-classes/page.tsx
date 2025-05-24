@@ -1,7 +1,7 @@
 import EmptyState from "@/components/common/empty-state";
 import { Card } from "@/components/ui/card";
 import { withServerComponentSession } from "@/server/auth";
-import { db } from "@/server/db";
+import { db, shareClasses, eq } from "@captable/db";
 import type { ShareClassMutationType } from "@/trpc/routers/share-class/schema";
 import { RiPieChart2Line } from "@remixicon/react";
 import type { Metadata } from "next";
@@ -13,9 +13,10 @@ export const metadata: Metadata = {
 };
 
 const getShareClasses = async (companyId: string) => {
-  return await db.shareClass.findMany({
-    where: { companyId },
-  });
+  return await db
+    .select()
+    .from(shareClasses)
+    .where(eq(shareClasses.companyId, companyId));
 };
 
 const SharesPage = async () => {
