@@ -10,11 +10,15 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { ConversionRightsEnum, SharePrefixEnum, ShareTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const shareClasses = createTable(
   "share_classes",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     idx: integer("idx").notNull(),
     name: varchar("name", { length: 191 }).notNull(),
     classType: ShareTypeEnum("class_type").notNull().default("COMMON"),

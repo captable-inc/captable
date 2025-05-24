@@ -1,11 +1,15 @@
 import { boolean, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const documents = createTable(
   "documents",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     name: varchar("name", { length: 191 }).notNull(),
 
@@ -46,7 +50,10 @@ export type Document = typeof documents.$inferSelect;
 export const documentShares = createTable(
   "document_shares",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     link: varchar("link", { length: 191 }).notNull(),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     linkExpiresAt: timestamp("link_expires_at", {

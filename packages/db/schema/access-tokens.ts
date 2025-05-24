@@ -2,11 +2,15 @@ import { boolean, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { AccessTokenTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const accessTokens = createTable(
   "access_tokens",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     active: boolean("active").notNull().default(true),
     clientId: varchar("client_id", { length: 191 }).notNull(),
     clientSecret: varchar("client_secret", { length: 191 }).notNull(),

@@ -2,11 +2,15 @@ import { index, integer, real, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { SecuritiesStatusEnum, ShareLegendsEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const shares = createTable(
   "shares",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     status: SecuritiesStatusEnum("status").notNull().default("DRAFT"),
 
     certificateId: varchar("certificate_id", { length: 191 }).notNull(),

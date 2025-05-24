@@ -23,6 +23,8 @@ import {
   type SQLWrapper,
 } from "drizzle-orm";
 
+import { createId } from "@paralleldrive/cuid2";
+
 export {
   eq, // Equal
   ne, // Not equal
@@ -70,4 +72,9 @@ export function paginationClause(page = 1, pageSize = 10) {
     limit: pageSize,
     offset,
   };
+}
+
+// ID generation helper using cuid2
+export function generateId() {
+  return createId();
 }

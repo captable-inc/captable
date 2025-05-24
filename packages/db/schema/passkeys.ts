@@ -8,11 +8,15 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { CredentialDeviceTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const passkeys = createTable(
   "passkeys",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

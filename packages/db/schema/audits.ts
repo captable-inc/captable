@@ -1,11 +1,15 @@
 import { index, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const audits = createTable(
   "audits",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     companyId: varchar("company_id", { length: 191 }).notNull(),
     summary: varchar("summary", { length: 191 }),
     action: varchar("action", { length: 191 }).notNull(),

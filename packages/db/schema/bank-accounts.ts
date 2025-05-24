@@ -2,11 +2,15 @@ import { boolean, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { BankAccountTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const bankAccounts = createTable(
   "bank_accounts",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     beneficiaryName: varchar("beneficiary_name", { length: 191 }).notNull(),
     beneficiaryAddress: varchar("beneficiary_address", {
       length: 191,

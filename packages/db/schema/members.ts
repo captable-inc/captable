@@ -8,11 +8,15 @@ import {
 import { createSelectSchema } from "drizzle-zod";
 import { MemberStatusEnum, RolesEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const members = createTable(
   "members",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     title: varchar("title", { length: 191 }),
     status: MemberStatusEnum("status").notNull().default("PENDING"),
     isOnboarded: boolean("is_onboarded").notNull().default(false),
@@ -54,7 +58,10 @@ export type Member = typeof members.$inferSelect;
 export const customRoles = createTable(
   "custom_roles",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }).notNull(),
 
     // Foreign key reference

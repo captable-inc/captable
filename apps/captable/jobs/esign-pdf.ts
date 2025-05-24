@@ -1,5 +1,5 @@
 import { BaseJob } from "@/jobs/base";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import {
   type EsignGetTemplateType,
   completeEsignDocuments,
@@ -68,7 +68,7 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
       templateName,
     });
 
-    await db.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       await completeEsignDocuments({
         bucketData: bucketData,
         companyId,

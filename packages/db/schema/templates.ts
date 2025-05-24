@@ -13,11 +13,15 @@ import {
   TemplateStatusEnum,
 } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const templates = createTable(
   "templates",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     name: varchar("name", { length: 191 }).notNull(),
     status: TemplateStatusEnum("status").notNull().default("DRAFT"),
@@ -52,7 +56,10 @@ export type Template = typeof templates.$inferSelect;
 export const templateFields = createTable(
   "template_fields",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }).notNull(),
     type: FieldTypesEnum("type").notNull().default("TEXT"),
     defaultValue: varchar("default_value", { length: 191 })
@@ -98,7 +105,10 @@ export type TemplateField = typeof templateFields.$inferSelect;
 export const esignRecipients = createTable(
   "esign_recipients",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     email: varchar("email", { length: 191 }).notNull(),
     name: varchar("name", { length: 191 }),
 

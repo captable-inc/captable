@@ -2,11 +2,15 @@ import { bigint, index, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { CancellationBehaviorEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const equityPlans = createTable(
   "equity_plans",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }).notNull(),
     boardApprovalDate: timestamp("board_approval_date", {
       withTimezone: true,

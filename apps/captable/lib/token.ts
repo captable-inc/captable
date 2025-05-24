@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-
-import { db } from "@/server/db";
+import { createId } from "@paralleldrive/cuid2";
+import { db, verificationTokens, passwordResetTokens, eq } from "@captable/db";
 import { getPasswordResetTokenByEmail } from "@/server/password-reset-token";
 import { getVerificationTokenByEmail } from "@/server/verification-token";
 
@@ -11,20 +11,22 @@ export const generateVerificationToken = async (email: string) => {
   const existingToken = await getVerificationTokenByEmail(email);
 
   if (existingToken) {
-    await db.verificationToken.delete({
-      where: {
-        id: existingToken.id,
-      },
-    });
+    await db
+      .delete(verificationTokens)
+      .where(eq(verificationTokens.id, existingToken.id));
   }
 
-  const verificationToken = await db.verificationToken.create({
-    data: {
+  // [security] - TODO: double check if this is secure, especially the token
+  const [verificationToken] = await db
+    .insert(verificationTokens)
+    .values({
+      id: createId(),
+      secondaryId: nanoid(32),
       identifier: email,
       token,
       expires,
-    },
-  });
+    })
+    .returning();
 
   return verificationToken;
 };
@@ -36,20 +38,21 @@ export const generatePasswordResetToken = async (email: string) => {
   const existingToken = await getPasswordResetTokenByEmail(email);
 
   if (existingToken) {
-    await db.passwordResetToken.delete({
-      where: {
-        id: existingToken.id,
-      },
-    });
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.id, existingToken.id));
   }
 
-  const passwordResetToken = await db.passwordResetToken.create({
-    data: {
+  // [security] - TODO: double check if this is secure, especially the token
+  const [passwordResetToken] = await db
+    .insert(passwordResetTokens)
+    .values({
+      id: createId(),
       email,
       token,
       expires,
-    },
-  });
+    })
+    .returning();
 
   return passwordResetToken;
 };

@@ -7,11 +7,15 @@ import {
 } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const dataRooms = createTable(
   "data_rooms",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }).notNull(),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     public: boolean("public").notNull().default(false),
@@ -44,7 +48,10 @@ export type DataRoom = typeof dataRooms.$inferSelect;
 export const dataRoomDocuments = createTable(
   "data_room_documents",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
 
     // Foreign key references
     dataRoomId: varchar("data_room_id", { length: 191 }).notNull(),
@@ -74,7 +81,10 @@ export type DataRoomDocument = typeof dataRoomDocuments.$inferSelect;
 export const dataRoomRecipients = createTable(
   "data_room_recipients",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }),
     email: varchar("email", { length: 191 }).notNull(),
 
@@ -113,7 +123,10 @@ export type DataRoomRecipient = typeof dataRoomRecipients.$inferSelect;
 export const updateRecipients = createTable(
   "update_recipients",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     name: varchar("name", { length: 191 }),
     email: varchar("email", { length: 191 }).notNull(),
 

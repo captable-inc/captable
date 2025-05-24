@@ -2,11 +2,15 @@ import { index, integer, real, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { OptionStatusEnum, OptionTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const options = createTable(
   "options",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     grantId: varchar("grant_id", { length: 191 }).notNull(),
     quantity: integer("quantity").notNull(),
     exercisePrice: real("exercise_price").notNull(),

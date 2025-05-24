@@ -2,11 +2,15 @@ import { boolean, index, real, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { SafeStatusEnum, SafeTemplateEnum, SafeTypeEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const safes = createTable(
   "safes",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     publicId: varchar("public_id", { length: 191 }).notNull(),
     type: SafeTypeEnum("type").notNull().default("POST_MONEY"),
     status: SafeStatusEnum("status").notNull().default("DRAFT"),

@@ -14,9 +14,13 @@ import {
   SubscriptionStatusEnum,
 } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const billingProducts = createTable("billing_products", {
-  id: varchar("id", { length: 191 }).primaryKey().notNull(),
+  id: varchar("id", { length: 191 })
+    .primaryKey()
+    .notNull()
+    .$defaultFn(() => generateId()),
   active: boolean("active").notNull(),
   name: varchar("name", { length: 191 }).notNull(),
   description: varchar("description", { length: 191 }),
@@ -29,7 +33,10 @@ export type BillingProduct = typeof billingProducts.$inferSelect;
 export const billingPrices = createTable(
   "billing_prices",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     productId: varchar("product_id", { length: 191 }).notNull(),
     active: boolean("active").notNull(),
     description: varchar("description", { length: 191 }),
@@ -55,7 +62,10 @@ export type BillingPrice = typeof billingPrices.$inferSelect;
 export const billingSubscriptions = createTable(
   "billing_subscriptions",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     priceId: varchar("price_id", { length: 191 }).notNull(),
     quantity: integer("quantity").notNull(),
     status: SubscriptionStatusEnum("status").notNull(),
@@ -100,7 +110,10 @@ export type BillingSubscription = typeof billingSubscriptions.$inferSelect;
 export const billingCustomers = createTable(
   "billing_customers",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     companyId: varchar("company_id", { length: 191 }),
   },
   (table) => {

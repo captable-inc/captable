@@ -1,11 +1,15 @@
 import { bigint, index, real, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const investments = createTable(
   "investments",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     amount: real("amount").notNull(),
     shares: bigint("shares", { mode: "number" }).notNull(),
     date: timestamp("date", { withTimezone: true }).notNull(),

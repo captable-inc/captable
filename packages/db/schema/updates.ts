@@ -2,11 +2,15 @@ import { boolean, index, jsonb, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { UpdateStatusEnum } from "./enums";
 import { createTable } from "./index";
+import { generateId } from "@/utils";
 
 export const updates = createTable(
   "updates",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
     publicId: varchar("public_id", { length: 191 }).notNull().unique(),
     title: varchar("title", { length: 191 }).notNull(),
     content: jsonb("content").notNull(),
@@ -40,7 +44,10 @@ export type Update = typeof updates.$inferSelect;
 export const esignAudits = createTable(
   "esign_audits",
   {
-    id: varchar("id", { length: 191 }).primaryKey().notNull(),
+    id: varchar("id", { length: 191 })
+      .primaryKey()
+      .notNull()
+      .$defaultFn(() => generateId()),
 
     // Foreign key references
     companyId: varchar("company_id", { length: 191 }).notNull(),
