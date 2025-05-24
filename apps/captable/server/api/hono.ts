@@ -1,16 +1,15 @@
 import { env } from "@/env";
 import { handleError, handleZodError } from "@/server/api/error";
-import type { TPrisma } from "@/server/db";
-import { swaggerUI } from "@hono/swagger-ui";
+import type { DB } from "@captable/db";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import type { Audit } from "../audit";
-import type { checkMembership } from "../auth";
+import type { Audit } from "@/server/audit";
+import type { checkMembership } from "@/server/auth";
 import { SECURITY_SCHEME_NAME } from "./const";
 
 declare module "hono" {
   interface ContextVariableMap {
     services: {
-      db: TPrisma;
+      db: DB;
       audit: typeof Audit;
       client: {
         requestIp: string;
@@ -48,7 +47,6 @@ export function PublicAPI() {
     },
   );
 
-  api.get("/v1/swagger", swaggerUI({ url: "/api/v1/schema" }));
   return api;
 }
 

@@ -7,7 +7,7 @@ import {
 } from "@/lib/rbac/constants";
 import type { RoleEnum } from "@captable/db";
 import { checkMembership, withServerComponentSession } from "@/server/auth";
-import { type TPrismaOrTransaction, db } from "@/server/db";
+import { db, type DBTransaction, customRoles, eq, and } from "@captable/db";
 import type { Session } from "next-auth";
 import { cache } from "react";
 import { z } from "zod";
@@ -20,7 +20,7 @@ import type { TSubjects } from "./subjects";
 
 export interface checkMembershipOptions {
   session: Session;
-  tx: TPrismaOrTransaction;
+  tx: DBTransaction;
 }
 
 class MembershipNotFoundError extends BaseError {
@@ -40,7 +40,7 @@ export async function checkAccessControlMembership({
 
 interface getPermissionsForRoleOptions {
   role: RoleEnum | null;
-  tx: TPrismaOrTransaction;
+  tx: DBTransaction;
   companyId: string;
   customRoleId: string | null;
 }
@@ -70,15 +70,18 @@ export async function getPermissionsForRole({
     );
   }
 
-  const customRole = await tx.customRole.findFirst({
-    where: {
-      companyId,
-      id: customRoleId,
-    },
-    select: {
-      permissions: true,
-    },
-  });
+  const [customRole] = await tx
+    .select({
+      permissions: customRoles.permissions,
+    })
+    .from(customRoles)
+    .where(
+      and(
+        eq(customRoles.companyId, companyId),
+        eq(customRoles.id, customRoleId),
+      ),
+    )
+    .limit(1);
 
   if (!customRole) {
     return Err(
@@ -103,7 +106,7 @@ export async function getPermissionsForRole({
 
 interface getPermissionsOptions {
   session: Session;
-  db: TPrismaOrTransaction;
+  db: DBTransaction;
 }
 
 export async function getPermissions({ db, session }: getPermissionsOptions) {
@@ -133,7 +136,7 @@ export async function getPermissions({ db, session }: getPermissionsOptions) {
 
 interface getRoleByIdOption {
   id?: string | null | undefined;
-  tx: TPrismaOrTransaction;
+  tx: DBTransaction;
 }
 
 export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
@@ -145,10 +148,19 @@ export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
     return { role: "ADMIN", customRoleId: null };
   }
 
-  const { id: customRoleId } = await tx.customRole.findFirstOrThrow({
-    where: { id },
-    select: { id: true },
-  });
+  const [result] = await tx
+    .select({
+      id: customRoles.id,
+    })
+    .from(customRoles)
+    .where(eq(customRoles.id, id))
+    .limit(1);
+
+  if (!result) {
+    throw new Error("Custom role not found");
+  }
+
+  const { id: customRoleId } = result;
 
   return { role: "CUSTOM", customRoleId };
 };

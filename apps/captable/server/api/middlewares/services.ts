@@ -1,5 +1,5 @@
 import { Audit } from "@/server/audit";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import { createMiddleware } from "hono/factory";
 import { getConnInfo } from "hono/vercel";
 
