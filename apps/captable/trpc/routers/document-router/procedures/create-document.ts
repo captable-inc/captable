@@ -1,6 +1,6 @@
 import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
-import type { TPrismaOrTransaction } from "@/server/db";
+import { db, documents, type DB, type DBTransaction } from "@captable/db";
 import {
   withAccessControl,
   type withAuthTrpcContextType,
@@ -16,7 +16,7 @@ interface createDocumentHandlerOptions
   companyId: string;
   uploaderName?: string | null | undefined;
   uploaderId?: string;
-  db: TPrismaOrTransaction;
+  db: DB | DBTransaction;
 }
 
 export const createDocumentHandler = async ({
@@ -30,14 +30,20 @@ export const createDocumentHandler = async ({
 }: createDocumentHandlerOptions) => {
   const publicId = generatePublicId();
 
-  const document = await db.document.create({
-    data: {
+  const [document] = await db
+    .insert(documents)
+    .values({
       companyId,
       uploaderId,
       publicId,
+      updatedAt: new Date(),
       ...input,
-    },
-  });
+    })
+    .returning();
+
+  if (!document) {
+    throw new Error("Failed to create document");
+  }
 
   await Audit.create(
     {
@@ -45,7 +51,7 @@ export const createDocumentHandler = async ({
       action: "document.created",
       actor: { type: "user", id: "" },
       context: {
-        requestIp,
+        requestIp: requestIp || "",
         userAgent,
       },
       target: [{ type: "document", id: document.id }],
@@ -69,7 +75,7 @@ export const createDocumentProcedure = withAccessControl
       membership: { companyId, memberId },
     } = ctx;
 
-    const data = await db.$transaction(async (tx) => {
+    const data = await db.transaction(async (tx) => {
       const data = await createDocumentHandler({
         input,
         userAgent,

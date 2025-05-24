@@ -1,16 +1,21 @@
 import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
-import type { PrismaTransactionalClient } from "@/server/db";
+import {
+  templates,
+  esignRecipients,
+  type DB,
+  type DBTransaction,
+} from "@captable/db";
 import { withAuth } from "@/trpc/api/trpc";
 import {
   type TypeZodCreateTemplateMutationSchema,
   ZodCreateTemplateMutationSchema,
-} from "../schema";
+} from "@/trpc/routers/template-router/schema";
 
 interface CreateTemplateHandlerProps {
   ctx: {
-    db: PrismaTransactionalClient;
+    db: DB | DBTransaction;
     requestIp: string;
     userAgent: string;
     user: {
@@ -31,18 +36,23 @@ export async function createTemplateHandler({
   input: { recipients, ...rest },
 }: CreateTemplateHandlerProps) {
   const publicId = generatePublicId();
-  const template = await db.template.create({
-    data: {
+  const [template] = await db
+    .insert(templates)
+    .values({
       status: "DRAFT",
       publicId,
+      updatedAt: new Date(),
       ...rest,
-    },
-    select: {
-      id: true,
-      publicId: true,
-      name: true,
-    },
-  });
+    })
+    .returning({
+      id: templates.id,
+      publicId: templates.publicId,
+      name: templates.name,
+    });
+
+  if (!template) {
+    throw new Error("Failed to create template");
+  }
 
   await Audit.create(
     {
@@ -51,7 +61,7 @@ export async function createTemplateHandler({
       actor: { type: "user", id: user.id },
       context: {
         userAgent,
-        requestIp,
+        requestIp: requestIp || "",
       },
       target: [{ type: "template", id: template.id }],
       summary: `${user.name} added templateField for template ID ${template.id}`,
@@ -59,12 +69,13 @@ export async function createTemplateHandler({
     db,
   );
 
-  await db.esignRecipient.createMany({
-    data: recipients.map((recipient) => ({
+  await db.insert(esignRecipients).values(
+    recipients.map((recipient) => ({
       ...recipient,
       templateId: template.id,
+      updatedAt: new Date(),
     })),
-  });
+  );
 
   return template;
 }
@@ -80,8 +91,8 @@ export const createTemplateProcedure = withAuth
       companyId: session.user.companyId,
     };
 
-    const data = await ctx.db.$transaction(async (tx) => {
-      const { companyId, memberId: uploaderId } = await checkMembership({
+    const data = await ctx.db.transaction(async (tx) => {
+      const { companyId, memberId } = await checkMembership({
         tx,
         session: ctx.session,
       });
@@ -90,9 +101,9 @@ export const createTemplateProcedure = withAuth
         input: {
           ...input,
           companyId,
-          uploaderId,
+          uploaderId: memberId as string,
         },
-        ctx: { db: tx, requestIp, userAgent, user },
+        ctx: { db: tx, requestIp: requestIp || "", userAgent, user },
       });
     });
 

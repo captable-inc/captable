@@ -1,19 +1,27 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
-import { type TPrismaOrTransaction } from "@/server/db";
+import {
+  members,
+  users,
+  companies,
+  eq,
+  and,
+  type DB,
+  type DBTransaction,
+} from "@captable/db";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
 import {
   type TypeZodRemoveMemberMutationSchema,
   ZodRemoveMemberMutationSchema,
-} from "../schema";
+} from "@/trpc/routers/member-router/schema";
 
 export const removeMemberProcedure = withAuth
   .input(ZodRemoveMemberMutationSchema)
   .mutation(async (args) => {
-    const data = await args.ctx.db.$transaction(async (db) => {
+    const data = await args.ctx.db.transaction(async (tx) => {
       const data = await removeMemberHandler({
         ...args,
-        ctx: { ...args.ctx, db },
+        ctx: { ...args.ctx, db: tx },
       });
 
       return data;
@@ -25,7 +33,7 @@ export const removeMemberProcedure = withAuth
 interface removeMemberHandlerOptions {
   input: TypeZodRemoveMemberMutationSchema;
   ctx: Omit<withAuthTrpcContextType, "db"> & {
-    db: TPrismaOrTransaction;
+    db: DB | DBTransaction;
   };
 }
 
@@ -38,25 +46,33 @@ export async function removeMemberHandler({
 
   const { companyId } = await checkMembership({ session, tx: db });
 
-  const member = await db.member.delete({
-    where: {
-      id: memberId,
-      companyId,
-    },
-    select: {
-      userId: true,
+  // First, get the member data with joins before deleting
+  const [memberData] = await db
+    .select({
+      userId: members.userId,
       user: {
-        select: {
-          name: true,
-        },
+        name: users.name,
       },
       company: {
-        select: {
-          name: true,
-        },
+        name: companies.name,
       },
-    },
-  });
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .innerJoin(companies, eq(members.companyId, companies.id))
+    .where(and(eq(members.id, memberId), eq(members.companyId, companyId)))
+    .limit(1);
+
+  if (!memberData) {
+    throw new Error("Member not found");
+  }
+
+  // Then delete the member
+  await db
+    .delete(members)
+    .where(and(eq(members.id, memberId), eq(members.companyId, companyId)));
+
+  const member = memberData;
 
   await Audit.create(
     {
@@ -64,7 +80,7 @@ export async function removeMemberHandler({
       companyId,
       actor: { type: "user", id: user.id },
       context: {
-        requestIp,
+        requestIp: requestIp || "",
         userAgent,
       },
       target: [{ type: "user", id: member.userId }],
