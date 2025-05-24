@@ -1,5 +1,5 @@
 import { Audit } from "@/server/audit";
-import type { TPrismaOrTransaction } from "@/server/db";
+import { buckets, type DB, type DBTransaction } from "@captable/db";
 import { withAuth } from "@/trpc/api/trpc";
 import {
   type TypeZodCreateBucketMutationSchema,
@@ -8,7 +8,7 @@ import {
 
 interface createBucketHandlerOptions {
   input: TypeZodCreateBucketMutationSchema;
-  db: TPrismaOrTransaction;
+  db: DB | DBTransaction;
   userAgent: string;
   requestIp: string;
   user?: {
@@ -25,7 +25,17 @@ export const createBucketHandler = async ({
   requestIp,
   user,
 }: createBucketHandlerOptions) => {
-  const bucket = await db.bucket.create({ data: input });
+  const [bucket] = await db
+    .insert(buckets)
+    .values({
+      ...input,
+      updatedAt: new Date(),
+    })
+    .returning();
+
+  if (!bucket) {
+    throw new Error("Failed to create bucket");
+  }
 
   await Audit.create(
     {
@@ -54,7 +64,7 @@ export const createBucketProcedure = withAuth
       input,
       db,
       userAgent,
-      requestIp,
+      requestIp: requestIp || "",
       user: { name: name || "", companyId, id },
     });
   });

@@ -19,7 +19,7 @@ import {
   getPermissions,
 } from "@/lib/rbac/access-control";
 import { getServerAuthSession } from "@/server/auth";
-import { db } from "@/server/db";
+import { db } from "@captable/db";
 import * as Sentry from "@sentry/nextjs";
 
 export interface Meta {

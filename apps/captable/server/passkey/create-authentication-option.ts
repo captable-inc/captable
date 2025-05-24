@@ -1,10 +1,12 @@
 import { getAuthenticatorOptions } from "@/lib/authenticator";
-import { db } from "@/server/db";
+import { db, passkeys, verificationTokens, eq, and } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
+import { createId } from "@paralleldrive/cuid2";
+import { nanoid } from "nanoid";
 import type { Passkey } from "@captable/db";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
-import { Audit } from "../audit";
+import { Audit } from "@/server/audit";
 
 type CreatePasskeyAuthenticationOptions = {
   userId: string;
@@ -30,17 +32,19 @@ export const createPasskeyAuthenticationOptions = async ({
   > | null = null;
 
   if (preferredPasskeyId) {
-    preferredPasskey = await db.passkey.findFirst({
-      where: {
-        userId,
-        id: preferredPasskeyId,
-      },
-      select: {
-        credentialId: true,
-        transports: true,
-        name: true,
-      },
-    });
+    const [result] = await db
+      .select({
+        credentialId: passkeys.credentialId,
+        transports: passkeys.transports,
+        name: passkeys.name,
+      })
+      .from(passkeys)
+      .where(
+        and(eq(passkeys.userId, userId), eq(passkeys.id, preferredPasskeyId)),
+      )
+      .limit(1);
+
+    preferredPasskey = result || null;
 
     if (!preferredPasskey) {
       throw new Error("Requested passkey not found");
@@ -54,7 +58,7 @@ export const createPasskeyAuthenticationOptions = async ({
     allowCredentials: preferredPasskey
       ? [
           {
-            id: preferredPasskey.credentialId.toString("utf8"),
+            id: preferredPasskey.credentialId.toString(),
             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
             transports:
               preferredPasskey.transports as AuthenticatorTransportFuture[],
@@ -66,29 +70,35 @@ export const createPasskeyAuthenticationOptions = async ({
   const { requestIp, userAgent, companyId, userName } = auditMetaData;
   const passKeyName = preferredPasskey?.name;
 
-  await Audit.create(
-    {
-      action: "passkey.updated",
-      companyId,
-      actor: { type: "user", id: userId },
-      context: {
-        userAgent,
-        requestIp,
+  await db.transaction(async (tx) => {
+    await Audit.create(
+      {
+        action: "passkey.updated",
+        companyId,
+        actor: { type: "user", id: userId },
+        context: {
+          userAgent,
+          requestIp,
+        },
+        target: [{ type: "passkey", id: preferredPasskeyId }],
+        summary: `${userName} created auth-options for Passkey with id ${passKeyName}`,
       },
-      target: [{ type: "passkey", id: preferredPasskeyId }],
-      summary: `${userName} created auth-options for Passkey with id ${passKeyName}`,
-    },
-    db,
-  );
+      tx,
+    );
+  });
 
-  const { secondaryId } = await db.verificationToken.create({
-    data: {
-      userId,
+  const secondaryId = nanoid(32);
+  const [verificationToken] = await db
+    .insert(verificationTokens)
+    .values({
+      id: createId(),
+      secondaryId,
+      identifier: "PASSKEY_CHALLENGE",
       token: options.challenge,
       expires: new Date(new Date().getTime() + 2 * 60000), // 2 min expiry
-      identifier: "PASSKEY_CHALLENGE",
-    },
-  });
+      userId,
+    })
+    .returning();
 
   return {
     tokenReference: secondaryId,
