@@ -1,6 +1,6 @@
 import { ADMIN_ROLE_ID } from "@/lib/rbac/constants";
 import type { RoleEnum } from "@captable/db/schema/enums";
-import { invariant } from "../error";
+import { invariant } from "@/lib/error";
 
 interface getRoleIdOption {
   role: RoleEnum | null;

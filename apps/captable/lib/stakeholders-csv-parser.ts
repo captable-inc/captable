@@ -6,7 +6,7 @@ export const parseStrakeholdersCSV = async (csvFile: File) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = function (event) {
+    reader.onload = (event) => {
       const csvData = event.target?.result as string;
       const parsed: ParseResult<string[]> = Papa.parse(csvData, {
         skipEmptyLines: true,
@@ -27,18 +27,19 @@ export const parseStrakeholdersCSV = async (csvFile: File) => {
         "zipcode",
       ];
 
-      const mappedCSV = parsed.data.map((csv) => {
+      const mappedCSV = parsed.data.map((csv: string[]) => {
         const values = csv.map((value, index) => {
-          value = value.trim();
+          const trimmedValue = value.trim();
 
           // make stakeholderType and currentRelationship uppercase
           if (index === 3 || index === 4) {
-            value = value.toUpperCase();
+            const uppercasedValue = trimmedValue.toUpperCase();
+            return uppercasedValue;
           }
-          return value;
+          return trimmedValue;
         });
 
-        if (values.length != keys.length) {
+        if (values.length !== keys.length) {
           reject(
             new Error(
               `Invalid values, Please make sure you have ${keys.length} values. You can put "" (empty string) for the optional fields.`,
@@ -59,7 +60,7 @@ export const parseStrakeholdersCSV = async (csvFile: File) => {
         return filtered;
       });
 
-      mappedCSV.forEach((csv) => {
+      for (const csv of mappedCSV) {
         try {
           ZodAddStakeholderMutationSchema.parse(csv);
         } catch (error) {
@@ -67,12 +68,12 @@ export const parseStrakeholdersCSV = async (csvFile: File) => {
             return new Error(error.issues[0]?.message);
           }
         }
-      });
+      }
 
       resolve(mappedCSV);
     };
 
-    reader.onerror = function () {
+    reader.onerror = () => {
       reject(new Error("Error reading the file"));
     };
 

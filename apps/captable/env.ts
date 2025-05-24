@@ -1,14 +1,13 @@
 // @ts-nocheck
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
-
 export const PUBLIC_ENV_KEY = "___ENV";
 
 function isBrowser() {
   return typeof window !== "undefined";
 }
 
-const readRuntimePublicEnvVariable = (key) => {
+const readRuntimePublicEnvVariable = (key: string) => {
   if (isBrowser()) {
     return window?.[PUBLIC_ENV_KEY]?.[key];
   }

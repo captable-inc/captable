@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DropdownButton } from "@/components/ui/dropdown-button";
 import { api } from "@/trpc/react";
-import type { Block, PartialBlock } from "@blocknote/core";
+import type { Block } from "@blocknote/core";
 import type { Update } from "@captable/db/schema";
 import { RiArrowDownSLine } from "@remixicon/react";
 import Link from "next/link";
@@ -16,7 +16,7 @@ import { Fragment, useState } from "react";
 import { toast } from "sonner";
 
 import "@/styles/editor.css";
-import { BlockNoteView, useCreateBlockNote } from "@blocknote/react";
+import { BlockNoteViewRaw, useCreateBlockNote } from "@blocknote/react";
 import "@blocknote/react/style.css";
 import { UpdateStatusEnum } from "@captable/db/schema/enums";
 import { pushModal } from "../modals";
@@ -33,8 +33,8 @@ const UpdatesEditor = ({
   update,
   companyPublicId,
 }: UpdatesEditorProps) => {
-  const isUpdatePrivate = update?.status === UpdateStatusEnum.PRIVATE;
-  const isUpdatePublic = update?.status === UpdateStatusEnum.PUBLIC;
+  const isUpdatePrivate = update?.status === UpdateStatusEnum.enumValues[2];
+  const isUpdatePublic = update?.status === UpdateStatusEnum.enumValues[1];
 
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
@@ -375,7 +375,7 @@ const UpdatesEditor = ({
       </form>
 
       <Card className="mx-auto mt-3 min-h-[80vh] w-[28rem] sm:w-[38rem] md:w-full	">
-        <BlockNoteView
+        <BlockNoteViewRaw
           className="py-5"
           editor={editor}
           theme="light"

@@ -1,10 +1,8 @@
 #!/usr/bin/env node
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 
-/* eslint-disable @typescript-eslint/no-var-requires */
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 const path = require("path");
+// biome-ignore lint/style/useNodejsImportProtocol: <explanation>
 const fs = require("fs");
 
 const pdfjsDistPath = path.dirname(require.resolve("pdfjs-dist/package.json"));

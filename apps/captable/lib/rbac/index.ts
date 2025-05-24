@@ -1,4 +1,4 @@
-import { Ok, type Result } from "../error";
+import { Ok, type Result } from "@/lib/error";
 import type { TActions } from "./actions";
 import type { TPermission } from "./schema";
 import type { TSubjects } from "./subjects";

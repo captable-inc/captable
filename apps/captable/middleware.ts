@@ -7,11 +7,11 @@ const log = logger.child({ module: "middleware" });
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   if (env.LOGS || env.NODE_ENV === "production" || env.NODE_ENV === "staging") {
-    const { url, ip, geo, method } = request;
+    const { url, method } = request;
     const time = new Date().toISOString();
     const { device, browser, isBot } = userAgent(request);
 
-    log.info({ method, time, url, ip, device, browser, geo, isBot });
+    log.info({ method, time, url, device, browser, isBot });
   }
   return NextResponse.next();
 }

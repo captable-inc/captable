@@ -1,3 +1,3 @@
 #!/bin/sh
 
-npx prisma migrate deploy
+bun db:migrate

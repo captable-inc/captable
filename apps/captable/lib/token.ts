@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 
 import { db } from "@/server/db";
-import { getPasswordResetokenByEmail } from "@/server/password-reset-token";
+import { getPasswordResetTokenByEmail } from "@/server/password-reset-token";
 import { getVerificationTokenByEmail } from "@/server/verification-token";
 
 export const generateVerificationToken = async (email: string) => {
@@ -33,7 +33,7 @@ export const generatePasswordResetToken = async (email: string) => {
   const token = nanoid(32);
   const expires = new Date(new Date().getTime() + 3600 * 1000);
 
-  const existingToken = await getPasswordResetokenByEmail(email);
+  const existingToken = await getPasswordResetTokenByEmail(email);
 
   if (existingToken) {
     await db.passwordResetToken.delete({

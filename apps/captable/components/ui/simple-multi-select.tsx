@@ -10,15 +10,14 @@ import {
 import { cn } from "@/lib/utils";
 import { RiCheckLine, RiCloseLine } from "@remixicon/react";
 import { Command as CommandPrimitive } from "cmdk";
-// import { X as RemoveIcon, Ri } from "lucide-react";
-import React, {
-  KeyboardEvent,
+import {
   createContext,
   forwardRef,
   useCallback,
   useContext,
   useState,
 } from "react";
+import type { KeyboardEvent } from "react";
 
 type MultiSelectorProps = {
   values: string[];
@@ -28,7 +27,7 @@ type MultiSelectorProps = {
 
 interface MultiSelectContextProps {
   value: string[];
-  onValueChange: (value: any) => void;
+  onValueChange: (value: string) => void;
   open: boolean;
   setOpen: (value: boolean) => void;
   inputValue: string;
@@ -72,7 +71,7 @@ const MultiSelector = ({
         }
       }
     },
-    [value],
+    [value, onValueChange],
   );
 
   // TODO : change from else if use to switch case statement
@@ -125,7 +124,7 @@ const MultiSelector = ({
         }
       }
     },
-    [value, inputValue, activeIndex, loop],
+    [value, inputValue, activeIndex, loop, onValueChange, dir],
   );
 
   return (

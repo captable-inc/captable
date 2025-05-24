@@ -112,13 +112,13 @@ function transToGroupOption(options: Option[], groupBy?: string) {
   }
 
   const groupOption: GroupOption = {};
-  options.forEach((option) => {
+  for (const option of options) {
     const key = (option[groupBy] as string) || "";
     if (!groupOption[key]) {
       groupOption[key] = [];
     }
     groupOption[key]?.push(option);
-  });
+  }
   return groupOption;
 }
 
@@ -207,7 +207,7 @@ const MultipleSelector = React.forwardRef<
       ref,
       () => ({
         selectedValue: [...selected],
-        input: inputRef.current!,
+        input: inputRef.current || document.createElement("input"),
       }),
       [selected],
     );
@@ -218,7 +218,7 @@ const MultipleSelector = React.forwardRef<
         setSelected(newOptions);
         onChange?.(newOptions);
       },
-      [onChange, selected],
+      [onChange, selected, setSelected],
     );
 
     const handleKeyDown = React.useCallback(
@@ -227,7 +227,8 @@ const MultipleSelector = React.forwardRef<
         if (input) {
           if (e.key === "Delete" || e.key === "Backspace") {
             if (input.value === "" && selected.length > 0) {
-              handleUnselect(selected[selected.length - 1]!);
+              const lastOption = selected.at(-1);
+              lastOption && handleUnselect(lastOption);
             }
           }
           // This is not a default behaviour of the <input /> field
@@ -243,7 +244,7 @@ const MultipleSelector = React.forwardRef<
       if (value) {
         setSelected(value);
       }
-    }, [value]);
+    }, [value, setSelected]);
 
     useEffect(() => {
       /** If `onSearch` is provided, do not trigger options updated. */
@@ -254,7 +255,7 @@ const MultipleSelector = React.forwardRef<
       if (JSON.stringify(newOption) !== JSON.stringify(options)) {
         setOptions(newOption);
       }
-    }, [arrayDefaultOptions, arrayOptions, groupBy, onSearch, options]);
+    }, [arrayOptions, groupBy, onSearch, options]);
 
     useEffect(() => {
       const doSearch = async () => {
@@ -277,7 +278,7 @@ const MultipleSelector = React.forwardRef<
       };
 
       void exec();
-    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
+    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus, onSearch]);
 
     const CreatableItem = () => {
       if (!creatable) return undefined;
@@ -387,6 +388,7 @@ const MultipleSelector = React.forwardRef<
                 >
                   {option.label}
                   <button
+                    type="button"
                     className={cn(
                       "ml-1 rounded-full outline-none",
                       (disabled || option.fixed) && "hidden",
@@ -467,58 +469,56 @@ const MultipleSelector = React.forwardRef<
                       heading={key}
                       className="h-full overflow-auto"
                     >
-                      <>
-                        {dropdowns.map((option) => {
-                          return (
-                            <CommandItem
-                              key={option.value}
-                              value={option.value}
-                              disabled={option.disable}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              onSelect={() => {
-                                if (selected.length >= maxSelected) {
-                                  onMaxSelected?.(selected.length);
-                                  return;
-                                }
-                                setInputValue("");
-                                const newOptions = [...selected, option];
-                                setSelected(newOptions);
-                                onChange?.(newOptions);
-                              }}
-                              className={cn(
-                                "cursor-pointer",
-                                option.disable &&
-                                  "cursor-default text-muted-foreground",
-                              )}
-                            >
-                              {customLabel ? (
-                                <div className="flex items-center gap-2">
-                                  <Avatar className="h-8 w-8 rounded-full">
-                                    <AvatarImage
-                                      src={
-                                        option.image ?? "/placeholders/user.svg"
-                                      }
-                                    />
-                                  </Avatar>
-                                  <span className="flex flex-col font-medium">
-                                    <span className="text-sm">
-                                      {option.label}
-                                    </span>
-                                    <span className="text-xs text-primary/50">
-                                      {option.subLabel}
-                                    </span>
+                      {dropdowns.map((option) => {
+                        return (
+                          <CommandItem
+                            key={option.value}
+                            value={option.value}
+                            disabled={option.disable}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onSelect={() => {
+                              if (selected.length >= maxSelected) {
+                                onMaxSelected?.(selected.length);
+                                return;
+                              }
+                              setInputValue("");
+                              const newOptions = [...selected, option];
+                              setSelected(newOptions);
+                              onChange?.(newOptions);
+                            }}
+                            className={cn(
+                              "cursor-pointer",
+                              option.disable &&
+                                "cursor-default text-muted-foreground",
+                            )}
+                          >
+                            {customLabel ? (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8 rounded-full">
+                                  <AvatarImage
+                                    src={
+                                      option.image ?? "/placeholders/user.svg"
+                                    }
+                                  />
+                                </Avatar>
+                                <span className="flex flex-col font-medium">
+                                  <span className="text-sm">
+                                    {option.label}
                                   </span>
-                                </div>
-                              ) : (
-                                <>{option.label}</>
-                              )}
-                            </CommandItem>
-                          );
-                        })}
-                      </>
+                                  <span className="text-xs text-primary/50">
+                                    {option.subLabel}
+                                  </span>
+                                </span>
+                              </div>
+                            ) : (
+                              <>{option.label}</>
+                            )}
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   ))}
                 </>

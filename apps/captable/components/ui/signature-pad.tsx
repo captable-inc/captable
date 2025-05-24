@@ -14,9 +14,17 @@ interface Point {
 const Drawing = forwardRef<SVGSVGElement, { lines: [Point][] }>(
   ({ lines }, ref) => {
     return (
-      <svg ref={ref} className="h-full w-full">
+      <svg
+        ref={ref}
+        className="h-full w-full"
+        aria-label="Signature drawing canvas"
+      >
+        <title>Signature drawing canvas</title>
         {lines.map((line, index) => (
-          <DrawingLine key={index} line={line} />
+          <DrawingLine
+            key={`${line[0]?.x}-${line[0]?.y}-${index}`}
+            line={line}
+          />
         ))}
       </svg>
     );
@@ -26,13 +34,11 @@ const Drawing = forwardRef<SVGSVGElement, { lines: [Point][] }>(
 Drawing.displayName = "Drawing";
 
 function DrawingLine({ line }: { line: [Point] }) {
-  const pathData =
-    "M " +
-    line
-      .map((p) => {
-        return `${p.x} ${p.y}`;
-      })
-      .join(" L ");
+  const pathData = `M ${line
+    .map((p) => {
+      return `${p.x} ${p.y}`;
+    })
+    .join(" L ")}`;
 
   return (
     <path
