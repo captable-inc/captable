@@ -1,5 +1,5 @@
 import type { TPermission } from "@/lib/rbac/schema";
-import type { RoleEnum } from "@captable/db/schema/enums";
+import type { RoleEnum } from "@captable/db";
 import type { TActions } from "./actions";
 import { SUBJECTS } from "./subjects";
 

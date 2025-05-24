@@ -12,7 +12,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { EsignAudit } from "./audit";
 import type { DBTransaction } from "@captable/db";
-import { eq } from "@captable/db/utils";
+import { eq } from "@captable/db";
 import {
   esignAudits,
   templates,
@@ -21,7 +21,7 @@ import {
   companies,
   members,
   users,
-} from "@captable/db/schema";
+} from "@captable/db";
 
 interface getEsignAuditsOptions {
   templateId: string;

@@ -1,7 +1,7 @@
 import FileIcon from "@/components/common/file-icon";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Bucket } from "@captable/db/schema";
+import type { Bucket } from "@captable/db";
 import Link from "next/link";
 
 type DocumentExplorerProps = {

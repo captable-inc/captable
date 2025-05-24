@@ -3,7 +3,7 @@ import {
   OptionTypeEnum,
   SecuritiesStatusEnum,
   ShareLegendsEnum,
-} from "@captable/db/schema/enums";
+} from "@captable/db";
 import { z } from "zod";
 
 // OPTIONS

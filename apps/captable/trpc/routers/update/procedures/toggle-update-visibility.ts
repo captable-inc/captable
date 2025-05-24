@@ -1,4 +1,4 @@
-import { UpdateStatusEnum } from "@captable/db/schema/enums";
+import { UpdateStatusEnum } from "@captable/db";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";

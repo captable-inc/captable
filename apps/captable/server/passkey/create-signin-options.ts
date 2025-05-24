@@ -1,6 +1,6 @@
 import { getAuthenticatorOptions } from "@/lib/authenticator";
 import { db } from "@captable/db";
-import { passkeyVerificationTokens } from "@captable/db/schema";
+import { passkeyVerificationTokens } from "@captable/db";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 
 type CreatePasskeySigninOptions = {

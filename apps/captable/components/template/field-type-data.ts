@@ -1,4 +1,4 @@
-import type { FieldTypesEnum } from "@captable/db/schema/enums";
+import type { FieldTypesEnum } from "@captable/db";
 import {
   RiCalendar2Line,
   RiListCheck3,

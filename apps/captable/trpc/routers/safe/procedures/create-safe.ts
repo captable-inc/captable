@@ -10,7 +10,7 @@ import { withAuth } from "@/trpc/api/trpc";
 import { createBucketHandler } from "../../bucket-router/procedures/create-bucket";
 import { createTemplateHandler } from "../../template-router/procedures/create-template";
 import { ZodCreateSafeMutationSchema } from "../schema";
-import type { Safe } from "@captable/db/schema";
+import type { Safe } from "@captable/db";
 export const createSafeProcedure = withAuth
   .input(ZodCreateSafeMutationSchema)
   .mutation(async ({ ctx, input }) => {

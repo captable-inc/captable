@@ -1,4 +1,4 @@
-import { PricingTypeEnum } from "@captable/db/schema/enums";
+import { PricingTypeEnum } from "@captable/db";
 import { z } from "zod";
 
 export const ZodCheckoutMutationSchema = z.object({

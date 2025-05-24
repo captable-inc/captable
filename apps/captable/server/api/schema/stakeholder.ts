@@ -1,7 +1,4 @@
-import {
-  StakeholderRelationshipEnum,
-  StakeholderTypeEnum,
-} from "@captable/db/schema/enums";
+import { StakeholderRelationshipEnum, StakeholderTypeEnum } from "@captable/db";
 import { z } from "@hono/zod-openapi";
 
 const StakeholderTypeArray = Object.values(StakeholderTypeEnum) as [

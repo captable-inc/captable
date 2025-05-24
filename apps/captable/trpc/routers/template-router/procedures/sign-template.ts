@@ -1,7 +1,7 @@
 import { dayjsExt } from "@/lib/common/dayjs";
 import { EsignNotificationEmailJob } from "@/jobs/esign-email";
 import { EsignPdfJob } from "@/jobs/esign-pdf";
-import type { TemplateStatusEnum } from "@captable/db/schema/enums";
+import type { TemplateStatusEnum } from "@captable/db";
 import { EsignAudit } from "@/server/audit";
 import {
   type CompleteEsignDocumentsOptionsType,

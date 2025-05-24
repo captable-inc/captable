@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { FieldTypesEnum, TemplateStatusEnum } from "@captable/db/schema/enums";
+import { FieldTypesEnum, TemplateStatusEnum } from "@captable/db";
 
 const TemplateFieldMetaType = z.object({
   options: z

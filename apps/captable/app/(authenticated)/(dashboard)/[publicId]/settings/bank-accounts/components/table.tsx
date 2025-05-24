@@ -1,4 +1,4 @@
-import type { BankAccount } from "@captable/db/schema";
+import type { BankAccount } from "@captable/db";
 
 const BankAccountsTable = () => {
   return <>Table</>;

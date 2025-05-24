@@ -1,7 +1,4 @@
-import {
-  StakeholderRelationshipEnum,
-  StakeholderTypeEnum,
-} from "@captable/db/schema/enums";
+import { StakeholderRelationshipEnum, StakeholderTypeEnum } from "@captable/db";
 import { z } from "zod";
 
 export const ZodAddStakeholderMutationSchema = z.object({

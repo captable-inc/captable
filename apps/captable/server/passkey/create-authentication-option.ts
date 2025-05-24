@@ -1,7 +1,7 @@
 import { getAuthenticatorOptions } from "@/lib/authenticator";
 import { db } from "@/server/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
-import type { Passkey } from "@captable/db/schema";
+import type { Passkey } from "@captable/db";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 import { Audit } from "../audit";

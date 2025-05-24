@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { COLORS } from "@/lib/constants/esign";
-import type { FieldTypesEnum } from "@captable/db/schema/enums";
+import type { FieldTypesEnum } from "@captable/db";
 import * as Toolbar from "@radix-ui/react-toolbar";
 import { FieldTypeData } from "@/components/template/field-type-data";
 import { OptionalMessageModal } from "@/components/esign/optional-message-modal";

@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { PricingPlanIntervalEnum } from "@captable/db/schema/enums";
+import type { PricingPlanIntervalEnum } from "@captable/db";
 import { useState } from "react";
 
 interface PricingCardProps {

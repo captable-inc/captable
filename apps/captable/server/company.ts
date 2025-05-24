@@ -1,6 +1,4 @@
-import { db } from "@captable/db";
-import { eq } from "@captable/db/utils";
-import { members, companies } from "@captable/db/schema";
+import { eq, members, companies, db } from "@captable/db";
 
 export const getCompanyList = async (userId: string) => {
   const data = await db

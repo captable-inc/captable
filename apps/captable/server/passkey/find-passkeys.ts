@@ -1,6 +1,4 @@
-import { db } from "@captable/db";
-import { eq } from "@captable/db/utils";
-import { passkeys } from "@captable/db/schema";
+import { db, eq, passkeys } from "@captable/db";
 
 export interface FindPasskeysOptions {
   userId: string;

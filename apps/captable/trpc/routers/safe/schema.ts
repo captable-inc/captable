@@ -1,4 +1,4 @@
-import { SafeTemplateEnum } from "@captable/db/schema/enums";
+import { SafeTemplateEnum } from "@captable/db";
 import { z } from "zod";
 import { ZodTemplateFieldRecipientSchema } from "../template-router/schema";
 

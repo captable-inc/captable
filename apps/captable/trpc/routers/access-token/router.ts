@@ -1,5 +1,5 @@
 import { createSecureHash, initializeAccessToken } from "@/lib/crypto";
-import { AccessTokenTypeEnum } from "@captable/db/schema/enums";
+import { AccessTokenTypeEnum } from "@captable/db";
 import { Audit } from "@/server/audit";
 
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";

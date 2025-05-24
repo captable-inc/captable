@@ -1,6 +1,4 @@
-import { db } from "@captable/db";
-import { eq } from "@captable/db/utils";
-import { users } from "@captable/db/schema";
+import { db, eq, users } from "@captable/db";
 
 export const getUserByEmail = async (email: string) => {
   try {

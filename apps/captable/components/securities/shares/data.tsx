@@ -1,4 +1,4 @@
-import { SecuritiesStatusEnum } from "@captable/db/schema/enums";
+import { SecuritiesStatusEnum } from "@captable/db";
 import { capitalize } from "lodash-es";
 
 export const statusValues = Object.keys(SecuritiesStatusEnum).map((item) => ({

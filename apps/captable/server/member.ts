@@ -1,8 +1,12 @@
 import { createHash } from "@/lib/crypto";
 import { nanoid } from "nanoid";
-import { db, type DBTransaction } from "@captable/db";
-import { eq, inArray } from "@captable/db/utils";
-import { verificationTokens } from "@captable/db/schema";
+import {
+  db,
+  type DBTransaction,
+  eq,
+  inArray,
+  verificationTokens,
+} from "@captable/db";
 
 export const checkVerificationToken = async (
   token: string,

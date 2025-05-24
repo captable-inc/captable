@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import type { ShareContactType } from "@/schema/contacts";
 import { api } from "@/trpc/react";
 
-import type { Bucket, DataRoom } from "@captable/db/schema";
+import type { Bucket, DataRoom } from "@captable/db";
 import { RiShareLine } from "@remixicon/react";
 import { useDebounceCallback } from "usehooks-ts";
 

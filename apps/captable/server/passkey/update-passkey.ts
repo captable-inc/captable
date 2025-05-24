@@ -1,8 +1,6 @@
-import { db } from "@captable/db";
+import { db, eq, passkeys } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
 import { Audit } from "@/server/audit";
-import { eq } from "@captable/db/utils";
-import { passkeys } from "@captable/db/schema";
 
 export interface UpdateAuthenticatorsOptions {
   userId: string;

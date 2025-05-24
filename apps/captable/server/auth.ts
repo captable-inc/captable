@@ -7,14 +7,14 @@ import {
   passkeyVerificationTokens,
   passkeys,
   companies,
-} from "@captable/db/schema";
+} from "@captable/db";
 import {
   type DefaultSession,
   type NextAuthOptions,
   type Session,
   getServerSession,
 } from "next-auth";
-import { eq, and, sql } from "@captable/db/utils";
+import { eq, and, sql } from "@captable/db";
 
 import { env } from "@/env";
 import { getAuthenticatorOptions } from "@/lib/authenticator";
@@ -23,7 +23,7 @@ import {
   ZAuthenticationResponseJSONSchema,
 } from "@/lib/types";
 
-import type { MemberStatusEnum } from "@captable/db/schema/enums";
+import type { MemberStatusEnum } from "@captable/db";
 import {
   verifyAuthenticationResponse,
   type AuthenticatorTransportFuture,

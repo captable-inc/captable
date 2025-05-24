@@ -4,7 +4,7 @@ import Modal from "@/components/common/modal";
 import Uploader, { type UploadReturn } from "@/components/ui/uploader";
 import { TAG } from "@/lib/tags";
 import { api } from "@/trpc/react";
-import type { DataRoom } from "@captable/db/schema";
+import type { DataRoom } from "@captable/db";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

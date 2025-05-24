@@ -1,14 +1,15 @@
 import { env } from "@/env";
 import { invariant } from "@/lib/error";
 import Stripe from "stripe";
-import { db, type DBTransaction } from "@captable/db";
 import {
+  db,
+  type DBTransaction,
+  eq,
   billingProducts,
   billingPrices,
   billingCustomers,
   billingSubscriptions,
-} from "@captable/db/schema";
-import { eq } from "@captable/db/utils";
+} from "@captable/db";
 
 const toDateTime = (secs: number) => {
   const t = new Date(+0); // Unix epoch start.

@@ -17,7 +17,7 @@ import {
   useStepper,
 } from "@/components/ui/stepper";
 import { toTitleCase } from "@/lib/string";
-import { OptionStatusEnum, OptionTypeEnum } from "@captable/db/schema/enums";
+import { OptionStatusEnum, OptionTypeEnum } from "@captable/db";
 import { useStockOptionFormValues } from "@/providers/stock-option-form-provider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";

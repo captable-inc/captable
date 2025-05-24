@@ -1,6 +1,4 @@
-import { db } from "@captable/db";
-import { eq } from "@captable/db/utils";
-import { verificationTokens } from "@captable/db/schema";
+import { db, eq, verificationTokens } from "@captable/db";
 
 export const getVerificationTokenByToken = async (token: string) => {
   try {

@@ -8,10 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type {
-  PricingPlanIntervalEnum,
-  PricingTypeEnum,
-} from "@captable/db/schema/enums";
+import type { PricingPlanIntervalEnum, PricingTypeEnum } from "@captable/db";
 import { api } from "@/trpc/react";
 import type { TypeZodStripePortalMutationSchema } from "@/trpc/routers/billing-router/schema";
 import type { RouterOutputs } from "@/trpc/shared";

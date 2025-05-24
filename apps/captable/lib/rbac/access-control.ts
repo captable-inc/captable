@@ -5,7 +5,7 @@ import {
   ADMIN_ROLE_ID,
   DEFAULT_PERMISSION,
 } from "@/lib/rbac/constants";
-import type { RoleEnum } from "@captable/db/schema/enums";
+import type { RoleEnum } from "@captable/db";
 import { checkMembership, withServerComponentSession } from "@/server/auth";
 import { type TPrismaOrTransaction, db } from "@/server/db";
 import type { Session } from "next-auth";

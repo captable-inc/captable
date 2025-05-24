@@ -1,6 +1,4 @@
-import { db } from "@captable/db";
-import { eq } from "@captable/db/utils";
-import { passwordResetTokens } from "@captable/db/schema";
+import { db, eq, passwordResetTokens } from "@captable/db";
 
 export const getPasswordResetTokenByToken = async (token: string) => {
   try {

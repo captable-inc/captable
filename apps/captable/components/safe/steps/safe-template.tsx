@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StepperModalFooter, StepperPrev } from "@/components/ui/stepper";
 import Uploader from "@/components/ui/uploader";
 import { toTitleCase } from "@/lib/string";
-import { SafeTemplateEnum } from "@captable/db/schema/enums";
+import { SafeTemplateEnum } from "@captable/db";
 import { useFormValueState } from "@/providers/form-value-provider";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
