@@ -3,10 +3,7 @@ import type { TPermission } from "@/lib/rbac/schema";
 import type { TSubjects } from "@/lib/rbac/subjects";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { 
-  db, 
-  customRoles
-} from "@captable/db";
+import { db, customRoles } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import {
   type TypeZodCreateRoleMutationSchema,
@@ -21,19 +18,18 @@ export const createRolesProcedure = withAccessControl
     },
   })
   .mutation(
-    async ({
-      input,
-      ctx: { membership, requestIp, userAgent, session },
-    }) => {
+    async ({ input, ctx: { membership, requestIp, userAgent, session } }) => {
       const { user } = session;
       const permissions = extractPermission(input.permissions);
-      
+
       const [role] = await db
         .insert(customRoles)
         .values({
           companyId: membership.companyId,
           name: input.name,
-          permissions: permissions.map(permission => JSON.stringify(permission)),
+          permissions: permissions.map((permission) =>
+            JSON.stringify(permission),
+          ),
         })
         .returning({
           id: customRoles.id,

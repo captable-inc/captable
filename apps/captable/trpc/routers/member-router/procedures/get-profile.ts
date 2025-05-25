@@ -18,10 +18,7 @@ export const getProfileProcedure = withAuth.query(async ({ ctx }) => {
     .from(members)
     .innerJoin(users, eq(members.userId, users.id))
     .where(
-      and(
-        eq(members.id, user.memberId),
-        eq(members.companyId, user.companyId)
-      )
+      and(eq(members.id, user.memberId), eq(members.companyId, user.companyId)),
     )
     .limit(1);
 

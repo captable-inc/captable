@@ -23,7 +23,12 @@ export const toggleUpdateVisibilityProcedure = withAuth
             status: updates.status,
           })
           .from(updates)
-          .where(and(eq(updates.id, input.updateId), eq(updates.companyId, companyId)))
+          .where(
+            and(
+              eq(updates.id, input.updateId),
+              eq(updates.companyId, companyId),
+            ),
+          )
           .limit(1);
 
         const foundUpdate = foundUpdateResult[0];
@@ -51,7 +56,12 @@ export const toggleUpdateVisibilityProcedure = withAuth
             status: newStatus as "DRAFT" | "PUBLIC" | "PRIVATE",
             updatedAt: new Date(),
           })
-          .where(and(eq(updates.id, input.updateId), eq(updates.companyId, companyId)))
+          .where(
+            and(
+              eq(updates.id, input.updateId),
+              eq(updates.companyId, companyId),
+            ),
+          )
           .returning({
             id: updates.id,
             title: updates.title,

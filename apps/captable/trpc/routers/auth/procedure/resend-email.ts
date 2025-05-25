@@ -17,7 +17,7 @@ export const resendEmailProcedure = withoutAuth
         message: "Email not found!",
       });
     }
-    
+
     const verificationToken = await generateVerificationToken(input);
 
     if (!verificationToken) {

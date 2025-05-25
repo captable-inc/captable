@@ -7,16 +7,16 @@ import { decode, encode } from "@/lib/jwt";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  templates, 
-  templateFields, 
-  esignRecipients, 
+import {
+  db,
+  templates,
+  templateFields,
+  esignRecipients,
   companies,
-  eq, 
-  and, 
+  eq,
+  and,
   inArray,
-  notInArray 
+  notInArray,
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -88,8 +88,8 @@ export const addFieldProcedure = withAuth
             and(
               eq(templates.publicId, input.templatePublicId),
               eq(templates.companyId, companyId),
-              eq(templates.status, "DRAFT")
-            )
+              eq(templates.status, "DRAFT"),
+            ),
           )
           .limit(1);
 
@@ -123,17 +123,26 @@ export const addFieldProcedure = withAuth
           .where(
             and(
               eq(esignRecipients.templateId, template.id),
-              inArray(esignRecipients.id, recipientIdList)
-            )
+              inArray(esignRecipients.id, recipientIdList),
+            ),
           );
 
         const fieldsList = [];
 
         for (const field of input.data) {
           if (field) {
-            fieldsList.push({ 
-              ...field, 
-              type: field.type as "TEXT" | "RADIO" | "EMAIL" | "DATE" | "DATETIME" | "TEXTAREA" | "CHECKBOX" | "SIGNATURE" | "SELECT",
+            fieldsList.push({
+              ...field,
+              type: field.type as
+                | "TEXT"
+                | "RADIO"
+                | "EMAIL"
+                | "DATE"
+                | "DATETIME"
+                | "TEXTAREA"
+                | "CHECKBOX"
+                | "SIGNATURE"
+                | "SELECT",
               templateId: template.id,
               updatedAt: new Date(),
             });
@@ -160,7 +169,12 @@ export const addFieldProcedure = withAuth
         await tx
           .update(templates)
           .set({
-            status: input.status as "DRAFT" | "COMPLETE" | "SENT" | "WAITING" | "CANCELLED",
+            status: input.status as
+              | "DRAFT"
+              | "COMPLETE"
+              | "SENT"
+              | "WAITING"
+              | "CANCELLED",
             message: input.message,
             updatedAt: new Date(),
           })
@@ -175,8 +189,8 @@ export const addFieldProcedure = withAuth
             .where(
               and(
                 eq(esignRecipients.templateId, template.id),
-                notInArray(esignRecipients.id, nonDeletableRecipientIdList)
-              )
+                notInArray(esignRecipients.id, nonDeletableRecipientIdList),
+              ),
             );
 
           for (const recipient of recipientList) {

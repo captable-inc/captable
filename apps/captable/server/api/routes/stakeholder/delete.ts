@@ -66,8 +66,8 @@ export const _delete = withAuthApiV1
         .where(
           and(
             eq(stakeholders.id, id),
-            eq(stakeholders.companyId, membership.companyId)
-          )
+            eq(stakeholders.companyId, membership.companyId),
+          ),
         )
         .limit(1);
 
@@ -78,9 +78,7 @@ export const _delete = withAuthApiV1
         });
       }
 
-      await tx
-        .delete(stakeholders)
-        .where(eq(stakeholders.id, stakeholder.id));
+      await tx.delete(stakeholders).where(eq(stakeholders.id, stakeholder.id));
 
       await audit.create(
         {
@@ -92,7 +90,7 @@ export const _delete = withAuthApiV1
             userAgent,
           },
           target: [{ type: "stakeholder", id }],
-          summary: `${membership.user?.name || 'User'} deleted the stakeholder ${stakeholder.name} - ${stakeholder.id}`,
+          summary: `${membership.user?.name || "User"} deleted the stakeholder ${stakeholder.name} - ${stakeholder.id}`,
         },
         tx,
       );

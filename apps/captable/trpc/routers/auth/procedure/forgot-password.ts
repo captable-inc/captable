@@ -16,9 +16,9 @@ export const forgotPasswordProcedure = withoutAuth
         message: "Email not found!",
       });
     }
-    
+
     const passwordResetToken = await generatePasswordResetToken(input);
-    
+
     if (!passwordResetToken) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

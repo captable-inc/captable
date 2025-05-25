@@ -11,9 +11,7 @@ export type PageProps = {
   }>;
 };
 
-export default async function VerifyEmailPage({
-  params,
-}: PageProps) {
+export default async function VerifyEmailPage({ params }: PageProps) {
   const { token } = await params;
   return <VerifyEmail token={token} />;
 }

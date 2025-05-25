@@ -1,12 +1,7 @@
 import { getRoleById } from "@/lib/rbac/access-control";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { 
-  db, 
-  customRoles,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, customRoles, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodDeleteRoleMutationSchema } from "../schema";
 
@@ -39,8 +34,8 @@ export const deleteRoleProcedure = withAccessControl
         .where(
           and(
             eq(customRoles.id, role.customRoleId),
-            eq(customRoles.companyId, companyId)
-          )
+            eq(customRoles.companyId, companyId),
+          ),
         )
         .returning({
           id: customRoles.id,

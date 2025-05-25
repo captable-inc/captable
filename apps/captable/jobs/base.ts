@@ -30,7 +30,10 @@ export abstract class BaseJob<T extends object, U = void> implements Job<T, U> {
   }
 
   async start(): Promise<void> {
-    await this.boss.work(this.type, this.work.bind(this) as unknown as pgBoss.WorkHandler<T>);
+    await this.boss.work(
+      this.type,
+      this.work.bind(this) as unknown as pgBoss.WorkHandler<T>,
+    );
   }
 
   abstract work(job: pgBoss.Job<T>): Promise<U>;

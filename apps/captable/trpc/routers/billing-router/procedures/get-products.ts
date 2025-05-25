@@ -29,15 +29,15 @@ export const getProductsProcedure = withAuth.query(async ({ ctx }) => {
           .where(
             and(
               eq(billingPrices.productId, product.id),
-              eq(billingPrices.active, true)
-            )
+              eq(billingPrices.active, true),
+            ),
           );
 
         return {
           ...product,
           prices,
         };
-      })
+      }),
     );
 
     return { products: productsWithPrices };

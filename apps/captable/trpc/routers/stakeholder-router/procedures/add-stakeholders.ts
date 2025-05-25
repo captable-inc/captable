@@ -7,10 +7,7 @@ export const addStakeholdersProcedure = withAccessControl
   .input(ZodAddStakeholderArrayMutationSchema)
   .meta({ policies: { stakeholder: { allow: ["create"] } } })
   .mutation(
-    async ({
-      ctx: { membership, userAgent, requestIp, session },
-      input,
-    }) => {
+    async ({ ctx: { membership, userAgent, requestIp, session }, input }) => {
       try {
         const { user } = session;
         await db.transaction(async (tx) => {
@@ -18,8 +15,20 @@ export const addStakeholdersProcedure = withAccessControl
           const inputDataWithCompanyId = input.map((stakeholder) => ({
             ...stakeholder,
             companyId: membership.companyId,
-            stakeholderType: stakeholder.stakeholderType as "INDIVIDUAL" | "INSTITUTION",
-            currentRelationship: stakeholder.currentRelationship as "ADVISOR" | "BOARD_MEMBER" | "CONSULTANT" | "EMPLOYEE" | "EX_ADVISOR" | "EX_CONSULTANT" | "EX_EMPLOYEE" | "FOUNDER" | "INVESTOR" | "OTHER",
+            stakeholderType: stakeholder.stakeholderType as
+              | "INDIVIDUAL"
+              | "INSTITUTION",
+            currentRelationship: stakeholder.currentRelationship as
+              | "ADVISOR"
+              | "BOARD_MEMBER"
+              | "CONSULTANT"
+              | "EMPLOYEE"
+              | "EX_ADVISOR"
+              | "EX_CONSULTANT"
+              | "EX_EMPLOYEE"
+              | "FOUNDER"
+              | "INVESTOR"
+              | "OTHER",
             updatedAt: new Date(),
           }));
 
@@ -43,9 +52,9 @@ export const addStakeholdersProcedure = withAccessControl
                 summary: `${user.name} added stakeholder ${stakeholder.name} for the company ID ${membership.companyId}`,
               },
               tx,
-            )
+            ),
           );
-          
+
           await Promise.all(auditPromises);
         });
 

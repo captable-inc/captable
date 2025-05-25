@@ -70,10 +70,7 @@ export const _delete = withAuthApiV1
         })
         .from(shares)
         .where(
-          and(
-            eq(shares.id, id),
-            eq(shares.companyId, membership.companyId)
-          )
+          and(eq(shares.id, id), eq(shares.companyId, membership.companyId)),
         )
         .limit(1);
 
@@ -84,9 +81,7 @@ export const _delete = withAuthApiV1
         });
       }
 
-      await tx
-        .delete(shares)
-        .where(eq(shares.id, share.id));
+      await tx.delete(shares).where(eq(shares.id, share.id));
 
       await audit.create(
         {
@@ -98,7 +93,7 @@ export const _delete = withAuthApiV1
             requestIp,
           },
           target: [{ type: "share", id }],
-          summary: `${membership.user?.name || 'User'} Deleted the share for stakeholder ${share.stakeholderId}`,
+          summary: `${membership.user?.name || "User"} Deleted the share for stakeholder ${share.stakeholderId}`,
         },
         tx,
       );

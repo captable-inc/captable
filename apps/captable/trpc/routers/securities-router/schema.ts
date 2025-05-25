@@ -59,7 +59,9 @@ export const ZodAddShareMutationSchema = z.object({
   status: z.enum(SecuritiesStatusEnum.enumValues as [string, ...string[]]),
   cliffYears: z.coerce.number().min(0),
   vestingYears: z.coerce.number().min(0),
-  companyLegends: z.enum(ShareLegendsEnum.enumValues as [string, ...string[]]).array(),
+  companyLegends: z
+    .enum(ShareLegendsEnum.enumValues as [string, ...string[]])
+    .array(),
   issueDate: z.string().date(),
   rule144Date: z.string().date(),
   vestingStartDate: z.string().date(),

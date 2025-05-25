@@ -1,13 +1,7 @@
 import { generatePublicId } from "@/lib/common/id";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import { ZodOnboardingMutationSchema } from "./schema";
-import { 
-  db, 
-  companies, 
-  users, 
-  members,
-  eq 
-} from "@captable/db";
+import { db, companies, users, members, eq } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 
 import { Audit } from "@/server/audit";
@@ -61,17 +55,15 @@ export const onboardingRouter = createTRPCRouter({
             });
           }
 
-          await tx
-            .insert(members)
-            .values({
-              isOnboarded: true,
-              status: "ACTIVE",
-              title: input.user.title,
-              userId: user.id,
-              companyId: company.id,
-              lastAccessed: new Date(),
-              updatedAt: new Date(),
-            });
+          await tx.insert(members).values({
+            isOnboarded: true,
+            status: "ACTIVE",
+            title: input.user.title,
+            userId: user.id,
+            companyId: company.id,
+            lastAccessed: new Date(),
+            updatedAt: new Date(),
+          });
 
           await Audit.create(
             {

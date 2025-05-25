@@ -89,7 +89,7 @@ export const create = withAuthApiV1
               userAgent,
             },
             target: [{ type: "stakeholder", id: stakeholder.id }],
-            summary: `${membership.user?.name || 'User'} added the stakholder in the company : ${stakeholder.name}`,
+            summary: `${membership.user?.name || "User"} added the stakholder in the company : ${stakeholder.name}`,
           },
           tx,
         ),

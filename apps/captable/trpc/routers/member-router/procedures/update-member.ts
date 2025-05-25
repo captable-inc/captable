@@ -1,13 +1,7 @@
 import { getRoleById } from "@/lib/rbac/access-control";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { 
-  db, 
-  members, 
-  users,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, members, users, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodUpdateMemberMutationSchema } from "../schema";
 
@@ -19,10 +13,7 @@ export const updateMemberProcedure = withAccessControl
     },
   })
   .mutation(
-    async ({
-      ctx: { session, requestIp, userAgent, membership },
-      input,
-    }) => {
+    async ({ ctx: { session, requestIp, userAgent, membership }, input }) => {
       const { memberId, name, roleId, ...rest } = input;
       const { companyId } = membership;
       const user = session.user;
@@ -43,8 +34,8 @@ export const updateMemberProcedure = withAccessControl
             and(
               eq(members.status, "ACTIVE"),
               eq(members.id, memberId),
-              eq(members.companyId, companyId)
-            )
+              eq(members.companyId, companyId),
+            ),
           )
           .returning({
             userId: members.userId,

@@ -33,12 +33,12 @@ export const getUpdatesProcedure = withAuth.query(async ({ ctx }) => {
         .select()
         .from(updateRecipients)
         .where(eq(updateRecipients.updateId, update.id));
-      
+
       return {
         ...update,
         recipients,
       };
-    })
+    }),
   );
 
   return { data: dataWithRecipients };

@@ -1,15 +1,15 @@
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  shares, 
-  stakeholders, 
-  shareClasses, 
-  documents, 
-  members, 
-  users, 
+import {
+  db,
+  shares,
+  stakeholders,
+  shareClasses,
+  documents,
+  members,
+  users,
   buckets,
-  eq 
+  eq,
 } from "@captable/db";
 
 export interface ShareWithRelations {
@@ -56,7 +56,7 @@ export const getSharesProcedure = withAuth.query(
   async ({ ctx: { session } }) => {
     const data = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
-      
+
       const data = await tx
         .select({
           id: shares.id,
@@ -96,58 +96,61 @@ export const getSharesProcedure = withAuth.query(
         .where(eq(shares.companyId, companyId));
 
       // Group the results to match the original nested structure
-      const groupedData = data.reduce((acc, row) => {
-        const shareId = row.id;
-        
-        if (!acc[shareId]) {
-          acc[shareId] = {
-            id: row.id,
-            certificateId: row.certificateId,
-            quantity: row.quantity,
-            pricePerShare: row.pricePerShare,
-            capitalContribution: row.capitalContribution,
-            ipContribution: row.ipContribution,
-            debtCancelled: row.debtCancelled,
-            otherContributions: row.otherContributions,
-            cliffYears: row.cliffYears,
-            vestingYears: row.vestingYears,
-            companyLegends: row.companyLegends,
-            status: row.status,
-            issueDate: row.issueDate,
-            rule144Date: row.rule144Date,
-            vestingStartDate: row.vestingStartDate,
-            boardApprovalDate: row.boardApprovalDate,
-            stakeholder: {
-              name: row.stakeholderName,
-            },
-            shareClass: {
-              classType: row.shareClassType,
-            },
-            documents: [],
-          };
-        }
+      const groupedData = data.reduce(
+        (acc, row) => {
+          const shareId = row.id;
 
-        // Add document if it exists
-        if (row.documentId) {
-          acc[shareId].documents.push({
-            id: row.documentId,
-            name: row.documentName || "",
-            uploader: {
-              user: {
-                name: row.uploaderName,
-                image: row.uploaderImage,
+          if (!acc[shareId]) {
+            acc[shareId] = {
+              id: row.id,
+              certificateId: row.certificateId,
+              quantity: row.quantity,
+              pricePerShare: row.pricePerShare,
+              capitalContribution: row.capitalContribution,
+              ipContribution: row.ipContribution,
+              debtCancelled: row.debtCancelled,
+              otherContributions: row.otherContributions,
+              cliffYears: row.cliffYears,
+              vestingYears: row.vestingYears,
+              companyLegends: row.companyLegends,
+              status: row.status,
+              issueDate: row.issueDate,
+              rule144Date: row.rule144Date,
+              vestingStartDate: row.vestingStartDate,
+              boardApprovalDate: row.boardApprovalDate,
+              stakeholder: {
+                name: row.stakeholderName,
               },
-            },
-            bucket: {
-              key: row.bucketKey,
-              mimeType: row.bucketMimeType,
-              size: row.bucketSize,
-            },
-          });
-        }
+              shareClass: {
+                classType: row.shareClassType,
+              },
+              documents: [],
+            };
+          }
 
-        return acc;
-      }, {} as Record<string, ShareWithRelations>);
+          // Add document if it exists
+          if (row.documentId) {
+            acc[shareId].documents.push({
+              id: row.documentId,
+              name: row.documentName || "",
+              uploader: {
+                user: {
+                  name: row.uploaderName,
+                  image: row.uploaderImage,
+                },
+              },
+              bucket: {
+                key: row.bucketKey,
+                mimeType: row.bucketMimeType,
+                size: row.bucketSize,
+              },
+            });
+          }
+
+          return acc;
+        },
+        {} as Record<string, ShareWithRelations>,
+      );
 
       return Object.values(groupedData);
     });

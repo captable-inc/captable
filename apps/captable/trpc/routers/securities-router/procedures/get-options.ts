@@ -1,14 +1,14 @@
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  options, 
-  stakeholders, 
-  documents, 
-  members, 
-  users, 
+import {
+  db,
+  options,
+  stakeholders,
+  documents,
+  members,
+  users,
   buckets,
-  eq 
+  eq,
 } from "@captable/db";
 
 export interface OptionWithRelations {
@@ -49,7 +49,7 @@ export const getOptionsProcedure = withAuth.query(
   async ({ ctx: { session } }) => {
     const data = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
-      
+
       const data = await tx
         .select({
           id: options.id,
@@ -84,52 +84,55 @@ export const getOptionsProcedure = withAuth.query(
         .where(eq(options.companyId, companyId));
 
       // Group the results to match the original nested structure
-      const groupedData = data.reduce((acc, row) => {
-        const optionId = row.id;
-        
-        if (!acc[optionId]) {
-          acc[optionId] = {
-            id: row.id,
-            grantId: row.grantId,
-            quantity: row.quantity,
-            exercisePrice: row.exercisePrice,
-            type: row.type,
-            status: row.status,
-            cliffYears: row.cliffYears,
-            vestingYears: row.vestingYears,
-            issueDate: row.issueDate,
-            expirationDate: row.expirationDate,
-            vestingStartDate: row.vestingStartDate,
-            boardApprovalDate: row.boardApprovalDate,
-            rule144Date: row.rule144Date,
-            stakeholder: {
-              name: row.stakeholderName,
-            },
-            documents: [],
-          };
-        }
+      const groupedData = data.reduce(
+        (acc, row) => {
+          const optionId = row.id;
 
-        // Add document if it exists
-        if (row.documentId) {
-          acc[optionId].documents.push({
-            id: row.documentId,
-            name: row.documentName || "",
-            uploader: {
-              user: {
-                name: row.uploaderName,
-                image: row.uploaderImage,
+          if (!acc[optionId]) {
+            acc[optionId] = {
+              id: row.id,
+              grantId: row.grantId,
+              quantity: row.quantity,
+              exercisePrice: row.exercisePrice,
+              type: row.type,
+              status: row.status,
+              cliffYears: row.cliffYears,
+              vestingYears: row.vestingYears,
+              issueDate: row.issueDate,
+              expirationDate: row.expirationDate,
+              vestingStartDate: row.vestingStartDate,
+              boardApprovalDate: row.boardApprovalDate,
+              rule144Date: row.rule144Date,
+              stakeholder: {
+                name: row.stakeholderName,
               },
-            },
-            bucket: {
-              key: row.bucketKey,
-              mimeType: row.bucketMimeType,
-              size: row.bucketSize,
-            },
-          });
-        }
+              documents: [],
+            };
+          }
 
-        return acc;
-      }, {} as Record<string, OptionWithRelations>);
+          // Add document if it exists
+          if (row.documentId) {
+            acc[optionId].documents.push({
+              id: row.documentId,
+              name: row.documentName || "",
+              uploader: {
+                user: {
+                  name: row.uploaderName,
+                  image: row.uploaderImage,
+                },
+              },
+              bucket: {
+                key: row.bucketKey,
+                mimeType: row.bucketMimeType,
+                size: row.bucketSize,
+              },
+            });
+          }
+
+          return acc;
+        },
+        {} as Record<string, OptionWithRelations>,
+      );
 
       return Object.values(groupedData);
     });

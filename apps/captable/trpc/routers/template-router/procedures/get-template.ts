@@ -1,15 +1,15 @@
 import { checkMembership } from "@/server/auth";
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  templates, 
-  templateFields, 
-  esignRecipients, 
+import {
+  db,
+  templates,
+  templateFields,
+  esignRecipients,
   buckets,
-  eq, 
+  eq,
   and,
-  asc 
+  asc,
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodGetTemplateQuerySchema } from "../schema";
@@ -25,7 +25,7 @@ export const getTemplateProcedure = withAuth
         eq(templates.publicId, input.publicId),
         eq(templates.companyId, companyId),
       ];
-      
+
       if (input.isDraftOnly) {
         whereConditions.push(eq(templates.status, "DRAFT"));
       }
@@ -82,13 +82,13 @@ export const getTemplateProcedure = withAuth
         .from(esignRecipients)
         .where(eq(esignRecipients.templateId, template.templateId));
 
-      return { 
+      return {
         template: {
           ...template,
           bucket: { key: template.bucketKey },
           fields,
           eSignRecipient: recipients,
-        }
+        },
       };
     });
 

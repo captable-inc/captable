@@ -7,10 +7,7 @@ import { TAG } from "@/lib/tags";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  safes
-} from "@captable/db";
+import { db, safes } from "@captable/db";
 import { createBucketHandler } from "../../bucket-router/procedures/create-bucket";
 import { createTemplateHandler } from "../../template-router/procedures/create-template";
 import { ZodCreateSafeMutationSchema } from "../schema";
@@ -90,7 +87,12 @@ export const createSafeProcedure = withAuth
           companyId: user.companyId,
         };
         const template = await createTemplateHandler({
-          ctx: { db: tx, userAgent, requestIp: requestIp || "", user: partialUser },
+          ctx: {
+            db: tx,
+            userAgent,
+            requestIp: requestIp || "",
+            user: partialUser,
+          },
           input: {
             ...document,
             uploaderId: memberId,
@@ -100,7 +102,7 @@ export const createSafeProcedure = withAuth
           },
         });
 
-        let safeData: Omit<Safe, 'id' | 'createdAt'>;
+        let safeData: Omit<Safe, "id" | "createdAt">;
 
         if (inputRest.safeTemplate === "CUSTOM") {
           const { document, ...rest } = inputRest;
@@ -135,9 +137,7 @@ export const createSafeProcedure = withAuth
           };
         }
 
-        await tx
-          .insert(safes)
-          .values(safeData);
+        await tx.insert(safes).values(safeData);
 
         await Audit.create(
           {

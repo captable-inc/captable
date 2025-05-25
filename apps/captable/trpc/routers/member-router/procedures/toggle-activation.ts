@@ -1,14 +1,7 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  members, 
-  users, 
-  companies,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, members, users, companies, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodToggleActivationMutationSchema } from "../schema";
 
@@ -26,12 +19,7 @@ export const toggleActivation = withAuth
         .set({
           status,
         })
-        .where(
-          and(
-            eq(members.id, memberId),
-            eq(members.companyId, companyId)
-          )
-        )
+        .where(and(eq(members.id, memberId), eq(members.companyId, companyId)))
         .returning({
           userId: members.userId,
         });

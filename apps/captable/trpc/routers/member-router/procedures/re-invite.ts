@@ -8,14 +8,14 @@ import {
   revokeExistingInviteTokens,
 } from "@/server/member";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  companies, 
-  members, 
-  users, 
+import {
+  db,
+  companies,
+  members,
+  users,
   verificationTokens,
-  eq, 
-  and 
+  eq,
+  and,
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodReInviteMutationSchema } from "../schema";
@@ -60,8 +60,8 @@ export const reInviteProcedure = withAuth
             and(
               eq(members.id, input.memberId),
               eq(members.status, "PENDING"),
-              eq(members.companyId, companyId)
-            )
+              eq(members.companyId, companyId),
+            ),
           )
           .limit(1);
 
@@ -127,7 +127,8 @@ export const reInviteProcedure = withAuth
           tx,
         );
 
-        const passwordResetTokenResult = await generatePasswordResetToken(email);
+        const passwordResetTokenResult =
+          await generatePasswordResetToken(email);
         if (!passwordResetTokenResult) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
@@ -135,11 +136,11 @@ export const reInviteProcedure = withAuth
           });
         }
 
-        return { 
-          verificationToken: createdToken.token, 
-          company, 
-          email, 
-          passwordResetToken: passwordResetTokenResult.token 
+        return {
+          verificationToken: createdToken.token,
+          company,
+          email,
+          passwordResetToken: passwordResetTokenResult.token,
         };
       });
 

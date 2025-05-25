@@ -13,7 +13,7 @@ export const signupProcedure = withoutAuth
   .mutation(async ({ ctx, input }) => {
     const { name, email, password } = input;
     const { userAgent, requestIp } = ctx;
-    
+
     const userExists = await db.query.users.findFirst({
       where: eq(users.email, email.toLowerCase()),
     });

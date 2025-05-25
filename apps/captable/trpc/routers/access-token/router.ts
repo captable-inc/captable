@@ -1,5 +1,12 @@
 import { createSecureHash, initializeAccessToken } from "@/lib/crypto";
-import { AccessTokenTypeEnum, db, accessTokens, eq, and, desc } from "@captable/db";
+import {
+  AccessTokenTypeEnum,
+  db,
+  accessTokens,
+  eq,
+  and,
+  desc,
+} from "@captable/db";
 import { Audit } from "@/server/audit";
 
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";
@@ -8,8 +15,8 @@ import z from "zod";
 
 const accessTokenTypeEnum = z.union(
   // @ts-expect-error - AccessTokenTypeEnum.enumValues is not typed correctly
-  AccessTokenTypeEnum.enumValues.map(value => z.literal(value))
-)
+  AccessTokenTypeEnum.enumValues.map((value) => z.literal(value)),
+);
 
 export const accessTokenRouter = createTRPCRouter({
   listAll: withAccessControl
@@ -37,8 +44,8 @@ export const accessTokenRouter = createTRPCRouter({
           and(
             eq(accessTokens.active, true),
             eq(accessTokens.userId, userId),
-            eq(accessTokens.typeEnum, typeEnum as AccessTokenTypeEnum)
-          )
+            eq(accessTokens.typeEnum, typeEnum as AccessTokenTypeEnum),
+          ),
         )
         .orderBy(desc(accessTokens.createdAt));
 
@@ -121,10 +128,7 @@ export const accessTokenRouter = createTRPCRouter({
         const [key] = await db
           .delete(accessTokens)
           .where(
-            and(
-              eq(accessTokens.id, tokenId),
-              eq(accessTokens.userId, userId)
-            )
+            and(eq(accessTokens.id, tokenId), eq(accessTokens.userId, userId)),
           )
           .returning();
 

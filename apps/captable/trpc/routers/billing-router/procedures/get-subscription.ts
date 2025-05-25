@@ -1,5 +1,14 @@
 import { checkMembership } from "@/server/auth";
-import { db, billingCustomers, billingSubscriptions, billingPrices, billingProducts, eq, inArray, and } from "@captable/db";
+import {
+  db,
+  billingCustomers,
+  billingSubscriptions,
+  billingPrices,
+  billingProducts,
+  eq,
+  inArray,
+  and,
+} from "@captable/db";
 import { withAuth } from "@/trpc/api/trpc";
 
 export const getSubscriptionProcedure = withAuth.query(async ({ ctx }) => {
@@ -42,27 +51,35 @@ export const getSubscriptionProcedure = withAuth.query(async ({ ctx }) => {
         productName: billingProducts.name,
       })
       .from(billingSubscriptions)
-      .innerJoin(billingPrices, eq(billingSubscriptions.priceId, billingPrices.id))
-      .innerJoin(billingProducts, eq(billingPrices.productId, billingProducts.id))
+      .innerJoin(
+        billingPrices,
+        eq(billingSubscriptions.priceId, billingPrices.id),
+      )
+      .innerJoin(
+        billingProducts,
+        eq(billingPrices.productId, billingProducts.id),
+      )
       .where(
         and(
           eq(billingSubscriptions.customerId, customer.id),
-          inArray(billingSubscriptions.status, ["active", "trialing"])
-        )
+          inArray(billingSubscriptions.status, ["active", "trialing"]),
+        ),
       )
       .limit(1);
 
     const rawSubscription = subscriptionResult[0];
-    
-    const subscription = rawSubscription ? {
-      ...rawSubscription,
-      price: {
-        unitAmount: rawSubscription.priceUnitAmount,
-        product: {
-          name: rawSubscription.productName,
-        },
-      },
-    } : null;
+
+    const subscription = rawSubscription
+      ? {
+          ...rawSubscription,
+          price: {
+            unitAmount: rawSubscription.priceUnitAmount,
+            product: {
+              name: rawSubscription.productName,
+            },
+          },
+        }
+      : null;
 
     return { subscription };
   });

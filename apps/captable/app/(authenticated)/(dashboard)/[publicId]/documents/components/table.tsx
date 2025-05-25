@@ -95,7 +95,8 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                           Share document
                         </DropdownMenuItem> */}
 
-                        {(document.bucket.mimeType || "") === "application/pdf" && (
+                        {(document.bucket.mimeType || "") ===
+                          "application/pdf" && (
                           <DropdownMenuItem
                             onClick={() => {
                               console.log(

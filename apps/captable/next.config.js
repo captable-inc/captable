@@ -15,14 +15,14 @@ const nextConfig = {
         perf_hooks: false,
       };
     }
-    
+
     // External database drivers for both client and server builds
     config.externals.push({
-      'postgres': 'commonjs postgres',
-      'pg': 'commonjs pg',
-      'mysql2': 'commonjs mysql2',
-      'sqlite3': 'commonjs sqlite3',
-      'better-sqlite3': 'commonjs better-sqlite3',
+      postgres: "commonjs postgres",
+      pg: "commonjs pg",
+      mysql2: "commonjs mysql2",
+      sqlite3: "commonjs sqlite3",
+      "better-sqlite3": "commonjs better-sqlite3",
     });
 
     return config;

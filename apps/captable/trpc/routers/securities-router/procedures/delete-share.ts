@@ -1,14 +1,7 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
-import { 
-  db, 
-  shares, 
-  stakeholders, 
-  companies,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, shares, stakeholders, companies, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import {
   type TypeZodDeleteShareMutationSchema,
@@ -46,12 +39,7 @@ export async function deleteShareHandler({
         .from(shares)
         .leftJoin(stakeholders, eq(shares.stakeholderId, stakeholders.id))
         .leftJoin(companies, eq(shares.companyId, companies.id))
-        .where(
-          and(
-            eq(shares.id, shareId),
-            eq(shares.companyId, companyId)
-          )
-        )
+        .where(and(eq(shares.id, shareId), eq(shares.companyId, companyId)))
         .limit(1);
 
       const share = shareResult[0];
@@ -65,12 +53,7 @@ export async function deleteShareHandler({
       // Delete the share
       await tx
         .delete(shares)
-        .where(
-          and(
-            eq(shares.id, shareId),
-            eq(shares.companyId, companyId)
-          )
-        );
+        .where(and(eq(shares.id, shareId), eq(shares.companyId, companyId)));
 
       await Audit.create(
         {

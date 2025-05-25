@@ -2,11 +2,7 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  shares, 
-  documents
-} from "@captable/db";
+import { db, shares, documents } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodAddShareMutationSchema } from "../schema";
 
@@ -41,7 +37,11 @@ export const addShareProcedure = withAuth
           otherContributions: input.otherContributions,
           cliffYears: input.cliffYears,
           vestingYears: input.vestingYears,
-          companyLegends: input.companyLegends as ("US_SECURITIES_ACT" | "SALE_AND_ROFR" | "TRANSFER_RESTRICTIONS")[],
+          companyLegends: input.companyLegends as (
+            | "US_SECURITIES_ACT"
+            | "SALE_AND_ROFR"
+            | "TRANSFER_RESTRICTIONS"
+          )[],
           issueDate: new Date(input.issueDate),
           rule144Date: new Date(input.rule144Date),
           vestingStartDate: new Date(input.vestingStartDate),
@@ -72,9 +72,7 @@ export const addShareProcedure = withAuth
             updatedAt: new Date(),
           }));
 
-          await tx
-            .insert(documents)
-            .values(bulkDocuments);
+          await tx.insert(documents).values(bulkDocuments);
         }
 
         await Audit.create(

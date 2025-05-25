@@ -33,10 +33,7 @@ export const companyRouter = createTRPCRouter({
       .from(members)
       .innerJoin(companies, eq(members.companyId, companies.id))
       .where(
-        and(
-          eq(members.id, user.memberId),
-          eq(members.companyId, companyId)
-        )
+        and(eq(members.id, user.memberId), eq(members.companyId, companyId)),
       )
       .limit(1);
 
@@ -80,12 +77,7 @@ export const companyRouter = createTRPCRouter({
             id: members.id,
           })
           .from(members)
-          .where(
-            and(
-              eq(members.id, input.id),
-              eq(members.isOnboarded, true)
-            )
-          )
+          .where(and(eq(members.id, input.id), eq(members.isOnboarded, true)))
           .limit(1);
 
         const member = memberResult[0];

@@ -1,13 +1,7 @@
 import { PayloadType } from "@/lib/types";
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  members, 
-  users,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, members, users, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodUpdateProfileMutationSchema } from "../schema";
 
@@ -32,8 +26,8 @@ export const updateProfileProcedure = withAuth
             and(
               eq(members.status, "ACTIVE"),
               eq(members.id, user.memberId),
-              eq(members.companyId, user.companyId)
-            )
+              eq(members.companyId, user.companyId),
+            ),
           )
           .returning({
             userId: members.userId,
@@ -93,8 +87,8 @@ export const updateProfileProcedure = withAuth
             and(
               eq(members.status, "ACTIVE"),
               eq(members.id, user.memberId),
-              eq(members.companyId, user.companyId)
-            )
+              eq(members.companyId, user.companyId),
+            ),
           )
           .limit(1);
 

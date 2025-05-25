@@ -69,7 +69,9 @@ export const create = withAuthApiV1
           issueDate: new Date(body.issueDate),
           boardApprovalDate: new Date(body.boardApprovalDate),
           rule144Date: body.rule144Date ? new Date(body.rule144Date) : null,
-          vestingStartDate: body.vestingStartDate ? new Date(body.vestingStartDate) : null,
+          vestingStartDate: body.vestingStartDate
+            ? new Date(body.vestingStartDate)
+            : null,
           updatedAt: new Date(),
         })
         .returning();
@@ -104,7 +106,7 @@ export const create = withAuthApiV1
             requestIp,
           },
           target: [{ type: "share", id: share.id }],
-          summary: `${membership.user?.name || 'User'} added share for stakeholder ${share.stakeholderId}`,
+          summary: `${membership.user?.name || "User"} added share for stakeholder ${share.stakeholderId}`,
         },
         tx,
       );

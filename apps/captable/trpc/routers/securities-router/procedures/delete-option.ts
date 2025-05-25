@@ -1,14 +1,7 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
-import { 
-  db, 
-  options, 
-  stakeholders, 
-  companies,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, options, stakeholders, companies, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import {
   type TypeZodDeleteOptionMutationSchema,
@@ -46,12 +39,7 @@ export async function deleteOptionHandler({
         .from(options)
         .leftJoin(stakeholders, eq(options.stakeholderId, stakeholders.id))
         .leftJoin(companies, eq(options.companyId, companies.id))
-        .where(
-          and(
-            eq(options.id, optionId),
-            eq(options.companyId, companyId)
-          )
-        )
+        .where(and(eq(options.id, optionId), eq(options.companyId, companyId)))
         .limit(1);
 
       const option = optionResult[0];
@@ -65,12 +53,7 @@ export async function deleteOptionHandler({
       // Delete the option
       await tx
         .delete(options)
-        .where(
-          and(
-            eq(options.id, optionId),
-            eq(options.companyId, companyId)
-          )
-        );
+        .where(and(eq(options.id, optionId), eq(options.companyId, companyId)));
 
       await Audit.create(
         {

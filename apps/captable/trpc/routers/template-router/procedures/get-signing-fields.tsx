@@ -1,14 +1,14 @@
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { withoutAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  esignRecipients, 
-  templates, 
-  templateFields, 
+import {
+  db,
+  esignRecipients,
+  templates,
+  templateFields,
   buckets,
-  eq, 
+  eq,
   and,
-  asc 
+  asc,
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { DecodeEmailToken } from "../../template-field-router/procedures/add-fields";
@@ -31,8 +31,8 @@ export const getSigningFieldsProcedure = withoutAuth
           and(
             eq(esignRecipients.id, recipientId),
             eq(esignRecipients.templateId, templateId),
-            eq(esignRecipients.status, "SENT")
-          )
+            eq(esignRecipients.status, "SENT"),
+          ),
         )
         .limit(1);
 
@@ -85,10 +85,10 @@ export const getSigningFieldsProcedure = withoutAuth
         .where(eq(templateFields.templateId, recipient.templateId))
         .orderBy(asc(templateFields.top));
 
-      return { 
-        bucket: { key: template.bucketKey }, 
-        fields, 
-        status: template.status 
+      return {
+        bucket: { key: template.bucketKey },
+        fields,
+        status: template.status,
       };
     });
 

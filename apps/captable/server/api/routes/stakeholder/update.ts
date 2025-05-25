@@ -86,8 +86,8 @@ export const update = withAuthApiV1
         .where(
           and(
             eq(stakeholders.id, id),
-            eq(stakeholders.companyId, membership.companyId)
-          )
+            eq(stakeholders.companyId, membership.companyId),
+          ),
         )
         .limit(1);
 
@@ -124,7 +124,7 @@ export const update = withAuthApiV1
             userAgent,
           },
           target: [{ type: "stakeholder", id: stakeholder.id }],
-          summary: `${membership.user?.name || 'User'} updated the stakeholder details in the company : ${updatedStakeHolder.name}`,
+          summary: `${membership.user?.name || "User"} updated the stakeholder details in the company : ${updatedStakeHolder.name}`,
         },
         tx,
       );

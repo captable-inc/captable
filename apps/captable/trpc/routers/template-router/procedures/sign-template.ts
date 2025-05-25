@@ -9,6 +9,7 @@ export const signTemplateProcedure = withoutAuth
     // This is a temporary stub to allow the build to pass
     throw new TRPCError({
       code: "NOT_IMPLEMENTED",
-      message: "Sign template procedure is temporarily disabled during Prisma to Drizzle migration",
+      message:
+        "Sign template procedure is temporarily disabled during Prisma to Drizzle migration",
     });
   });

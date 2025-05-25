@@ -137,9 +137,9 @@ function findAccessToken(clientId: string, c: Context) {
       and(
         eq(accessTokens.clientId, clientId),
         eq(accessTokens.typeEnum, "api"),
-        eq(accessTokens.active, true)
-      )
+        eq(accessTokens.active, true),
+      ),
     )
     .limit(1)
-    .then(results => results[0] || null);
+    .then((results) => results[0] || null);
 }

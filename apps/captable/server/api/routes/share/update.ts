@@ -77,7 +77,9 @@ export const update = withAuthApiV1
       const shareResult = await tx
         .select()
         .from(shares)
-        .where(and(eq(shares.id, id), eq(shares.companyId, membership.companyId)))
+        .where(
+          and(eq(shares.id, id), eq(shares.companyId, membership.companyId)),
+        )
         .limit(1);
 
       const share = shareResult[0];
@@ -90,15 +92,25 @@ export const update = withAuthApiV1
       }
 
       // Convert string dates to Date objects for database
-      const { issueDate, rule144Date, vestingStartDate, boardApprovalDate, ...bodyWithoutDates } = body;
-      
+      const {
+        issueDate,
+        rule144Date,
+        vestingStartDate,
+        boardApprovalDate,
+        ...bodyWithoutDates
+      } = body;
+
       const updateData = {
         ...bodyWithoutDates,
         updatedAt: new Date(),
         ...(issueDate && { issueDate: new Date(issueDate) }),
         ...(rule144Date && { rule144Date: new Date(rule144Date) }),
-        ...(vestingStartDate && { vestingStartDate: new Date(vestingStartDate) }),
-        ...(boardApprovalDate && { boardApprovalDate: new Date(boardApprovalDate) }),
+        ...(vestingStartDate && {
+          vestingStartDate: new Date(vestingStartDate),
+        }),
+        ...(boardApprovalDate && {
+          boardApprovalDate: new Date(boardApprovalDate),
+        }),
       };
 
       const updatedShareResult = await tx
@@ -126,7 +138,7 @@ export const update = withAuthApiV1
             requestIp: requestIp,
           },
           target: [{ type: "share", id: share.id }],
-          summary: `${membership.user?.name || 'User'} updated share the share ID ${updatedShare.id}`,
+          summary: `${membership.user?.name || "User"} updated share the share ID ${updatedShare.id}`,
         },
         tx,
       );

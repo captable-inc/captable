@@ -1,6 +1,13 @@
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
-import { db, verificationTokens, users, members, companies, eq } from "@captable/db";
+import {
+  db,
+  verificationTokens,
+  users,
+  members,
+  companies,
+  eq,
+} from "@captable/db";
 import { ZodAcceptMemberMutationSchema } from "../schema";
 
 export const acceptMemberProcedure = withAuth

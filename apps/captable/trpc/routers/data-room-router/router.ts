@@ -9,18 +9,18 @@ import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  dataRooms, 
-  dataRoomDocuments, 
-  dataRoomRecipients, 
-  documents, 
-  buckets, 
+import {
+  db,
+  dataRooms,
+  dataRoomDocuments,
+  dataRoomRecipients,
+  documents,
+  buckets,
   companies,
-  eq, 
-  and, 
+  eq,
+  and,
   inArray,
-  type DataRoom 
+  type DataRoom,
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -63,8 +63,8 @@ export const dataRoomRouter = createTRPCRouter({
           .where(
             and(
               eq(dataRooms.publicId, dataRoomPublicId),
-              eq(dataRooms.companyId, companyId)
-            )
+              eq(dataRooms.companyId, companyId),
+            ),
           )
           .limit(1);
 
@@ -235,7 +235,7 @@ export const dataRoomRouter = createTRPCRouter({
               documents.map((document) => ({
                 dataRoomId: room.id,
                 documentId: document.documentId,
-              }))
+              })),
             );
           }
 
@@ -247,7 +247,7 @@ export const dataRoomRouter = createTRPCRouter({
                 memberId: recipient.memberId,
                 stakeholderId: recipient.stakeholderId,
                 updatedAt: new Date(),
-              }))
+              })),
             );
           }
         }
@@ -281,16 +281,13 @@ export const dataRoomRouter = createTRPCRouter({
       const { dataRoomId, others, selectedContacts } = input;
       const { name: senderName, email: senderEmail, companyId } = session.user;
       const { user } = session;
-      
+
       const dataRoomResult = await db
         .select()
         .from(dataRooms)
         .innerJoin(companies, eq(dataRooms.companyId, companies.id))
         .where(
-          and(
-            eq(dataRooms.id, dataRoomId),
-            eq(dataRooms.companyId, companyId)
-          )
+          and(eq(dataRooms.id, dataRoomId), eq(dataRooms.companyId, companyId)),
         )
         .limit(1);
 
@@ -330,8 +327,8 @@ export const dataRoomRouter = createTRPCRouter({
               .where(
                 and(
                   eq(dataRoomRecipients.dataRoomId, dataRoomId),
-                  eq(dataRoomRecipients.email, email)
-                )
+                  eq(dataRoomRecipients.email, email),
+                ),
               )
               .limit(1);
 
@@ -347,7 +344,7 @@ export const dataRoomRouter = createTRPCRouter({
                 })
                 .where(eq(dataRoomRecipients.id, existingRecipient[0].id))
                 .returning();
-              
+
               if (!updated) {
                 throw new TRPCError({
                   code: "INTERNAL_SERVER_ERROR",
@@ -367,7 +364,7 @@ export const dataRoomRouter = createTRPCRouter({
                   updatedAt: new Date(),
                 })
                 .returning();
-              
+
               if (!created) {
                 throw new TRPCError({
                   code: "INTERNAL_SERVER_ERROR",
@@ -446,15 +443,12 @@ export const dataRoomRouter = createTRPCRouter({
       const { dataRoomId, recipientId } = input;
       const companyId = session.user.companyId;
       const { user } = session;
-      
+
       const dataRoomResult = await db
         .select()
         .from(dataRooms)
         .where(
-          and(
-            eq(dataRooms.id, dataRoomId),
-            eq(dataRooms.companyId, companyId)
-          )
+          and(eq(dataRooms.id, dataRoomId), eq(dataRooms.companyId, companyId)),
         )
         .limit(1);
 
@@ -472,8 +466,8 @@ export const dataRoomRouter = createTRPCRouter({
           .where(
             and(
               eq(dataRoomRecipients.id, recipientId),
-              eq(dataRoomRecipients.dataRoomId, dataRoomId)
-            )
+              eq(dataRoomRecipients.dataRoomId, dataRoomId),
+            ),
           );
 
         await Audit.create(
@@ -498,4 +492,3 @@ export const dataRoomRouter = createTRPCRouter({
       };
     }),
 });
-

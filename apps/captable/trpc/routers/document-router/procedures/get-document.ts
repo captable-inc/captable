@@ -23,8 +23,8 @@ export const getDocumentProcedure = withAccessControl
         .where(
           and(
             eq(documents.publicId, input.publicId),
-            eq(documents.companyId, companyId)
-          )
+            eq(documents.companyId, companyId),
+          ),
         )
         .limit(1);
 

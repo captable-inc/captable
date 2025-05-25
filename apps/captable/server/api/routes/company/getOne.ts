@@ -48,7 +48,12 @@ export const getOne = withAuthApiV1
     const [member] = await db
       .select({ companyId: members.companyId })
       .from(members)
-      .where(and(eq(members.companyId, companyId), eq(members.id, membership.memberId)))
+      .where(
+        and(
+          eq(members.companyId, companyId),
+          eq(members.id, membership.memberId),
+        ),
+      )
       .limit(1);
 
     if (!member) {

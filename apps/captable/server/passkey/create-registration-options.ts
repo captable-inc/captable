@@ -4,7 +4,10 @@ import { db, users, passkeyVerificationTokens, eq } from "@captable/db";
 import type { PasskeyAudit } from "@/trpc/routers/passkey-router/schema";
 import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
-import type { AuthenticatorTransportFuture, PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
+import type {
+  AuthenticatorTransportFuture,
+  PublicKeyCredentialCreationOptionsJSON,
+} from "@simplewebauthn/types";
 import { Audit } from "@/server/audit";
 
 type CreatePasskeyRegistrationOptions = {

@@ -42,7 +42,7 @@ export const commonRouter = createTRPCRouter({
         });
       }
     });
-    
+
     (stakeholdersData || []).map((stakeholder) => {
       if (stakeholder.email && stakeholder.name) {
         contacts.push({

@@ -14,10 +14,7 @@ type DashboardLayoutProps = {
   params: Promise<{ publicId: string }>;
 };
 
-const DashboardLayout = async ({
-  children,
-  params,
-}: DashboardLayoutProps) => {
+const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
   const { publicId } = await params;
   const { user } = await withServerComponentSession();
 

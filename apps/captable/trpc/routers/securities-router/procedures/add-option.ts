@@ -2,11 +2,7 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  options, 
-  documents
-} from "@captable/db";
+import { db, options, documents } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodAddOptionMutationSchema } from "../schema";
 
@@ -33,7 +29,12 @@ export const addOptionProcedure = withAuth
           quantity: input.quantity,
           exercisePrice: input.exercisePrice,
           type: input.type as "ISO" | "NSO" | "RSU",
-          status: input.status as "ACTIVE" | "DRAFT" | "CANCELLED" | "EXERCISED" | "EXPIRED",
+          status: input.status as
+            | "ACTIVE"
+            | "DRAFT"
+            | "CANCELLED"
+            | "EXERCISED"
+            | "EXPIRED",
           cliffYears: input.cliffYears,
           vestingYears: input.vestingYears,
           issueDate: new Date(input.issueDate),
@@ -67,9 +68,7 @@ export const addOptionProcedure = withAuth
             updatedAt: new Date(),
           }));
 
-          await tx
-            .insert(documents)
-            .values(bulkDocuments);
+          await tx.insert(documents).values(bulkDocuments);
         }
 
         await Audit.create(

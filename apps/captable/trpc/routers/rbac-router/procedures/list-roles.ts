@@ -1,11 +1,7 @@
 import { DEFAULT_ADMIN_ROLE, type RoleList } from "@/lib/rbac/constants";
 import { permissionSchema } from "@/lib/rbac/schema";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { 
-  db, 
-  customRoles,
-  eq 
-} from "@captable/db";
+import { db, customRoles, eq } from "@captable/db";
 import { z } from "zod";
 
 export const listRolesProcedure = withAccessControl
@@ -28,14 +24,17 @@ export const listRolesProcedure = withAccessControl
 
     const customRolesList: RoleList[] = customRolesData.map((data) => {
       // Parse permissions from string array back to permission objects
-      const parsedPermissions = data.permissions?.map(permission => {
-        try {
-          return JSON.parse(permission);
-        } catch {
-          return null;
-        }
-      }).filter(Boolean) || [];
-      
+      const parsedPermissions =
+        data.permissions
+          ?.map((permission) => {
+            try {
+              return JSON.parse(permission);
+            } catch {
+              return null;
+            }
+          })
+          .filter(Boolean) || [];
+
       const permissions = z.array(permissionSchema).parse(parsedPermissions);
       return {
         ...data,

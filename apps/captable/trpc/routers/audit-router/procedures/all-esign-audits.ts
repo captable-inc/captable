@@ -36,8 +36,8 @@ export const allEsignAuditsProcedure = withAccessControl
         .where(
           and(
             eq(esignAudits.companyId, companyId),
-            eq(esignAudits.templateId, template.id)
-          )
+            eq(esignAudits.templateId, template.id),
+          ),
         );
 
       return { audits };

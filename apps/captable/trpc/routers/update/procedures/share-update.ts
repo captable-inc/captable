@@ -4,7 +4,15 @@ import {
   type UpdateSharePayloadType,
 } from "@/jobs/share-update-email";
 import { encode } from "@/lib/jwt";
-import { UpdateStatusEnum, db, updates, updateRecipients, companies, eq, and } from "@captable/db";
+import {
+  UpdateStatusEnum,
+  db,
+  updates,
+  updateRecipients,
+  companies,
+  eq,
+  and,
+} from "@captable/db";
 import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
@@ -69,7 +77,12 @@ export const shareUpdateProcedure = withAuth
         const existingRecipient = await db
           .select()
           .from(updateRecipients)
-          .where(and(eq(updateRecipients.updateId, updateId), eq(updateRecipients.email, email)))
+          .where(
+            and(
+              eq(updateRecipients.updateId, updateId),
+              eq(updateRecipients.email, email),
+            ),
+          )
           .limit(1);
 
         let recipientRecord: typeof updateRecipients.$inferSelect;
@@ -79,7 +92,7 @@ export const shareUpdateProcedure = withAuth
           if (!existingId) {
             throw new Error("Existing recipient ID not found");
           }
-          
+
           const [updated] = await db
             .update(updateRecipients)
             .set({
@@ -89,7 +102,7 @@ export const shareUpdateProcedure = withAuth
             })
             .where(eq(updateRecipients.id, existingId))
             .returning();
-          
+
           if (!updated) {
             throw new Error("Failed to update recipient");
           }
@@ -106,7 +119,7 @@ export const shareUpdateProcedure = withAuth
               updatedAt: new Date(),
             })
             .returning();
-          
+
           if (!created) {
             throw new Error("Failed to create recipient");
           }
@@ -140,7 +153,8 @@ export const shareUpdateProcedure = withAuth
 
     await upsertManyRecipients();
 
-    if (update.status === UpdateStatusEnum.enumValues[0]) { // DRAFT
+    if (update.status === UpdateStatusEnum.enumValues[0]) {
+      // DRAFT
       await db
         .update(updates)
         .set({
@@ -203,7 +217,12 @@ export const unshareUpdateProcedure = withAuth
 
     await db
       .delete(updateRecipients)
-      .where(and(eq(updateRecipients.id, recipientId), eq(updateRecipients.updateId, updateId)));
+      .where(
+        and(
+          eq(updateRecipients.id, recipientId),
+          eq(updateRecipients.updateId, updateId),
+        ),
+      );
 
     await Audit.create(
       {

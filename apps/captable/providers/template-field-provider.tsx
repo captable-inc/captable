@@ -66,9 +66,11 @@ export const TemplateFieldProvider = ({
   const form = useForm<TemplateFieldForm>({
     defaultValues: {
       status: "DRAFT",
-      fields: (fields ?? []).map(field => ({
+      fields: (fields ?? []).map((field) => ({
         ...field,
-        meta: field.meta as { options?: Array<{ id: string; value: string }> } | undefined,
+        meta: field.meta as
+          | { options?: Array<{ id: string; value: string }> }
+          | undefined,
       })),
       fieldType: undefined,
       recipient: recipients?.[0]?.id,

@@ -15,7 +15,9 @@ type BadgeVariant =
   | "secondary"
   | "destructive";
 
-type AuditType = NonNullable<RouterOutputs["audit"]["allEsignAudits"]>["audits"][number];
+type AuditType = NonNullable<
+  RouterOutputs["audit"]["allEsignAudits"]
+>["audits"][number];
 
 export default async function TemplateDetailViewPage({
   params,

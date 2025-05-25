@@ -2,11 +2,7 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  safes, 
-  documents
-} from "@captable/db";
+import { db, safes, documents } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodAddExistingSafeMutationSchema } from "../schema";
 
@@ -51,9 +47,7 @@ export const addExistingSafeProcedure = withAuth
             updatedAt: new Date(),
           }));
 
-          await tx
-            .insert(documents)
-            .values(bulkDocuments);
+          await tx.insert(documents).values(bulkDocuments);
         }
 
         await Audit.create(

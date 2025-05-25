@@ -1,14 +1,14 @@
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  safes, 
-  stakeholders, 
-  documents, 
-  members, 
-  users, 
+import {
+  db,
+  safes,
+  stakeholders,
+  documents,
+  members,
+  users,
   buckets,
-  eq 
+  eq,
 } from "@captable/db";
 
 export interface SafeWithRelations {
@@ -49,7 +49,7 @@ export const getSafesProcedure = withAuth.query(
   async ({ ctx: { session } }) => {
     const data = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ tx, session });
-      
+
       const data = await tx
         .select({
           id: safes.id,
@@ -84,52 +84,55 @@ export const getSafesProcedure = withAuth.query(
         .where(eq(safes.companyId, companyId));
 
       // Group the results to match the original nested structure
-      const groupedData = data.reduce((acc, row) => {
-        const safeId = row.id;
-        
-        if (!acc[safeId]) {
-          acc[safeId] = {
-            id: row.id,
-            publicId: row.publicId,
-            type: row.type,
-            status: row.status,
-            capital: row.capital,
-            safeTemplate: row.safeTemplate,
-            valuationCap: row.valuationCap,
-            discountRate: row.discountRate,
-            mfn: row.mfn,
-            proRata: row.proRata,
-            additionalTerms: row.additionalTerms,
-            issueDate: row.issueDate,
-            boardApprovalDate: row.boardApprovalDate,
-            stakeholder: {
-              name: row.stakeholderName,
-            },
-            documents: [],
-          };
-        }
+      const groupedData = data.reduce(
+        (acc, row) => {
+          const safeId = row.id;
 
-        // Add document if it exists
-        if (row.documentId) {
-          acc[safeId].documents.push({
-            id: row.documentId,
-            name: row.documentName || "",
-            uploader: {
-              user: {
-                name: row.uploaderName,
-                image: row.uploaderImage,
+          if (!acc[safeId]) {
+            acc[safeId] = {
+              id: row.id,
+              publicId: row.publicId,
+              type: row.type,
+              status: row.status,
+              capital: row.capital,
+              safeTemplate: row.safeTemplate,
+              valuationCap: row.valuationCap,
+              discountRate: row.discountRate,
+              mfn: row.mfn,
+              proRata: row.proRata,
+              additionalTerms: row.additionalTerms,
+              issueDate: row.issueDate,
+              boardApprovalDate: row.boardApprovalDate,
+              stakeholder: {
+                name: row.stakeholderName,
               },
-            },
-            bucket: {
-              key: row.bucketKey,
-              mimeType: row.bucketMimeType,
-              size: row.bucketSize,
-            },
-          });
-        }
+              documents: [],
+            };
+          }
 
-        return acc;
-      }, {} as Record<string, SafeWithRelations>);
+          // Add document if it exists
+          if (row.documentId) {
+            acc[safeId].documents.push({
+              id: row.documentId,
+              name: row.documentName || "",
+              uploader: {
+                user: {
+                  name: row.uploaderName,
+                  image: row.uploaderImage,
+                },
+              },
+              bucket: {
+                key: row.bucketKey,
+                mimeType: row.bucketMimeType,
+                size: row.bucketSize,
+              },
+            });
+          }
+
+          return acc;
+        },
+        {} as Record<string, SafeWithRelations>,
+      );
 
       return Object.values(groupedData);
     });

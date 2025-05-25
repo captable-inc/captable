@@ -1,12 +1,7 @@
 import { getRoleById } from "@/lib/rbac/access-control";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { 
-  db, 
-  customRoles,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, customRoles, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodUpdateRoleMutationSchema } from "../schema";
 import { extractPermission } from "./create-role";
@@ -19,10 +14,7 @@ export const updateRolesProcedure = withAccessControl
     },
   })
   .mutation(
-    async ({
-      input,
-      ctx: { membership, userAgent, requestIp, session },
-    }) => {
+    async ({ input, ctx: { membership, userAgent, requestIp, session } }) => {
       const permissions = extractPermission(input.permissions);
       const { user } = session;
       await db.transaction(async (tx) => {
@@ -38,14 +30,16 @@ export const updateRolesProcedure = withAccessControl
         const [role] = await tx
           .update(customRoles)
           .set({
-            permissions: permissions.map(permission => JSON.stringify(permission)),
+            permissions: permissions.map((permission) =>
+              JSON.stringify(permission),
+            ),
             name: input.name,
           })
           .where(
             and(
               eq(customRoles.companyId, membership.companyId),
-              eq(customRoles.id, id.customRoleId)
-            )
+              eq(customRoles.id, id.customRoleId),
+            ),
           )
           .returning({
             id: customRoles.id,

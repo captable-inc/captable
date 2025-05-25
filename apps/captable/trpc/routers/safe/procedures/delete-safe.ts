@@ -1,14 +1,7 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
-import { 
-  db, 
-  safes, 
-  stakeholders, 
-  companies,
-  eq, 
-  and 
-} from "@captable/db";
+import { db, safes, stakeholders, companies, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import {
   type TypeZodDeleteSafesMutationSchema,
@@ -46,12 +39,7 @@ export async function deleteSafeHandler({
         .from(safes)
         .leftJoin(stakeholders, eq(safes.stakeholderId, stakeholders.id))
         .leftJoin(companies, eq(safes.companyId, companies.id))
-        .where(
-          and(
-            eq(safes.id, safeId),
-            eq(safes.companyId, companyId)
-          )
-        )
+        .where(and(eq(safes.id, safeId), eq(safes.companyId, companyId)))
         .limit(1);
 
       const safe = safeResult[0];
@@ -65,12 +53,7 @@ export async function deleteSafeHandler({
       // Delete the safe
       await tx
         .delete(safes)
-        .where(
-          and(
-            eq(safes.id, safeId),
-            eq(safes.companyId, companyId)
-          )
-        );
+        .where(and(eq(safes.id, safeId), eq(safes.companyId, companyId)));
 
       await Audit.create(
         {

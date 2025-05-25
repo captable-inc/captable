@@ -179,7 +179,10 @@ export const ProfileSettings = ({ memberProfile }: ProfileType) => {
       loginEmail: memberProfile.loginEmail,
       workEmail: memberProfile.workEmail ?? "",
     };
-    const hasChanged = compareFormDataWithInitial(memberProfileFormFields, values);
+    const hasChanged = compareFormDataWithInitial(
+      memberProfileFormFields,
+      values,
+    );
 
     if (!hasChanged) return;
 

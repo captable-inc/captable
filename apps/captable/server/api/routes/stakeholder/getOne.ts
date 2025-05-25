@@ -64,8 +64,8 @@ export const getOne = withAuthApiV1
       .where(
         and(
           eq(stakeholders.id, id),
-          eq(stakeholders.companyId, membership.companyId)
-        )
+          eq(stakeholders.companyId, membership.companyId),
+        ),
       )
       .limit(1);
 

@@ -5,7 +5,10 @@ import { createId } from "@paralleldrive/cuid2";
 import { nanoid } from "nanoid";
 import type { Passkey } from "@captable/db";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
-import type { AuthenticatorTransportFuture, PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+import type {
+  AuthenticatorTransportFuture,
+  PublicKeyCredentialRequestOptionsJSON,
+} from "@simplewebauthn/types";
 import { Audit } from "@/server/audit";
 
 type CreatePasskeyAuthenticationOptions = {

@@ -54,7 +54,7 @@ export const getMany = withAuthApiV1
 
     // Build the where condition
     let whereCondition = eq(stakeholders.companyId, membership.companyId);
-    
+
     // Add cursor condition if provided (for pagination)
     if (query.cursor) {
       whereCondition = eq(stakeholders.companyId, membership.companyId);
@@ -71,7 +71,7 @@ export const getMany = withAuthApiV1
     // Check if there's a next page
     const hasNextPage = data.length > query.limit;
     const items = hasNextPage ? data.slice(0, -1) : data;
-    
+
     // Create pagination meta
     const meta = {
       hasNextPage,

@@ -30,12 +30,26 @@ export const updateStakeholderProcedure = withAccessControl
 
         await db.transaction(async (tx) => {
           const { stakeholderType, currentRelationship, ...otherFields } = rest;
-          
+
           const updateData = {
             ...otherFields,
             updatedAt: new Date(),
-            ...(stakeholderType && { stakeholderType: stakeholderType as "INDIVIDUAL" | "INSTITUTION" }),
-            ...(currentRelationship && { currentRelationship: currentRelationship as "ADVISOR" | "BOARD_MEMBER" | "CONSULTANT" | "EMPLOYEE" | "EX_ADVISOR" | "EX_CONSULTANT" | "EX_EMPLOYEE" | "FOUNDER" | "INVESTOR" | "OTHER" }),
+            ...(stakeholderType && {
+              stakeholderType: stakeholderType as "INDIVIDUAL" | "INSTITUTION",
+            }),
+            ...(currentRelationship && {
+              currentRelationship: currentRelationship as
+                | "ADVISOR"
+                | "BOARD_MEMBER"
+                | "CONSULTANT"
+                | "EMPLOYEE"
+                | "EX_ADVISOR"
+                | "EX_CONSULTANT"
+                | "EX_EMPLOYEE"
+                | "FOUNDER"
+                | "INVESTOR"
+                | "OTHER",
+            }),
           };
 
           const [updated] = await tx
@@ -44,8 +58,8 @@ export const updateStakeholderProcedure = withAccessControl
             .where(
               and(
                 eq(stakeholders.id, stakeholderId),
-                eq(stakeholders.companyId, companyId)
-              )
+                eq(stakeholders.companyId, companyId),
+              ),
             )
             .returning({
               id: stakeholders.id,

@@ -131,13 +131,13 @@ export function FieldRenderer({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {(meta as { options?: Array<{ id: string; value: string }> })?.options?.map(
-                    (item) => (
-                      <SelectItem key={item.id} value={item.id}>
-                        {item.value}
-                      </SelectItem>
-                    ),
-                  )}
+                  {(
+                    meta as { options?: Array<{ id: string; value: string }> }
+                  )?.options?.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.value}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />

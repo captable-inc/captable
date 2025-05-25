@@ -19,8 +19,8 @@ export const cancelTemplateProcedure = withAuth
           and(
             eq(templates.id, templateId),
             eq(templates.companyId, companyId),
-            eq(templates.publicId, publicId)
-          )
+            eq(templates.publicId, publicId),
+          ),
         )
         .limit(1);
 

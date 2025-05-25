@@ -44,11 +44,13 @@ export const api = createTRPCProxyClient<AppRouter>({
             .then((ctx) => {
               // Create a server-side caller using the new v11 approach
               const caller = appRouter.createCaller(ctx);
-              
+
               // Navigate to the correct procedure and call it
               // Using explicit any types for dynamic procedure access in RSC context
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const procedure = op.path.split('.').reduce((acc: any, segment) => acc[segment], caller as any);
+              const procedure = op.path
+                .split(".")
+                .reduce((acc: any, segment) => acc[segment], caller as any);
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return (procedure as any)(op.input);
             })

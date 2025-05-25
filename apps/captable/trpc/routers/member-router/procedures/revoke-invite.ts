@@ -2,13 +2,7 @@ import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { revokeExistingInviteTokens } from "@/server/member";
 import { withAuth } from "@/trpc/api/trpc";
-import { 
-  db, 
-  members, 
-  users, 
-  companies,
-  eq 
-} from "@captable/db";
+import { db, members, users, companies, eq } from "@captable/db";
 import { ZodRevokeInviteMutationSchema } from "../schema";
 import { removeMemberHandler } from "./remove-member";
 
