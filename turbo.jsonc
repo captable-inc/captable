@@ -33,6 +33,15 @@
 		},
 		"db:studio": {
 			"dependsOn": ["^db:studio"]
+		},
+		"email:dev": {
+			"dependsOn": ["^email:dev"]
+		},
+		"email:build": {
+			"dependsOn": ["^email:build"]
+		},
+		"email:export": {
+			"dependsOn": ["^email:export"]
 		}
 	}
 }
