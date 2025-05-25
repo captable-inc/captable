@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, shares } from "@captable/db";
 import {
   CreateShareSchema,
   type CreateShareSchemaType,
@@ -53,16 +54,29 @@ export const create = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client;
 
     const body = c.req.valid("json");
 
-    const share = await db.$transaction(async (tx) => {
-      const share = await tx.share.create({
-        data: { ...body, companyId: membership.companyId },
-      });
+    const share = await db.transaction(async (tx) => {
+      const [share] = await tx
+        .insert(shares)
+        .values({
+          ...body,
+          companyId: membership.companyId,
+          issueDate: new Date(body.issueDate),
+          boardApprovalDate: new Date(body.boardApprovalDate),
+          rule144Date: body.rule144Date ? new Date(body.rule144Date) : null,
+          vestingStartDate: body.vestingStartDate ? new Date(body.vestingStartDate) : null,
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      if (!share) {
+        throw new Error("Failed to create share");
+      }
 
       // if (documents && documents.length > 0) {
       //   const bulkDocuments = documents.map((doc) => ({
@@ -90,7 +104,7 @@ export const create = withAuthApiV1
             requestIp,
           },
           target: [{ type: "share", id: share.id }],
-          summary: `${membership.user.name} added share for stakeholder ${share.stakeholderId}`,
+          summary: `${membership.user?.name || 'User'} added share for stakeholder ${share.stakeholderId}`,
         },
         tx,
       );
@@ -99,11 +113,23 @@ export const create = withAuthApiV1
     });
 
     const data: CreateShareSchemaType = {
-      ...share,
+      status: share.status,
+      certificateId: share.certificateId,
+      quantity: share.quantity,
+      pricePerShare: share.pricePerShare,
+      capitalContribution: share.capitalContribution,
+      ipContribution: share.ipContribution,
+      debtCancelled: share.debtCancelled,
+      otherContributions: share.otherContributions,
+      cliffYears: share.cliffYears,
+      vestingYears: share.vestingYears,
+      companyLegends: share.companyLegends,
       issueDate: share.issueDate.toISOString(),
       boardApprovalDate: share.boardApprovalDate.toISOString(),
       rule144Date: share.rule144Date?.toISOString(),
       vestingStartDate: share.vestingStartDate?.toISOString(),
+      stakeholderId: share.stakeholderId,
+      shareClassId: share.shareClassId,
     };
 
     return c.json({ message: "Share successfully created.", data }, 200);

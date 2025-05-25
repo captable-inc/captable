@@ -1,24 +1,21 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
+import { db, equityPlans, eq, desc } from "@captable/db";
 import { EquityPlanMutationSchema } from "./schema";
 
 export const equityPlanRouter = createTRPCRouter({
   getPlans: withAuth.query(async ({ ctx }) => {
-    const { db, session } = ctx;
+    const { session } = ctx;
 
-    const data = await db.$transaction(async (tx) => {
+    const data = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
-      const data = await tx.equityPlan.findMany({
-        where: {
-          companyId,
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      const data = await tx
+        .select()
+        .from(equityPlans)
+        .where(eq(equityPlans.companyId, companyId))
+        .orderBy(desc(equityPlans.createdAt));
 
       return data;
     });
@@ -32,10 +29,10 @@ export const equityPlanRouter = createTRPCRouter({
       const { userAgent, requestIp, session } = ctx;
 
       try {
-        await ctx.db.$transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           const { companyId } = await checkMembership({ session, tx });
 
-          const data = {
+          await tx.insert(equityPlans).values({
             companyId,
             name: input.name,
             planEffectiveDate: input.planEffectiveDate
@@ -46,16 +43,16 @@ export const equityPlanRouter = createTRPCRouter({
             shareClassId: input.shareClassId,
             comments: input.comments,
             defaultCancellatonBehavior: input.defaultCancellatonBehavior,
-          };
+            updatedAt: new Date(),
+          });
 
-          await tx.equityPlan.create({ data });
           await Audit.create(
             {
               action: "equityPlan.created",
               companyId,
               actor: { type: "user", id: ctx.session.user.id },
               context: {
-                requestIp,
+                requestIp: requestIp || "",
                 userAgent,
               },
               target: [{ type: "company", id: companyId }],
@@ -81,25 +78,28 @@ export const equityPlanRouter = createTRPCRouter({
       try {
         const { userAgent, requestIp, session } = ctx;
 
-        await ctx.db.$transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           const { companyId } = await checkMembership({ tx, session });
 
-          const data = {
-            name: input.name,
-            planEffectiveDate: input.planEffectiveDate
-              ? new Date(input.planEffectiveDate)
-              : null,
-            boardApprovalDate: new Date(input.boardApprovalDate),
-            initialSharesReserved: input.initialSharesReserved,
-            shareClassId: input.shareClassId,
-            comments: input.comments,
-            defaultCancellatonBehavior: input.defaultCancellatonBehavior,
-          };
+          if (!input.id) {
+            throw new Error("Equity plan ID is required for update");
+          }
 
-          await tx.equityPlan.update({
-            where: { id: input.id },
-            data,
-          });
+          await tx
+            .update(equityPlans)
+            .set({
+              name: input.name,
+              planEffectiveDate: input.planEffectiveDate
+                ? new Date(input.planEffectiveDate)
+                : null,
+              boardApprovalDate: new Date(input.boardApprovalDate),
+              initialSharesReserved: input.initialSharesReserved,
+              shareClassId: input.shareClassId,
+              comments: input.comments,
+              defaultCancellatonBehavior: input.defaultCancellatonBehavior,
+              updatedAt: new Date(),
+            })
+            .where(eq(equityPlans.id, input.id));
 
           await Audit.create(
             {
@@ -107,7 +107,7 @@ export const equityPlanRouter = createTRPCRouter({
               companyId,
               actor: { type: "user", id: ctx.session.user.id },
               context: {
-                requestIp,
+                requestIp: requestIp || "",
                 userAgent,
               },
               target: [{ type: "company", id: companyId }],

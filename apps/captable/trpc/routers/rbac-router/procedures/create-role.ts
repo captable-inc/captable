@@ -3,6 +3,11 @@ import type { TPermission } from "@/lib/rbac/schema";
 import type { TSubjects } from "@/lib/rbac/subjects";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { 
+  db, 
+  customRoles
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import {
   type TypeZodCreateRoleMutationSchema,
   ZodCreateRoleMutationSchema,
@@ -18,17 +23,30 @@ export const createRolesProcedure = withAccessControl
   .mutation(
     async ({
       input,
-      ctx: { db, membership, requestIp, userAgent, session },
+      ctx: { membership, requestIp, userAgent, session },
     }) => {
       const { user } = session;
       const permissions = extractPermission(input.permissions);
-      const role = await db.customRole.create({
-        data: {
+      
+      const [role] = await db
+        .insert(customRoles)
+        .values({
           companyId: membership.companyId,
           name: input.name,
-          permissions,
-        },
-      });
+          permissions: permissions.map(permission => JSON.stringify(permission)),
+        })
+        .returning({
+          id: customRoles.id,
+          name: customRoles.name,
+        });
+
+      if (!role) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create role",
+        });
+      }
+
       await Audit.create(
         {
           action: "role.created",
@@ -36,7 +54,7 @@ export const createRolesProcedure = withAccessControl
           actor: { type: "user", id: user.id },
           context: {
             userAgent,
-            requestIp,
+            requestIp: requestIp || "",
           },
           target: [{ type: "role", id: role.id }],
           summary: `${user.name} created a role ${role.name}`,

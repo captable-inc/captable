@@ -1,32 +1,44 @@
 import { checkMembership } from "@/server/auth";
+import { db, templates, esignAudits, eq, and } from "@captable/db";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { ZodAllEsignAuditsQuerySchema } from "../schema";
 
 export const allEsignAuditsProcedure = withAccessControl
   .meta({ policies: { audits: { allow: ["read"] } } })
   .input(ZodAllEsignAuditsQuerySchema)
   .query(async ({ ctx, input }) => {
-    const { db, session } = ctx;
+    const { session } = ctx;
     const { templatePublicId } = input;
 
-    const { audits } = await db.$transaction(async (tx) => {
+    const { audits } = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
-      const { id: templateId } = await tx.template.findFirstOrThrow({
-        where: {
-          publicId: templatePublicId,
-        },
-        select: {
-          id: true,
-        },
-      });
+      const templateResult = await tx
+        .select({
+          id: templates.id,
+        })
+        .from(templates)
+        .where(eq(templates.publicId, templatePublicId))
+        .limit(1);
 
-      const audits = await tx.esignAudit.findMany({
-        where: {
-          companyId,
-          templateId,
-        },
-      });
+      const template = templateResult[0];
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found",
+        });
+      }
+
+      const audits = await tx
+        .select()
+        .from(esignAudits)
+        .where(
+          and(
+            eq(esignAudits.companyId, companyId),
+            eq(esignAudits.templateId, template.id)
+          )
+        );
 
       return { audits };
     });

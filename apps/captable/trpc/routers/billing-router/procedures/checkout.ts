@@ -12,7 +12,7 @@ export const checkoutProcedure = withAuth
     const { priceId, priceType } = input;
     const { db, session } = ctx;
 
-    const { stripeSessionId } = await db.$transaction(async (tx) => {
+    const { stripeSessionId } = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
       let customer: string;

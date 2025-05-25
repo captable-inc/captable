@@ -10,16 +10,27 @@ import {
   Text,
 } from "@react-email/components";
 
-import type { ConfirmationEmailPayloadType } from "../jobs/esign-confirmation-email";
+export type EsignConfirmationEmailPayloadType = {
+  fileUrl: string;
+  documentName: string;
+  senderName: string | null;
+  senderEmail: string | null;
+  company: {
+    name: string;
+    logo?: string | null;
+  };
+  recipient: { name?: string | null; email: string };
+};
 
-type Payload = Omit<ConfirmationEmailPayloadType, "fileUrl">;
+export type EsignConfirmationEmailProps = Omit<EsignConfirmationEmailPayloadType, "fileUrl">;
 
 const ESignConfirmationEmail = ({
   documentName,
   recipient,
   senderName,
+  senderEmail,
   company,
-}: Payload) => {
+}: EsignConfirmationEmailProps) => {
   return (
     <Html>
       <Head />
@@ -63,6 +74,7 @@ ESignConfirmationEmail.PreviewProps = {
   documentName: "Document Name",
   recipient: { name: "Recipient Name", email: "" },
   senderName: "Sender Name",
+  senderEmail: "sender@example.com",
   company: { name: "Company Name" },
 };
 

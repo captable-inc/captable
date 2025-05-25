@@ -18,12 +18,14 @@ import { RiFolder3Fill as FolderIcon } from "@remixicon/react";
 import { notFound } from "next/navigation";
 
 const DataRoomPage = async ({
-  params: { publicId },
-  searchParams: { token },
+  params,
+  searchParams,
 }: {
-  params: { publicId: string };
-  searchParams: { token: string };
+  params: Promise<{ publicId: string }>;
+  searchParams: Promise<{ token: string }>;
 }) => {
+  const { publicId } = await params;
+  const { token } = await searchParams;
   let decodedToken: JWTVerifyResult | null = null;
 
   try {

@@ -12,9 +12,10 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { META } from "@/lib/constants/meta";
+import * as React from "react";
+import { META } from "@/lib/constants";
 
-interface ShareDataRoomEmailProps {
+export interface ShareDataRoomEmailProps {
   senderName: string;
   recipientName: string | null | undefined;
   companyName: string;

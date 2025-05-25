@@ -1,30 +1,46 @@
 import { withAuth } from "@/trpc/api/trpc";
+import { db, billingProducts, billingPrices, eq, and } from "@captable/db";
 
 export const getProductsProcedure = withAuth.query(async ({ ctx }) => {
-  const { db } = ctx;
+  const { products } = await db.transaction(async (tx) => {
+    const products = await tx
+      .select({
+        id: billingProducts.id,
+        name: billingProducts.name,
+        description: billingProducts.description,
+        active: billingProducts.active,
+        metadata: billingProducts.metadata,
+      })
+      .from(billingProducts)
+      .where(eq(billingProducts.active, true));
 
-  const { products } = await db.$transaction(async (tx) => {
-    const products = await tx.billingProduct.findMany({
-      where: {
-        active: true,
-      },
-      include: {
-        prices: {
-          where: {
-            active: true,
-          },
-          select: {
-            id: true,
-            interval: true,
-            unitAmount: true,
-            currency: true,
-            type: true,
-          },
-        },
-      },
-    });
+    // Get prices for each product
+    const productsWithPrices = await Promise.all(
+      products.map(async (product) => {
+        const prices = await tx
+          .select({
+            id: billingPrices.id,
+            interval: billingPrices.interval,
+            unitAmount: billingPrices.unitAmount,
+            currency: billingPrices.currency,
+            type: billingPrices.type,
+          })
+          .from(billingPrices)
+          .where(
+            and(
+              eq(billingPrices.productId, product.id),
+              eq(billingPrices.active, true)
+            )
+          );
 
-    return { products };
+        return {
+          ...product,
+          prices,
+        };
+      })
+    );
+
+    return { products: productsWithPrices };
   });
 
   return { products };

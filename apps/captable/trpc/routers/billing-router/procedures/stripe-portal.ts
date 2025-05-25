@@ -10,7 +10,7 @@ export const stripePortalProcedure = withAuth
   .mutation(async ({ ctx, input }) => {
     const { db, session } = ctx;
 
-    const { url } = await db.$transaction(async (tx) => {
+    const { url } = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
       let customer: string;

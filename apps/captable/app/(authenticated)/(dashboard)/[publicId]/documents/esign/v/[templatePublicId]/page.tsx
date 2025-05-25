@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { serverAccessControl } from "@/lib/rbac/access-control";
 import { TemplateSigningFieldProvider } from "@/providers/template-signing-field-provider";
 import { api } from "@/trpc/server";
+import type { RouterOutputs } from "@/trpc/shared";
 import { RiCheckFill } from "@remixicon/react";
 
 type BadgeVariant =
@@ -14,11 +15,14 @@ type BadgeVariant =
   | "secondary"
   | "destructive";
 
+type AuditType = NonNullable<RouterOutputs["audit"]["allEsignAudits"]>["audits"][number];
+
 export default async function TemplateDetailViewPage({
-  params: { templatePublicId },
+  params,
 }: {
-  params: { templatePublicId: string };
+  params: Promise<{ templatePublicId: string }>;
 }) {
+  const { templatePublicId } = await params;
   const { allow } = await serverAccessControl();
 
   const [{ name, status, url, fields }, auditsData] = await Promise.all([
@@ -83,7 +87,7 @@ export default async function TemplateDetailViewPage({
               <CardContent>
                 {auditsData.audits.length ? (
                   <div className="flex  flex-col gap-y-3">
-                    {auditsData.audits.map((item) => (
+                    {(auditsData.audits as AuditType[]).map((item) => (
                       <div className="flex items-start gap-x-2" key={item.id}>
                         <div>
                           <div className="rounded-full bg-green-700 ">

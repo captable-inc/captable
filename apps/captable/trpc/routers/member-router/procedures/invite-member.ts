@@ -4,6 +4,15 @@ import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
 import { generateInviteToken, generateMemberIdentifier } from "@/server/member";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { 
+  db, 
+  companies, 
+  users, 
+  members, 
+  verificationTokens,
+  eq, 
+  and 
+} from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodInviteMemberMutationSchema } from "../schema";
 
@@ -25,47 +34,76 @@ export const inviteMemberProcedure = withAccessControl
 
     const { expires, memberInviteTokenHash } = await generateInviteToken();
 
-    const { token: passwordResetToken } =
-      await generatePasswordResetToken(email);
+    const passwordResetTokenResult = await generatePasswordResetToken(email);
+    
+    if (!passwordResetTokenResult) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate password reset token",
+      });
+    }
 
-    const { company, verificationToken } = await ctx.db.$transaction(
+    const { company, verificationToken } = await db.transaction(
       async (tx) => {
-        const company = await tx.company.findFirstOrThrow({
-          where: {
-            id: companyId,
-          },
-          select: {
-            name: true,
-            id: true,
-          },
-        });
+        // Get company details
+        const [company] = await tx
+          .select({
+            name: companies.name,
+            id: companies.id,
+          })
+          .from(companies)
+          .where(eq(companies.id, companyId))
+          .limit(1);
 
-        // create or find user
-        const invitedUser = await tx.user.upsert({
-          where: {
-            email,
-          },
-          update: {},
-          create: {
-            name,
-            email,
-          },
-          select: {
-            id: true,
-          },
-        });
+        if (!company) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Company not found",
+          });
+        }
 
-        // check if user is already a member
-        const prevMember = await tx.member.findUnique({
-          where: {
-            companyId_userId: {
-              companyId,
-              userId: invitedUser.id,
-            },
-          },
-        });
+        // Check if user exists, if not create user
+        let invitedUser: { id: string };
+        const [existingUser] = await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
 
-        // if already a member, throw error
+        if (existingUser) {
+          invitedUser = existingUser;
+        } else {
+          const [newUser] = await tx
+            .insert(users)
+            .values({
+              name,
+              email,
+              lastSignedIn: new Date(),
+            })
+            .returning({ id: users.id });
+
+          if (!newUser) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create user",
+            });
+          }
+          invitedUser = newUser;
+        }
+
+        // Check if user is already a member
+        const [prevMember] = await tx
+          .select({ status: members.status })
+          .from(members)
+          .where(
+            and(
+              eq(members.companyId, companyId),
+              eq(members.userId, invitedUser.id)
+            )
+          )
+          .limit(1);
+
+        // If already an active member, throw error
         if (prevMember && prevMember.status === "ACTIVE") {
           throw new TRPCError({
             code: "FORBIDDEN",
@@ -75,52 +113,98 @@ export const inviteMemberProcedure = withAccessControl
 
         const role = await getRoleById({ id: roleId, tx });
 
-        //  create member
-        const member = await tx.member.upsert({
-          create: {
-            title,
-            isOnboarded: false,
-            lastAccessed: new Date(),
-            companyId,
-            userId: invitedUser.id,
-            status: "PENDING",
-            ...role,
-          },
-          update: {
-            title,
-            isOnboarded: false,
-            lastAccessed: new Date(),
-            status: "PENDING",
-            ...role,
-          },
-          where: {
-            companyId_userId: {
+        // Create or update member
+        let member: { id: string; userId: string };
+        if (prevMember) {
+          // Update existing member
+          const [updatedMember] = await tx
+            .update(members)
+            .set({
+              title,
+              isOnboarded: false,
+              lastAccessed: new Date(),
+              status: "PENDING",
+              role: role.role as "ADMIN" | "CUSTOM" | null,
+              customRoleId: role.customRoleId,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(
+                eq(members.companyId, companyId),
+                eq(members.userId, invitedUser.id)
+              )
+            )
+            .returning({
+              id: members.id,
+              userId: members.userId,
+            });
+
+          if (!updatedMember) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to update member",
+            });
+          }
+          member = updatedMember;
+        } else {
+          // Create new member
+          const [newMember] = await tx
+            .insert(members)
+            .values({
+              title,
+              isOnboarded: false,
+              lastAccessed: new Date(),
               companyId,
               userId: invitedUser.id,
-            },
-          },
-          select: {
-            id: true,
-            userId: true,
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        });
+              status: "PENDING",
+              role: role.role as "ADMIN" | "CUSTOM" | null,
+              customRoleId: role.customRoleId,
+              updatedAt: new Date(),
+            })
+            .returning({
+              id: members.id,
+              userId: members.userId,
+            });
 
-        // custom verification token for member invitation
-        const { token: verificationToken } = await tx.verificationToken.create({
-          data: {
+          if (!newMember) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create member",
+            });
+          }
+          member = newMember;
+        }
+
+        // Get member user name for audit
+        const [memberUser] = await tx
+          .select({ name: users.name })
+          .from(users)
+          .where(eq(users.id, member.userId))
+          .limit(1);
+
+        // Create verification token for member invitation
+        const [createdToken] = await tx
+          .insert(verificationTokens)
+          .values({
+            secondaryId: generateMemberIdentifier({
+              email,
+              memberId: member.id,
+            }),
             identifier: generateMemberIdentifier({
               email,
               memberId: member.id,
             }),
             token: memberInviteTokenHash,
             expires,
-          },
-        });
+          })
+          .returning({ token: verificationTokens.token });
+
+        if (!createdToken) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create verification token",
+          });
+        }
 
         await Audit.create(
           {
@@ -128,22 +212,22 @@ export const inviteMemberProcedure = withAccessControl
             companyId: company.id,
             actor: { type: "user", id: user.id },
             context: {
-              requestIp,
+              requestIp: requestIp || "",
               userAgent,
             },
             target: [{ type: "user", id: member.userId }],
-            summary: `${user.name} invited ${member.user?.name} to join ${company.name}`,
+            summary: `${user.name} invited ${memberUser?.name} to join ${company.name}`,
           },
           tx,
         );
 
-        return { verificationToken, company };
+        return { verificationToken: createdToken.token, company };
       },
     );
 
     const payload = {
       verificationToken,
-      passwordResetToken,
+      passwordResetToken: passwordResetTokenResult.token,
       email,
       company,
       user: {

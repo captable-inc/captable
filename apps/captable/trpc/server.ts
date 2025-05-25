@@ -5,7 +5,6 @@ import {
   createTRPCProxyClient,
   loggerLink,
 } from "@trpc/client";
-import { callProcedure } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import type { TRPCErrorResponse } from "@trpc/server/rpc";
 import { cookies } from "next/headers";
@@ -14,7 +13,6 @@ import { cache } from "react";
 import { env } from "@/env";
 import { type AppRouter, appRouter } from "@/trpc/api/root";
 import { createTRPCContext } from "@/trpc/api/trpc";
-import { transformer } from "./shared";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -30,7 +28,6 @@ const createContext = cache(() => {
 });
 
 export const api = createTRPCProxyClient<AppRouter>({
-  transformer,
   links: [
     loggerLink({
       enabled: (op) =>
@@ -45,13 +42,15 @@ export const api = createTRPCProxyClient<AppRouter>({
         observable((observer) => {
           createContext()
             .then((ctx) => {
-              return callProcedure({
-                procedures: appRouter._def.procedures,
-                path: op.path,
-                rawInput: op.input,
-                ctx,
-                type: op.type,
-              });
+              // Create a server-side caller using the new v11 approach
+              const caller = appRouter.createCaller(ctx);
+              
+              // Navigate to the correct procedure and call it
+              // Using explicit any types for dynamic procedure access in RSC context
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const procedure = op.path.split('.').reduce((acc: any, segment) => acc[segment], caller as any);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              return (procedure as any)(op.input);
             })
             .then((data) => {
               observer.next({ result: { data } });

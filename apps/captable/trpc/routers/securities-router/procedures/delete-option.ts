@@ -1,6 +1,15 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
+import { 
+  db, 
+  options, 
+  stakeholders, 
+  companies,
+  eq, 
+  and 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import {
   type TypeZodDeleteOptionMutationSchema,
   ZodDeleteOptionMutationSchema,
@@ -18,35 +27,50 @@ interface deleteOptionHandlerOptions {
 }
 
 export async function deleteOptionHandler({
-  ctx: { db, session, requestIp, userAgent },
+  ctx: { session, requestIp, userAgent },
   input,
 }: deleteOptionHandlerOptions) {
   const user = session.user;
   const { optionId } = input;
   try {
-    await db.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
-      const option = await tx.option.delete({
-        where: {
-          id: optionId,
-          companyId,
-        },
-        select: {
-          id: true,
-          stakeholder: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          company: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
+      // Get option details before deletion for audit
+      const optionResult = await tx
+        .select({
+          id: options.id,
+          stakeholderName: stakeholders.name,
+          companyName: companies.name,
+        })
+        .from(options)
+        .leftJoin(stakeholders, eq(options.stakeholderId, stakeholders.id))
+        .leftJoin(companies, eq(options.companyId, companies.id))
+        .where(
+          and(
+            eq(options.id, optionId),
+            eq(options.companyId, companyId)
+          )
+        )
+        .limit(1);
+
+      const option = optionResult[0];
+      if (!option) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Option not found",
+        });
+      }
+
+      // Delete the option
+      await tx
+        .delete(options)
+        .where(
+          and(
+            eq(options.id, optionId),
+            eq(options.companyId, companyId)
+          )
+        );
 
       await Audit.create(
         {
@@ -54,11 +78,11 @@ export async function deleteOptionHandler({
           companyId: user.companyId,
           actor: { type: "user", id: session.user.id },
           context: {
-            requestIp,
+            requestIp: requestIp || "",
             userAgent,
           },
           target: [{ type: "option", id: option.id }],
-          summary: `${user.name} deleted stock option of stakholder ${option.stakeholder.name}`,
+          summary: `${user.name} deleted stock option of stakeholder ${option.stakeholderName}`,
         },
         tx,
       );

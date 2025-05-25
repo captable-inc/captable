@@ -1,5 +1,6 @@
 import { ApiError } from "@/server/api/error";
 import { CompanySchema } from "@/server/api/schema/company";
+import { db, members, companies, eq, and } from "@captable/db";
 import { z } from "@hono/zod-openapi";
 
 import { authMiddleware, withAuthApiV1 } from "../../utils/endpoint-creator";
@@ -41,14 +42,14 @@ export const getOne = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db } = c.get("services");
     const { membership } = c.get("session");
     const { id: companyId } = c.req.valid("param");
 
-    const member = await db.member.findFirst({
-      where: { companyId, id: membership.memberId },
-      select: { companyId: true },
-    });
+    const [member] = await db
+      .select({ companyId: members.companyId })
+      .from(members)
+      .where(and(eq(members.companyId, companyId), eq(members.id, membership.memberId)))
+      .limit(1);
 
     if (!member) {
       throw new ApiError({
@@ -57,10 +58,18 @@ export const getOne = withAuthApiV1
       });
     }
 
-    const company = await db.company.findFirstOrThrow({
-      where: {
-        id: member.companyId,
-      },
-    });
+    const [company] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, member.companyId))
+      .limit(1);
+
+    if (!company) {
+      throw new ApiError({
+        code: "NOT_FOUND",
+        message: `Company not found`,
+      });
+    }
+
     return c.json({ data: company }, 200);
   });

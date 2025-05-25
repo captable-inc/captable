@@ -1,6 +1,13 @@
 import { getRoleById } from "@/lib/rbac/access-control";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { 
+  db, 
+  customRoles,
+  eq, 
+  and 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodDeleteRoleMutationSchema } from "../schema";
 
 export const deleteRoleProcedure = withAccessControl
@@ -17,16 +24,35 @@ export const deleteRoleProcedure = withAccessControl
       requestIp,
       session,
     } = ctx;
-    await ctx.db.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const role = await getRoleById({ id: input.roleId, tx });
       const { user } = session;
       if (!role.customRoleId) {
-        throw new Error("default roles cannot be deleted");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "default roles cannot be deleted",
+        });
       }
 
-      const existingRole = await tx.customRole.delete({
-        where: { id: role.customRoleId, companyId },
-      });
+      const [existingRole] = await tx
+        .delete(customRoles)
+        .where(
+          and(
+            eq(customRoles.id, role.customRoleId),
+            eq(customRoles.companyId, companyId)
+          )
+        )
+        .returning({
+          id: customRoles.id,
+          name: customRoles.name,
+        });
+
+      if (!existingRole) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Role not found",
+        });
+      }
 
       await Audit.create(
         {
@@ -35,7 +61,7 @@ export const deleteRoleProcedure = withAccessControl
           actor: { type: "user", id: user.id },
           context: {
             userAgent,
-            requestIp,
+            requestIp: requestIp || "",
           },
           target: [{ type: "role", id: existingRole.id }],
           summary: `${user.name} deleted the role ${existingRole.name}`,

@@ -16,10 +16,11 @@ const getUpdate = async (publicId: string) => {
 };
 
 const UpdatePage = async ({
-  params: { publicId, updatePublicId },
+  params,
 }: {
-  params: { publicId: string; updatePublicId: string };
+  params: Promise<{ publicId: string; updatePublicId: string }>;
 }) => {
+  const { publicId, updatePublicId } = await params;
   if (updatePublicId === "new") {
     return <EditorWrapper companyPublicId={publicId} mode="new" />;
   }

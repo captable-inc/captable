@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, stakeholders } from "@captable/db";
 import {
   CreateStakeholderSchema,
   StakeholderSchema,
@@ -53,7 +54,7 @@ export const create = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client as {
       requestIp: string;
@@ -62,19 +63,20 @@ export const create = withAuthApiV1
 
     const body = c.req.valid("json");
 
-    const stakeholders = await db.$transaction(async (tx) => {
+    const stakeholderResults = await db.transaction(async (tx) => {
       const inputDataWithCompanyId = body.map((stakeholder) => ({
         ...stakeholder,
         companyId: membership.companyId,
+        updatedAt: new Date(),
       }));
 
-      const addedStakeholders = await tx.stakeholder.createManyAndReturn({
-        data: inputDataWithCompanyId,
-        select: {
-          id: true,
-          name: true,
-        },
-      });
+      const addedStakeholders = await tx
+        .insert(stakeholders)
+        .values(inputDataWithCompanyId)
+        .returning({
+          id: stakeholders.id,
+          name: stakeholders.name,
+        });
 
       const auditPromises = addedStakeholders.map((stakeholder) =>
         audit.create(
@@ -87,7 +89,7 @@ export const create = withAuthApiV1
               userAgent,
             },
             target: [{ type: "stakeholder", id: stakeholder.id }],
-            summary: `${membership.user.name} added the stakholder in the company : ${stakeholder.name}`,
+            summary: `${membership.user?.name || 'User'} added the stakholder in the company : ${stakeholder.name}`,
           },
           tx,
         ),
@@ -97,7 +99,7 @@ export const create = withAuthApiV1
       return addedStakeholders;
     });
 
-    const data: z.infer<typeof ResponseSchema>["data"] = stakeholders;
+    const data: z.infer<typeof ResponseSchema>["data"] = stakeholderResults;
 
     return c.json(
       {

@@ -6,7 +6,7 @@ import { findPasskeys } from "@/server/passkey/find-passkeys";
 import { updatePasskey } from "@/server/passkey/update-passkey";
 import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 import { TRPCError } from "@trpc/server";
-import cookie from "cookie";
+import * as cookie from "cookie";
 
 import { createPasskeySigninOptions } from "@/server/passkey/create-signin-options";
 import { createTRPCRouter, withAuth, withoutAuth } from "@/trpc/api/trpc";
@@ -27,7 +27,7 @@ export const passkeyRouter = createTRPCRouter({
           input.verificationResponse as RegistrationResponseJSON;
 
         const auditMetaData = {
-          requestIp,
+          requestIp: requestIp || "",
           userAgent,
           companyId: session.user.companyId,
         };
@@ -50,7 +50,7 @@ export const passkeyRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const auditMetaData = {
-          requestIp: ctx.requestIp,
+          requestIp: ctx.requestIp || "",
           userAgent: ctx.userAgent,
           companyId: ctx.session.user.companyId,
           userName: ctx.session.user.name || "",
@@ -75,7 +75,7 @@ export const passkeyRouter = createTRPCRouter({
     try {
       const { requestIp, userAgent } = ctx;
       const auditMetaData = {
-        requestIp,
+        requestIp: requestIp || "",
         userAgent,
         companyId: ctx.session.user.companyId,
       };
@@ -125,7 +125,7 @@ export const passkeyRouter = createTRPCRouter({
       try {
         const { passkeyId } = input;
         const auditMetaData = {
-          requestIp,
+          requestIp: requestIp || "",
           userAgent,
           userName: session.user.name || "",
           companyId: session.user.companyId,
@@ -167,7 +167,7 @@ export const passkeyRouter = createTRPCRouter({
       try {
         const { passkeyId, name } = input;
         const auditMetaData = {
-          requestIp,
+          requestIp: requestIp || "",
           userAgent,
           companyId: session.user.companyId,
           userName: session.user.name || "",

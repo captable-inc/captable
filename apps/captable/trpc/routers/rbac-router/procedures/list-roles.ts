@@ -1,6 +1,11 @@
 import { DEFAULT_ADMIN_ROLE, type RoleList } from "@/lib/rbac/constants";
 import { permissionSchema } from "@/lib/rbac/schema";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { 
+  db, 
+  customRoles,
+  eq 
+} from "@captable/db";
 import { z } from "zod";
 
 export const listRolesProcedure = withAccessControl
@@ -10,21 +15,28 @@ export const listRolesProcedure = withAccessControl
     },
   })
   .query(async ({ ctx }) => {
-    const customRoles = await ctx.db.customRole.findMany({
-      where: {
-        companyId: ctx.membership.companyId,
-      },
-      select: {
-        id: true,
-        name: true,
-        permissions: true,
-      },
-    });
+    const customRolesData = await db
+      .select({
+        id: customRoles.id,
+        name: customRoles.name,
+        permissions: customRoles.permissions,
+      })
+      .from(customRoles)
+      .where(eq(customRoles.companyId, ctx.membership.companyId));
 
     const defaultRolesList = [DEFAULT_ADMIN_ROLE];
 
-    const customRolesList: RoleList[] = customRoles.map((data) => {
-      const permissions = z.array(permissionSchema).parse(data.permissions);
+    const customRolesList: RoleList[] = customRolesData.map((data) => {
+      // Parse permissions from string array back to permission objects
+      const parsedPermissions = data.permissions?.map(permission => {
+        try {
+          return JSON.parse(permission);
+        } catch {
+          return null;
+        }
+      }).filter(Boolean) || [];
+      
+      const permissions = z.array(permissionSchema).parse(parsedPermissions);
       return {
         ...data,
         type: "custom",

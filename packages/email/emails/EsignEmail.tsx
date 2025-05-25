@@ -1,8 +1,6 @@
-import type { EsignEmailPayloadType } from "@/jobs/esign-email";
 import {
   Body,
   Button,
-  Column,
   Container,
   Head,
   Heading,
@@ -10,18 +8,30 @@ import {
   Html,
   Link,
   Preview,
-  Row,
   Section,
   Tailwind,
   Text,
 } from "@react-email/components";
-import {
-  ArrowRight,
-  SignatureIcon,
-  UserAvatarIcon,
-} from "../components/common/icons";
 
-type TEsignEmailProps = EsignEmailPayloadType & { signingLink: string };
+export interface EsignEmailPayloadType {
+  documentName?: string;
+  message?: string | null;
+  recipient: {
+    id: string;
+    name: string | null | undefined;
+    email: string;
+  };
+  sender?: {
+    name: string | null | undefined;
+    email: string | null | undefined;
+  };
+  company?: {
+    name: string;
+    logo: string | null | undefined;
+  };
+}
+
+export type EsignEmailProps = EsignEmailPayloadType & { signingLink: string };
 
 const EsignEmail = ({
   signingLink,
@@ -30,7 +40,7 @@ const EsignEmail = ({
   recipient,
   sender,
   company,
-}: TEsignEmailProps) => {
+}: EsignEmailProps) => {
   return (
     <Html>
       <Head />
@@ -65,23 +75,10 @@ const EsignEmail = ({
                 </Text>
               </>
             )}
-            <Section className="max-w-[435px]">
-              <Row className="gap-x-6">
-                <Column align="right">
-                  <UserAvatarIcon className="h-16 w-16 rounded-full" />
-                </Column>
-                <Column className="mx-24" align="center">
-                  <ArrowRight className="mx-3 h-6 w-6" />
-                </Column>
-                <Column align="left">
-                  <SignatureIcon className="text-blue-700" />
-                </Column>
-              </Row>
-            </Section>
 
             <Section className="mx-auto mb-[32px] mt-[32px]">
               <Button
-                className="mx-[200px] rounded bg-black px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
+                className="rounded bg-black px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
                 href={signingLink}
               >
                 Sign the document
@@ -117,6 +114,6 @@ EsignEmail.PreviewProps = {
     name: "John Doe",
   },
   company: {},
-} as TEsignEmailProps;
+} as EsignEmailProps;
 
 export default EsignEmail;

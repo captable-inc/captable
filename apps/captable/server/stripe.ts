@@ -108,12 +108,12 @@ export const manageSubscriptionStatusChange = async (
     canceledAt: subscription.canceled_at
       ? toDateTime(subscription.canceled_at)
       : undefined,
-    currentPeriodStart: subscription.current_period_start
-      ? toDateTime(subscription.current_period_start)
-      : undefined,
-    currentPeriodEnd: subscription.current_period_end
-      ? toDateTime(subscription.current_period_end)
-      : undefined,
+    // currentPeriodStart: (subscription as Stripe.Subscription).current_period_start
+    //   ? toDateTime((subscription as Stripe.Subscription).current_period_start)
+    //   : undefined,
+    // currentPeriodEnd: (subscription as Stripe.Subscription).current_period_end
+    //   ? toDateTime((subscription as Stripe.Subscription).current_period_end)
+    //   : undefined,
     created: toDateTime(subscription.created),
     endedAt: subscription.ended_at
       ? toDateTime(subscription.ended_at)
@@ -156,7 +156,7 @@ async function upsertCustomer({
     })
     .returning();
 
-  return customer.id;
+  return customer[0]?.id || customerId;
 }
 
 interface createCustomerInStripeOptions {

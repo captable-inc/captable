@@ -1,40 +1,41 @@
 import { withAuth } from "@/trpc/api/trpc";
+import { db, members, users, eq, and } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 
 export const getProfileProcedure = withAuth.query(async ({ ctx }) => {
   const {
-    db,
     session: { user },
   } = ctx;
 
-  const memberData = await db.member.findUnique({
-    where: {
-      id: user.memberId,
-      companyId: user.companyId,
-    },
-    select: {
-      title: true,
-      workEmail: true,
-      user: {
-        select: {
-          name: true,
-          email: true,
-          image: true,
-        },
-      },
-    },
-  });
+  const memberDataResult = await db
+    .select({
+      title: members.title,
+      workEmail: members.workEmail,
+      userName: users.name,
+      userEmail: users.email,
+      userImage: users.image,
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(
+      and(
+        eq(members.id, user.memberId),
+        eq(members.companyId, user.companyId)
+      )
+    )
+    .limit(1);
 
-  if (!memberData?.user.name || !memberData.user.email) {
+  const memberData = memberDataResult[0];
+
+  if (!memberData?.userName || !memberData.userEmail) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "Something went wrong.",
     });
   }
 
-  const { name, email, image } = memberData.user ?? {};
-
-  const { title, workEmail } = memberData ?? {};
+  const { userName: name, userEmail: email, userImage: image } = memberData;
+  const { title, workEmail } = memberData;
 
   const payload = {
     fullName: name ?? "",

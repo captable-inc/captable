@@ -1,63 +1,103 @@
 import { checkMembership } from "@/server/auth";
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  templates, 
+  templateFields, 
+  esignRecipients, 
+  buckets,
+  eq, 
+  and,
+  asc 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodGetTemplateQuerySchema } from "../schema";
 
 export const getTemplateProcedure = withAuth
   .input(ZodGetTemplateQuerySchema)
   .query(async ({ ctx, input }) => {
-    const { template } = await ctx.db.$transaction(async (tx) => {
+    const { template } = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ tx, session: ctx.session });
 
-      const template = await tx.template.findFirstOrThrow({
-        where: {
-          publicId: input.publicId,
-          companyId: companyId,
-          ...(input.isDraftOnly && { status: "DRAFT" }),
-        },
-        select: {
-          name: true,
-          status: true,
-          bucket: {
-            select: {
-              key: true,
-            },
-          },
-          fields: {
-            select: {
-              id: true,
-              name: true,
-              width: true,
-              height: true,
-              top: true,
-              left: true,
-              required: true,
-              defaultValue: true,
-              readOnly: true,
-              type: true,
-              viewportHeight: true,
-              viewportWidth: true,
-              page: true,
-              recipientId: true,
-              prefilledValue: true,
-              meta: true,
-            },
-            orderBy: {
-              top: "asc",
-            },
-          },
-          eSignRecipient: {
-            select: {
-              email: true,
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
+      // Build the where condition
+      const whereConditions = [
+        eq(templates.publicId, input.publicId),
+        eq(templates.companyId, companyId),
+      ];
+      
+      if (input.isDraftOnly) {
+        whereConditions.push(eq(templates.status, "DRAFT"));
+      }
 
-      return { template };
+      const templateResult = await tx
+        .select({
+          name: templates.name,
+          status: templates.status,
+          bucketKey: buckets.key,
+          templateId: templates.id,
+        })
+        .from(templates)
+        .leftJoin(buckets, eq(templates.bucketId, buckets.id))
+        .where(and(...whereConditions))
+        .limit(1);
+
+      const template = templateResult[0];
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found",
+        });
+      }
+
+      const fields = await tx
+        .select({
+          id: templateFields.id,
+          name: templateFields.name,
+          width: templateFields.width,
+          height: templateFields.height,
+          top: templateFields.top,
+          left: templateFields.left,
+          required: templateFields.required,
+          defaultValue: templateFields.defaultValue,
+          readOnly: templateFields.readOnly,
+          type: templateFields.type,
+          viewportHeight: templateFields.viewportHeight,
+          viewportWidth: templateFields.viewportWidth,
+          page: templateFields.page,
+          recipientId: templateFields.recipientId,
+          prefilledValue: templateFields.prefilledValue,
+          meta: templateFields.meta,
+        })
+        .from(templateFields)
+        .where(eq(templateFields.templateId, template.templateId))
+        .orderBy(asc(templateFields.top));
+
+      const recipients = await tx
+        .select({
+          email: esignRecipients.email,
+          id: esignRecipients.id,
+          name: esignRecipients.name,
+        })
+        .from(esignRecipients)
+        .where(eq(esignRecipients.templateId, template.templateId));
+
+      return { 
+        template: {
+          ...template,
+          bucket: { key: template.bucketKey },
+          fields,
+          eSignRecipient: recipients,
+        }
+      };
     });
+
+    if (!template.bucket.key) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Template file not found",
+      });
+    }
 
     const { key, url } = await getPresignedGetUrl(template.bucket.key);
 

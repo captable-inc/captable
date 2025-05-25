@@ -10,27 +10,26 @@ export const metadata: Metadata = {
 };
 
 export default async function VerifyMember({
-  params: { token },
+  params,
   searchParams,
 }: {
-  params: { token: string };
-  searchParams: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{
     passwordResetToken: string;
     email: string;
-  };
+  }>;
 }) {
+  const { token } = await params;
+  const { passwordResetToken, email } = await searchParams;
   const session = await getServerSession(authOptions);
 
-  const passwordResetToken = searchParams.passwordResetToken;
-  const email = searchParams.email;
-
-  const params = new URLSearchParams({
+  const urlParams = new URLSearchParams({
     email: email,
     verificationToken: token,
   });
 
   if (!session?.user || !session?.user.email) {
-    redirect(`/set-password/${passwordResetToken}?${params.toString()}`);
+    redirect(`/set-password/${passwordResetToken}?${urlParams.toString()}`);
   }
 
   // check if token is valid

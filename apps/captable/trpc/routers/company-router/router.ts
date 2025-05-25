@@ -1,6 +1,8 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
+import { db, members, companies, eq, and } from "@captable/db";
 import { createTRPCRouter, withAccessControl, withAuth } from "@/trpc/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { ZodOnboardingMutationSchema } from "../onboarding-router/schema";
 import { ZodSwitchCompanyMutationSchema } from "./schema";
 
@@ -9,61 +11,94 @@ export const companyRouter = createTRPCRouter({
     const user = ctx.session.user;
     const companyId = user.companyId;
 
-    const company = await ctx.db.member.findFirstOrThrow({
-      where: {
-        id: user.memberId,
-        companyId,
+    const companyResult = await db
+      .select({
+        id: members.id,
+        title: members.title,
+        companyId: companies.id,
+        companyPublicId: companies.publicId,
+        companyName: companies.name,
+        companyWebsite: companies.website,
+        companyIncorporationDate: companies.incorporationDate,
+        companyIncorporationType: companies.incorporationType,
+        companyIncorporationState: companies.incorporationState,
+        companyIncorporationCountry: companies.incorporationCountry,
+        companyState: companies.state,
+        companyCity: companies.city,
+        companyZipcode: companies.zipcode,
+        companyStreetAddress: companies.streetAddress,
+        companyCountry: companies.country,
+        companyLogo: companies.logo,
+      })
+      .from(members)
+      .innerJoin(companies, eq(members.companyId, companies.id))
+      .where(
+        and(
+          eq(members.id, user.memberId),
+          eq(members.companyId, companyId)
+        )
+      )
+      .limit(1);
+
+    const rawCompany = companyResult[0];
+    if (!rawCompany) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Company not found",
+      });
+    }
+
+    const company = {
+      id: rawCompany.id,
+      title: rawCompany.title,
+      company: {
+        id: rawCompany.companyId,
+        publicId: rawCompany.companyPublicId,
+        name: rawCompany.companyName,
+        website: rawCompany.companyWebsite,
+        incorporationDate: rawCompany.companyIncorporationDate,
+        incorporationType: rawCompany.companyIncorporationType,
+        incorporationState: rawCompany.companyIncorporationState,
+        incorporationCountry: rawCompany.companyIncorporationCountry,
+        state: rawCompany.companyState,
+        city: rawCompany.companyCity,
+        zipcode: rawCompany.companyZipcode,
+        streetAddress: rawCompany.companyStreetAddress,
+        country: rawCompany.companyCountry,
+        logo: rawCompany.companyLogo,
       },
-      select: {
-        id: true,
-        title: true,
-        company: {
-          select: {
-            id: true,
-            publicId: true,
-            name: true,
-            website: true,
-            incorporationDate: true,
-            incorporationType: true,
-            incorporationState: true,
-            incorporationCountry: true,
-            state: true,
-            city: true,
-            zipcode: true,
-            streetAddress: true,
-            country: true,
-            logo: true,
-          },
-        },
-      },
-    });
+    };
+
     return company;
   }),
   switchCompany: withAuth
     .input(ZodSwitchCompanyMutationSchema)
     .mutation(async ({ ctx, input }) => {
-      const { db } = ctx;
+      await db.transaction(async (tx) => {
+        const memberResult = await tx
+          .select({
+            id: members.id,
+          })
+          .from(members)
+          .where(
+            and(
+              eq(members.id, input.id),
+              eq(members.isOnboarded, true)
+            )
+          )
+          .limit(1);
 
-      await db.$transaction(async (tx) => {
-        const member = await tx.member.findFirst({
-          where: {
-            id: input.id,
-            isOnboarded: true,
-          },
-        });
-
+        const member = memberResult[0];
         if (!member) {
           return { success: true };
         }
 
-        await tx.member.update({
-          where: {
-            id: member.id,
-          },
-          data: {
+        await tx
+          .update(members)
+          .set({
             lastAccessed: new Date(),
-          },
-        });
+          })
+          .where(eq(members.id, member.id));
       });
 
       return { success: true };
@@ -75,19 +110,17 @@ export const companyRouter = createTRPCRouter({
       try {
         const { company } = input;
         const { incorporationDate, ...rest } = company;
-        const { requestIp, userAgent, session, db } = ctx;
+        const { requestIp, userAgent, session } = ctx;
         const { user } = session;
         const { companyId } = ctx.membership;
 
-        await db.company.update({
-          where: {
-            id: companyId,
-          },
-          data: {
+        await db
+          .update(companies)
+          .set({
             incorporationDate: new Date(incorporationDate),
             ...rest,
-          },
-        });
+          })
+          .where(eq(companies.id, companyId));
 
         await Audit.create(
           {
@@ -96,7 +129,7 @@ export const companyRouter = createTRPCRouter({
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "company", id: user.companyId }],
             summary: `${user.name} updated the company ${company.name}`,

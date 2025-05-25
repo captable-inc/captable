@@ -2,6 +2,12 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  safes, 
+  documents
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodAddExistingSafeMutationSchema } from "../schema";
 
 export const addExistingSafeProcedure = withAuth
@@ -9,35 +15,46 @@ export const addExistingSafeProcedure = withAuth
   .mutation(async ({ ctx, input }) => {
     const { userAgent, requestIp, session } = ctx;
     const user = ctx.session.user;
-    const { documents, ...rest } = input;
+    const { documents: documentInputs, ...rest } = input;
 
     try {
-      await ctx.db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const { companyId, memberId } = await checkMembership({ session, tx });
 
-        const safe = await tx.safe.create({
-          data: {
+        const [safe] = await tx
+          .insert(safes)
+          .values({
             publicId: generatePublicId(),
             companyId,
             ...rest,
             issueDate: new Date(input.issueDate),
             boardApprovalDate: new Date(input.boardApprovalDate),
-          },
-        });
+            updatedAt: new Date(),
+          })
+          .returning({ id: safes.id });
 
-        const bulkDocuments = documents.map((doc) => ({
-          companyId,
-          uploaderId: memberId,
-          publicId: generatePublicId(),
-          name: doc.name,
-          bucketId: doc.bucketId,
-          safeId: safe.id,
-        }));
+        if (!safe) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create safe",
+          });
+        }
 
-        await tx.document.createMany({
-          data: bulkDocuments,
-          skipDuplicates: true,
-        });
+        if (documentInputs.length > 0) {
+          const bulkDocuments = documentInputs.map((doc) => ({
+            companyId,
+            uploaderId: memberId,
+            publicId: generatePublicId(),
+            name: doc.name,
+            bucketId: doc.bucketId,
+            safeId: safe.id,
+            updatedAt: new Date(),
+          }));
+
+          await tx
+            .insert(documents)
+            .values(bulkDocuments);
+        }
 
         await Audit.create(
           {
@@ -46,7 +63,7 @@ export const addExistingSafeProcedure = withAuth
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "company", id: companyId }],
             summary: `${user.name} imported existing SAFEs.`,

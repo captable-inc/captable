@@ -1,4 +1,5 @@
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";
+import { db, bankAccounts, eq, desc } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
@@ -7,30 +8,23 @@ export const bankAccountsRouter = createTRPCRouter({
     .meta({ policies: { "bank-accounts": { allow: ["read"] } } })
     .query(async ({ ctx }) => {
       const {
-        db,
         membership: { companyId },
       } = ctx;
 
-      const bankAccounts = await db.bankAccount.findMany({
-        where: {
-          companyId,
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
-
-        select: {
-          id: true,
-          bankName: true,
-          accountNumber: true,
-          primary: true,
-          createdAt: true,
-        },
-      });
+      const bankAccountsData = await db
+        .select({
+          id: bankAccounts.id,
+          bankName: bankAccounts.bankName,
+          accountNumber: bankAccounts.accountNumber,
+          primary: bankAccounts.primary,
+          createdAt: bankAccounts.createdAt,
+        })
+        .from(bankAccounts)
+        .where(eq(bankAccounts.companyId, companyId))
+        .orderBy(desc(bankAccounts.createdAt));
 
       return {
-        bankAccounts,
+        bankAccounts: bankAccountsData,
       };
     }),
 

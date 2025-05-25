@@ -1,54 +1,60 @@
-import { type ShareContactType } from "@/schema/contacts";
+import type { ShareContactType } from "@/schema/contacts";
+import { db, members, users, stakeholders, eq } from "@captable/db";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 
 export const commonRouter = createTRPCRouter({
   getContacts: withAuth.query(async ({ ctx }) => {
-    const { db, session } = ctx;
+    const { session } = ctx;
     const user = session.user;
     const companyId = user.companyId;
     const contacts = [] as ShareContactType[];
 
-    const members = await db.member.findMany({
-      where: {
-        companyId,
-      },
+    const membersData = await db
+      .select({
+        id: members.id,
+        userEmail: users.email,
+        userName: users.name,
+        userImage: users.image,
+      })
+      .from(members)
+      .innerJoin(users, eq(members.userId, users.id))
+      .where(eq(members.companyId, companyId));
 
-      include: {
-        user: {
-          select: {
-            email: true,
-            name: true,
-            image: true,
-          },
-        },
-      },
-    });
+    const stakeholdersData = await db
+      .select({
+        id: stakeholders.id,
+        email: stakeholders.email,
+        name: stakeholders.name,
+        institutionName: stakeholders.institutionName,
+      })
+      .from(stakeholders)
+      .where(eq(stakeholders.companyId, companyId));
 
-    const stakeholders = await db.stakeholder.findMany({
-      where: {
-        companyId,
-      },
+    (membersData || []).map((member) => {
+      if (member.userEmail && member.userName) {
+        contacts.push({
+          id: member.id,
+          image: member.userImage || "",
+          email: member.userEmail,
+          value: member.userEmail,
+          name: member.userName,
+          type: "member",
+        });
+      }
     });
-    (members || []).map((member) =>
-      contacts.push({
-        id: member.id,
-        image: member.user.image!,
-        email: member.user.email!,
-        value: member.user.email!,
-        name: member.user.name!,
-        type: "member",
-      }),
-    );
-    (stakeholders || []).map((stakeholder) =>
-      contacts.push({
-        id: stakeholder.id,
-        email: stakeholder.email,
-        value: stakeholder.email,
-        name: stakeholder.name,
-        institutionName: stakeholder.institutionName!,
-        type: "stakeholder",
-      }),
-    );
+    
+    (stakeholdersData || []).map((stakeholder) => {
+      if (stakeholder.email && stakeholder.name) {
+        contacts.push({
+          id: stakeholder.id,
+          email: stakeholder.email,
+          value: stakeholder.email,
+          name: stakeholder.name,
+          institutionName: stakeholder.institutionName || "",
+          type: "stakeholder",
+        });
+      }
+    });
 
     return contacts;
   }),

@@ -7,10 +7,15 @@ import { TAG } from "@/lib/tags";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  safes
+} from "@captable/db";
 import { createBucketHandler } from "../../bucket-router/procedures/create-bucket";
 import { createTemplateHandler } from "../../template-router/procedures/create-template";
 import { ZodCreateSafeMutationSchema } from "../schema";
 import type { Safe } from "@captable/db";
+
 export const createSafeProcedure = withAuth
   .input(ZodCreateSafeMutationSchema)
   .mutation(async ({ ctx, input }) => {
@@ -50,7 +55,7 @@ export const createSafeProcedure = withAuth
         );
       }
 
-      const { template } = await ctx.db.$transaction(async (tx) => {
+      const { template } = await db.transaction(async (tx) => {
         const { companyId, memberId } = await checkMembership({
           session,
           tx,
@@ -62,7 +67,7 @@ export const createSafeProcedure = withAuth
             db: tx,
             input: { ...rest, tags: [TAG.SAFE] },
             userAgent,
-            requestIp,
+            requestIp: requestIp || "",
             user: {
               companyId: user.companyId,
               id: user.id,
@@ -85,7 +90,7 @@ export const createSafeProcedure = withAuth
           companyId: user.companyId,
         };
         const template = await createTemplateHandler({
-          ctx: { db: tx, userAgent, requestIp, user: partialUser },
+          ctx: { db: tx, userAgent, requestIp: requestIp || "", user: partialUser },
           input: {
             ...document,
             uploaderId: memberId,
@@ -95,7 +100,7 @@ export const createSafeProcedure = withAuth
           },
         });
 
-        let safeData: Safe;
+        let safeData: Omit<Safe, 'id' | 'createdAt'>;
 
         if (inputRest.safeTemplate === "CUSTOM") {
           const { document, ...rest } = inputRest;
@@ -106,6 +111,12 @@ export const createSafeProcedure = withAuth
             companyId,
             boardApprovalDate: new Date(rest.boardApprovalDate),
             issueDate: new Date(rest.issueDate),
+            updatedAt: new Date(),
+            type: "POST_MONEY",
+            status: "DRAFT",
+            mfn: false,
+            additionalTerms: null,
+            discountRate: rest.discountRate ?? null,
           };
         } else {
           safeData = {
@@ -114,19 +125,26 @@ export const createSafeProcedure = withAuth
             companyId,
             boardApprovalDate: new Date(inputRest.boardApprovalDate),
             issueDate: new Date(inputRest.issueDate),
+            updatedAt: new Date(),
+            type: "POST_MONEY",
+            status: "DRAFT",
+            mfn: false,
+            additionalTerms: null,
+            discountRate: inputRest.discountRate ?? null,
+            safeTemplate: inputRest.safeTemplate as any,
           };
         }
 
-        await tx.safe.create({
-          data: safeData,
-        });
+        await tx
+          .insert(safes)
+          .values(safeData);
 
         await Audit.create(
           {
             action: "safe.created",
             companyId: user.companyId,
             actor: { type: "user", id: ctx.session.user.id },
-            context: { requestIp, userAgent },
+            context: { requestIp: requestIp || "", userAgent },
             target: [{ type: "company", id: user.companyId }],
             summary: `${ctx.session.user.name} created a new SAFE agreement with YC template.`,
           },

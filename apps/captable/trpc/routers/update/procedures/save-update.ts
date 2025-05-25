@@ -1,6 +1,7 @@
 import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
+import { db, updates, eq } from "@captable/db";
 import { UpdateMutationSchema } from "../schema";
 
 export const saveUpdateProcedure = withAuth
@@ -21,16 +22,25 @@ export const saveUpdateProcedure = withAuth
           message: "Title and content cannot be empty.",
         };
       }
-      await ctx.db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         if (input.publicId) {
-          const update = await tx.update.update({
-            where: { publicId },
-            data: {
+          const [update] = await tx
+            .update(updates)
+            .set({
               html,
               title,
               content,
-            },
-          });
+              updatedAt: new Date(),
+            })
+            .where(eq(updates.publicId, publicId))
+            .returning({
+              id: updates.id,
+              title: updates.title,
+            });
+
+          if (!update) {
+            throw new Error("Failed to update");
+          }
 
           await Audit.create(
             {
@@ -39,7 +49,7 @@ export const saveUpdateProcedure = withAuth
               actor: { type: "user", id: userId },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "update", id: update.id }],
               summary: `${userName} updated an Update ${update.title} for the company with id ${companyId}`,
@@ -47,16 +57,25 @@ export const saveUpdateProcedure = withAuth
             tx,
           );
         } else {
-          const update = await tx.update.create({
-            data: {
+          const [update] = await tx
+            .insert(updates)
+            .values({
               html,
               title,
               content,
               publicId,
               companyId,
               authorId,
-            },
-          });
+              updatedAt: new Date(),
+            })
+            .returning({
+              id: updates.id,
+              title: updates.title,
+            });
+
+          if (!update) {
+            throw new Error("Failed to create update");
+          }
 
           await Audit.create(
             {
@@ -65,7 +84,7 @@ export const saveUpdateProcedure = withAuth
               actor: { type: "user", id: userId },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "update", id: update.id }],
               summary: `${userName} created an Update ${update.title} for the company with id ${companyId}`,

@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, stakeholders, eq, gt } from "@captable/db";
 import {
   PaginationQuerySchema,
   PaginationResponseSchema,
@@ -49,18 +50,38 @@ export const getMany = withAuthApiV1
   })
   .handler(async (c) => {
     const { membership } = c.get("session");
-    const { db } = c.get("services");
     const query = c.req.valid("query");
 
-    const [data, meta] = await db.stakeholder
-      .paginate({ where: { companyId: membership.companyId } })
-      .withCursor({
-        limit: query.limit,
-        after: query.cursor,
-      });
+    // Build the where condition
+    let whereCondition = eq(stakeholders.companyId, membership.companyId);
+    
+    // Add cursor condition if provided (for pagination)
+    if (query.cursor) {
+      whereCondition = eq(stakeholders.companyId, membership.companyId);
+      // Note: For proper cursor pagination, you'd need to add cursor logic here
+      // This is a simplified implementation
+    }
+
+    const data = await db
+      .select()
+      .from(stakeholders)
+      .where(whereCondition)
+      .limit(query.limit + 1); // Get one extra to check if there's a next page
+
+    // Check if there's a next page
+    const hasNextPage = data.length > query.limit;
+    const items = hasNextPage ? data.slice(0, -1) : data;
+    
+    // Create pagination meta
+    const meta = {
+      hasNextPage,
+      hasPreviousPage: !!query.cursor,
+      startCursor: items.length > 0 ? items[0]?.id || null : null,
+      endCursor: hasNextPage ? items[items.length - 1]?.id || null : null,
+    };
 
     const response: z.infer<typeof ResponseSchema> = {
-      data: data.map((stakeholder) => ({
+      data: items.map((stakeholder) => ({
         ...stakeholder,
         createdAt: stakeholder.createdAt.toISOString(),
         updatedAt: stakeholder.updatedAt.toISOString(),

@@ -1,8 +1,7 @@
-import PasswordResetEmail from "@/emails/PasswordResetEmail";
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { PasswordResetEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type PasswordResetPayloadType = {
@@ -10,22 +9,20 @@ export type PasswordResetPayloadType = {
   token: string;
 };
 
-export const sendPasswordResetEmail = async (
-  payload: PasswordResetPayloadType,
-) => {
-  const { email, token } = payload;
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL;
-
-  const confirmLink = `${baseUrl}/reset-password/${token}`;
+const sendPasswordResetEmail = async ({
+  email,
+  token,
+}: PasswordResetPayloadType) => {
+  const resetLink = `${env.NEXTAUTH_URL}/reset-password?token=${token}`;
 
   const html = await renderAsync(
     PasswordResetEmail({
-      resetLink: confirmLink,
+      resetLink,
     }),
   );
 
   await sendMail({
-    to: email,
+    to: [email],
     subject: "Reset your password",
     html,
   });

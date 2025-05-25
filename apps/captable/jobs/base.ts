@@ -30,7 +30,7 @@ export abstract class BaseJob<T extends object, U = void> implements Job<T, U> {
   }
 
   async start(): Promise<void> {
-    await this.boss.work(this.type, this.work.bind(this));
+    await this.boss.work(this.type, this.work.bind(this) as unknown as pgBoss.WorkHandler<T>);
   }
 
   abstract work(job: pgBoss.Job<T>): Promise<U>;
@@ -98,7 +98,6 @@ export const boss = singleton(
       max: 5,
       retryBackoff: true,
       retryLimit: 4,
-      expireInHours: 48,
       archiveCompletedAfterSeconds: 60 * 60 * 2, // 2 hours
       deleteAfterDays: 2,
       retentionDays: 2,

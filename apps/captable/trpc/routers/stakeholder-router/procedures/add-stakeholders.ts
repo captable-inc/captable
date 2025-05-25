@@ -1,5 +1,6 @@
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { db, stakeholders } from "@captable/db";
 import { ZodAddStakeholderArrayMutationSchema } from "../schema";
 
 export const addStakeholdersProcedure = withAccessControl
@@ -7,39 +8,45 @@ export const addStakeholdersProcedure = withAccessControl
   .meta({ policies: { stakeholder: { allow: ["create"] } } })
   .mutation(
     async ({
-      ctx: { db, membership, userAgent, requestIp, session },
+      ctx: { membership, userAgent, requestIp, session },
       input,
     }) => {
       try {
         const { user } = session;
-        await db.$transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           // insert companyId in every input
           const inputDataWithCompanyId = input.map((stakeholder) => ({
             ...stakeholder,
             companyId: membership.companyId,
+            stakeholderType: stakeholder.stakeholderType as "INDIVIDUAL" | "INSTITUTION",
+            currentRelationship: stakeholder.currentRelationship as "ADVISOR" | "BOARD_MEMBER" | "CONSULTANT" | "EMPLOYEE" | "EX_ADVISOR" | "EX_CONSULTANT" | "EX_EMPLOYEE" | "FOUNDER" | "INVESTOR" | "OTHER",
+            updatedAt: new Date(),
           }));
 
-          await tx.stakeholder.createMany({
-            data: inputDataWithCompanyId,
-            skipDuplicates: true,
-          });
+          const insertedStakeholders = await tx
+            .insert(stakeholders)
+            .values(inputDataWithCompanyId)
+            .returning({ id: stakeholders.id, name: stakeholders.name });
 
-          inputDataWithCompanyId.map(async (inp) => {
-            await Audit.create(
+          // Create audit entries for each inserted stakeholder
+          const auditPromises = insertedStakeholders.map((stakeholder) =>
+            Audit.create(
               {
                 action: "stakeholder.added",
                 companyId: user.companyId,
                 actor: { type: "user", id: user.id },
                 context: {
                   userAgent,
-                  requestIp,
+                  requestIp: requestIp || "",
                 },
-                target: [{ type: "stakeholder", id: inp.id }],
-                summary: `${user.name} added stakeholder ${inp.name} for the company ID ${inp.companyId}`,
+                target: [{ type: "stakeholder", id: stakeholder.id }],
+                summary: `${user.name} added stakeholder ${stakeholder.name} for the company ID ${membership.companyId}`,
               },
               tx,
-            );
-          });
+            )
+          );
+          
+          await Promise.all(auditPromises);
         });
 
         return {

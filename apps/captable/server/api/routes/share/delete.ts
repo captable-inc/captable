@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, shares, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 
 import { authMiddleware, withAuthApiV1 } from "../../utils/endpoint-creator";
@@ -52,7 +53,7 @@ export const _delete = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client as {
       requestIp: string;
@@ -61,17 +62,20 @@ export const _delete = withAuthApiV1
 
     const { id } = c.req.valid("param");
 
-    await db.$transaction(async (tx) => {
-      const share = await tx.share.findUnique({
-        where: {
-          id,
-          companyId: membership.companyId,
-        },
-        select: {
-          id: true,
-          stakeholderId: true,
-        },
-      });
+    await db.transaction(async (tx) => {
+      const [share] = await tx
+        .select({
+          id: shares.id,
+          stakeholderId: shares.stakeholderId,
+        })
+        .from(shares)
+        .where(
+          and(
+            eq(shares.id, id),
+            eq(shares.companyId, membership.companyId)
+          )
+        )
+        .limit(1);
 
       if (!share) {
         throw new ApiError({
@@ -80,11 +84,9 @@ export const _delete = withAuthApiV1
         });
       }
 
-      await tx.share.delete({
-        where: {
-          id: share.id,
-        },
-      });
+      await tx
+        .delete(shares)
+        .where(eq(shares.id, share.id));
 
       await audit.create(
         {
@@ -96,7 +98,7 @@ export const _delete = withAuthApiV1
             requestIp,
           },
           target: [{ type: "share", id }],
-          summary: `${membership.user.name} Deleted the share for stakeholder ${share.stakeholderId}`,
+          summary: `${membership.user?.name || 'User'} Deleted the share for stakeholder ${share.stakeholderId}`,
         },
         tx,
       );

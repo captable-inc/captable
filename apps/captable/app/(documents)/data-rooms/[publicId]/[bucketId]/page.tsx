@@ -20,12 +20,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 const DataRoomPage = async ({
-  params: { publicId, bucketId },
-  searchParams: { token },
+  params,
+  searchParams,
 }: {
-  params: { publicId: string; bucketId: string };
-  searchParams: { token: string };
+  params: Promise<{ publicId: string; bucketId: string }>;
+  searchParams: Promise<{ token: string }>;
 }) => {
+  const { publicId, bucketId } = await params;
+  const { token } = await searchParams;
   let decodedToken: JWTVerifyResult | null = null;
 
   try {

@@ -15,7 +15,7 @@ interface PricingCardProps {
   description?: string | null;
   price: string;
   interval: PricingPlanIntervalEnum;
-  subscribedUnitAmount?: bigint | null;
+  subscribedUnitAmount?: number | null;
   unitAmount: number;
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   handleClick?: () => Promise<any>;
@@ -40,9 +40,7 @@ export function PricingCard({
   isSubmitting,
 }: PricingCardProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const subscribedUnitAmount = subscribedUnitAmount_
-    ? Number(subscribedUnitAmount_)
-    : null;
+  const subscribedUnitAmount = subscribedUnitAmount_ ?? null;
 
   const active = unitAmount === subscribedUnitAmount;
 

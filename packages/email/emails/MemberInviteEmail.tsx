@@ -12,25 +12,21 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { META } from "@/lib/constants/meta";
+import * as React from "react";
+import { META } from "@/lib/constants";
 
-interface ShareUpdateEmailProps {
-  senderName: string;
-  recipientName: string | null | undefined;
+export interface MemberInviteEmailProps {
+  invitedBy: string;
   companyName: string;
-  updateTitle: string;
-  link: string;
+  inviteLink: string;
 }
 
-export const ShareUpdateEmail = ({
-  senderName,
-  recipientName,
+export const MemberInviteEmail = ({
+  invitedBy,
   companyName,
-  updateTitle,
-  link,
-}: ShareUpdateEmailProps) => {
-  const recipientFirstName = recipientName?.split(" ")[0] || "there";
-  const previewText = `${senderName} at ${companyName} shared ${updateTitle} with you.`;
+  inviteLink,
+}: MemberInviteEmailProps) => {
+  const previewText = `Join ${invitedBy} on ${META.title}`;
 
   return (
     <Html>
@@ -40,39 +36,41 @@ export const ShareUpdateEmail = ({
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] max-w-[465px] border-separate rounded border border-solid border-neutral-200 p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
-              {companyName} - <strong>{updateTitle}</strong>
+              Join <strong>{companyName}</strong> on{" "}
+              <strong>{META.title}</strong>
             </Heading>
             <Text className="text-[14px] leading-[24px] text-black">
-              Hello {recipientFirstName},
+              Hello ,
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
-              <strong>{senderName}</strong> has shared an update{" "}
-              <strong>{updateTitle}</strong> on <strong>{META.title}</strong>
+              <strong>{invitedBy}</strong> has invited you to join{" "}
+              <strong>{companyName}</strong> on <strong>Captable, Inc.</strong>.
             </Text>
 
             <Section className="mb-[32px] mt-[32px]">
               <Button
                 className="rounded bg-black px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
-                href={link}
+                href={inviteLink}
               >
-                View update - <strong>{updateTitle}</strong>
+                Join the team
               </Button>
             </Section>
-
             <Text className="!text-[14px] leading-[24px] text-black">
               or copy and paste this URL into your browser:{" "}
               <Link
-                href={link}
+                href={inviteLink}
                 className="break-all text-blue-600 no-underline"
               >
-                {link}
+                {inviteLink}
               </Link>
             </Text>
 
             <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
-            <Link href={META.url} className="text-sm no-underline">
-              <span className="text-xs !text-gray-400">Powered by</span>
-              <span>{` ${META.title}`}</span>
+            <Link
+              href={META.url}
+              className="text-sm !text-gray-400 no-underline"
+            >
+              {META.title}
             </Link>
           </Container>
         </Body>
@@ -81,12 +79,10 @@ export const ShareUpdateEmail = ({
   );
 };
 
-ShareUpdateEmail.PreviewProps = {
-  senderName: "John Doe",
-  recipientName: "Will Smith",
-  companyName: "Captable, Inc.",
-  updateTitle: "Q1 2024 Financials",
-  link: "https://captable.inc/...",
-} as ShareUpdateEmailProps;
+MemberInviteEmail.PreviewProps = {
+  invitedBy: "joker",
+  companyName: "Batmobile",
+  inviteLink: "https://captable.inc/...",
+} as MemberInviteEmailProps;
 
-export default ShareUpdateEmail;
+export default MemberInviteEmail;

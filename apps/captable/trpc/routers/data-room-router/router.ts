@@ -9,7 +9,20 @@ import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
-import type { DataRoom } from "@captable/db";
+import { 
+  db, 
+  dataRooms, 
+  dataRoomDocuments, 
+  dataRoomRecipients, 
+  documents, 
+  buckets, 
+  companies,
+  eq, 
+  and, 
+  inArray,
+  type DataRoom 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { DataRoomSchema } from "./schema";
 
@@ -38,58 +51,76 @@ export const dataRoomRouter = createTRPCRouter({
         company: object;
       };
 
-      const { db, session } = ctx;
+      const { session } = ctx;
       const { dataRoomPublicId, include } = input;
 
-      const { dataRoom } = await db.$transaction(async (tx) => {
+      const { dataRoom } = await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({ session, tx });
 
-        const dataRoom = await tx.dataRoom.findUniqueOrThrow({
-          where: {
-            publicId: dataRoomPublicId,
-            companyId,
-          },
-          include: {
-            documents: include.documents,
-            company: include.company,
-            recipients: include.recipients,
-          },
-        });
+        const dataRoomResult = await tx
+          .select()
+          .from(dataRooms)
+          .where(
+            and(
+              eq(dataRooms.publicId, dataRoomPublicId),
+              eq(dataRooms.companyId, companyId)
+            )
+          )
+          .limit(1);
+
+        const dataRoom = dataRoomResult[0];
+        if (!dataRoom) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Data room not found",
+          });
+        }
 
         response.dataRoom = dataRoom;
 
         if (include.documents) {
-          const documentIds = dataRoom.documents.map((doc) => doc.id);
+          const dataRoomDocs = await tx
+            .select()
+            .from(dataRoomDocuments)
+            .where(eq(dataRoomDocuments.dataRoomId, dataRoom.id));
 
-          const dataRoomDocument = await tx.dataRoomDocument.findMany({
-            where: {
-              id: { in: documentIds },
-            },
+          const documentIds = dataRoomDocs.map((doc) => doc.documentId);
 
-            include: {
-              document: {
-                select: {
-                  id: true,
-                  bucket: true,
-                },
-              },
-            },
-          });
+          if (documentIds.length > 0) {
+            const documentsWithBuckets = await tx
+              .select({
+                bucketId: buckets.id,
+                bucketName: buckets.name,
+                bucketKey: buckets.key,
+                bucketMimeType: buckets.mimeType,
+                bucketSize: buckets.size,
+                bucketCreatedAt: buckets.createdAt,
+                bucketUpdatedAt: buckets.updatedAt,
+              })
+              .from(documents)
+              .innerJoin(buckets, eq(documents.bucketId, buckets.id))
+              .where(inArray(documents.id, documentIds));
 
-          response.documents = dataRoomDocument.map((doc) => ({
-            id: doc.document.bucket.id,
-            name: doc.document.bucket.name,
-            key: doc.document.bucket.key,
-            mimeType: doc.document.bucket.mimeType,
-            size: doc.document.bucket.size,
-            createdAt: doc.document.bucket.createdAt,
-            updatedAt: doc.document.bucket.updatedAt,
-          }));
+            response.documents = documentsWithBuckets.map((doc) => ({
+              id: doc.bucketId,
+              name: doc.bucketName,
+              key: doc.bucketKey,
+              mimeType: doc.bucketMimeType,
+              size: doc.bucketSize,
+              createdAt: doc.bucketCreatedAt,
+              updatedAt: doc.bucketUpdatedAt,
+            }));
+          }
         }
 
         if (include.recipients) {
+          const recipients = await tx
+            .select()
+            .from(dataRoomRecipients)
+            .where(eq(dataRoomRecipients.dataRoomId, dataRoom.id));
+
           response.recipients = await Promise.all(
-            dataRoom.recipients.map(async (recipient) => ({
+            recipients.map(async (recipient) => ({
               ...recipient,
               token: await encode({
                 companyId,
@@ -100,12 +131,21 @@ export const dataRoomRouter = createTRPCRouter({
           );
         }
 
+        if (include.company) {
+          const companyResult = await tx
+            .select()
+            .from(companies)
+            .where(eq(companies.id, companyId))
+            .limit(1);
+
+          const company = companyResult[0];
+          if (company) {
+            response.company = company;
+          }
+        }
+
         return { dataRoom };
       });
-
-      if (include.company) {
-        response.company = dataRoom.company;
-      }
 
       return response;
     }),
@@ -113,21 +153,32 @@ export const dataRoomRouter = createTRPCRouter({
   save: withAuth.input(DataRoomSchema).mutation(async ({ ctx, input }) => {
     try {
       let room = {} as DataRoom;
-      const { db, session, userAgent, requestIp } = ctx;
+      const { session, userAgent, requestIp } = ctx;
 
       const { publicId } = input;
 
-      await db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({ tx, session });
         const { user } = session;
         if (!publicId) {
-          room = await tx.dataRoom.create({
-            data: {
+          const [newRoom] = await tx
+            .insert(dataRooms)
+            .values({
               name: input.name,
               companyId,
               publicId: generatePublicId(),
-            },
-          });
+              updatedAt: new Date(),
+            })
+            .returning();
+
+          if (!newRoom) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create data room",
+            });
+          }
+
+          room = newRoom;
 
           await Audit.create(
             {
@@ -136,7 +187,7 @@ export const dataRoomRouter = createTRPCRouter({
               actor: { type: "user", id: user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "dataroom", id: room.id }],
               summary: `${user.name} created the data room ${room.name}`,
@@ -144,14 +195,23 @@ export const dataRoomRouter = createTRPCRouter({
             tx,
           );
         } else {
-          room = await tx.dataRoom.update({
-            where: {
-              publicId,
-            },
-            data: {
+          const [updatedRoom] = await tx
+            .update(dataRooms)
+            .set({
               name: input.name,
-            },
-          });
+              updatedAt: new Date(),
+            })
+            .where(eq(dataRooms.publicId, publicId))
+            .returning();
+
+          if (!updatedRoom) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Data room not found",
+            });
+          }
+
+          room = updatedRoom;
 
           await Audit.create(
             {
@@ -160,7 +220,7 @@ export const dataRoomRouter = createTRPCRouter({
               actor: { type: "user", id: user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "dataroom", id: room.id }],
               summary: `${user.name} updated the data room ${room.name}`,
@@ -170,25 +230,25 @@ export const dataRoomRouter = createTRPCRouter({
 
           const { documents, recipients } = input;
 
-          if (documents) {
-            await tx.dataRoomDocument.createMany({
-              data: documents.map((document) => ({
+          if (documents && documents.length > 0) {
+            await tx.insert(dataRoomDocuments).values(
+              documents.map((document) => ({
                 dataRoomId: room.id,
                 documentId: document.documentId,
-              })),
-            });
+              }))
+            );
           }
 
-          if (recipients) {
-            await tx.dataRoomRecipient.createMany({
-              data: recipients.map((recipient) => ({
+          if (recipients && recipients.length > 0) {
+            await tx.insert(dataRoomRecipients).values(
+              recipients.map((recipient) => ({
                 dataRoomId: room.id,
                 email: recipient.email,
                 memberId: recipient.memberId,
                 stakeholderId: recipient.stakeholderId,
-                expiresAt: recipient.expiresAt,
-              })),
-            });
+                updatedAt: new Date(),
+              }))
+            );
           }
         }
       });
@@ -217,26 +277,33 @@ export const dataRoomRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { session, db, requestIp, userAgent } = ctx;
+      const { session, requestIp, userAgent } = ctx;
       const { dataRoomId, others, selectedContacts } = input;
       const { name: senderName, email: senderEmail, companyId } = session.user;
       const { user } = session;
-      const dataRoom = await db.dataRoom.findUniqueOrThrow({
-        where: {
-          id: dataRoomId,
-          companyId,
-        },
+      
+      const dataRoomResult = await db
+        .select()
+        .from(dataRooms)
+        .innerJoin(companies, eq(dataRooms.companyId, companies.id))
+        .where(
+          and(
+            eq(dataRooms.id, dataRoomId),
+            eq(dataRooms.companyId, companyId)
+          )
+        )
+        .limit(1);
 
-        include: {
-          company: true,
-        },
-      });
-
-      if (!dataRoom) {
-        throw new Error("Data room not found");
+      const dataRoomData = dataRoomResult[0];
+      if (!dataRoomData) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Data room not found",
+        });
       }
 
-      const company = dataRoom.company;
+      const dataRoom = dataRoomData.data_rooms;
+      const company = dataRoomData.companies;
 
       const upsertManyRecipients = async () => {
         const baseUrl = env.NEXT_PUBLIC_BASE_URL;
@@ -255,27 +322,70 @@ export const dataRoomRouter = createTRPCRouter({
                 ? { stakeholderId: recipient.id }
                 : {};
 
-          const { recipientRecord } = await db.$transaction(async (tx) => {
-            const recipientRecord = await tx.dataRoomRecipient.upsert({
-              where: {
-                dataRoomId_email: {
+          const { recipientRecord } = await db.transaction(async (tx) => {
+            // Check if recipient already exists
+            const existingRecipient = await tx
+              .select()
+              .from(dataRoomRecipients)
+              .where(
+                and(
+                  eq(dataRoomRecipients.dataRoomId, dataRoomId),
+                  eq(dataRoomRecipients.email, email)
+                )
+              )
+              .limit(1);
+
+            let recipientRecord: typeof dataRoomRecipients.$inferSelect;
+            if (existingRecipient[0]) {
+              // Update existing recipient
+              const [updated] = await tx
+                .update(dataRoomRecipients)
+                .set({
+                  name: recipient.name,
+                  ...memberOrStakeholderId,
+                  updatedAt: new Date(),
+                })
+                .where(eq(dataRoomRecipients.id, existingRecipient[0].id))
+                .returning();
+              
+              if (!updated) {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: "Failed to update recipient",
+                });
+              }
+              recipientRecord = updated;
+            } else {
+              // Create new recipient
+              const [created] = await tx
+                .insert(dataRoomRecipients)
+                .values({
                   dataRoomId,
+                  name: recipient.name,
                   email,
-                },
-              },
-              create: {
-                dataRoomId,
-                name: recipient.name,
-                email,
-                ...memberOrStakeholderId,
-              },
-              update: {
-                name: recipient.name,
-                ...memberOrStakeholderId,
-              },
-            });
+                  ...memberOrStakeholderId,
+                  updatedAt: new Date(),
+                })
+                .returning();
+              
+              if (!created) {
+                throw new TRPCError({
+                  code: "INTERNAL_SERVER_ERROR",
+                  message: "Failed to create recipient",
+                });
+              }
+              recipientRecord = created;
+            }
+
             return { recipientRecord };
           });
+
+          if (!recipientRecord) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to upsert recipient",
+            });
+          }
 
           const token = await encode({
             companyId,
@@ -297,7 +407,7 @@ export const dataRoomRouter = createTRPCRouter({
 
           await new ShareDataRoomEmailJob().emit(payload);
 
-          await db.$transaction(async (tx) => {
+          await db.transaction(async (tx) => {
             await Audit.create(
               {
                 action: "dataroom.shared",
@@ -305,7 +415,7 @@ export const dataRoomRouter = createTRPCRouter({
                 actor: { type: "user", id: user.id },
                 context: {
                   userAgent,
-                  requestIp,
+                  requestIp: requestIp || "",
                 },
                 target: [{ type: "dataroom", id: dataRoom.id }],
                 summary: `${user.name} shared the data room ${dataRoom.name}`,
@@ -332,28 +442,39 @@ export const dataRoomRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { session, db, requestIp, userAgent } = ctx;
+      const { session, requestIp, userAgent } = ctx;
       const { dataRoomId, recipientId } = input;
       const companyId = session.user.companyId;
       const { user } = session;
-      const dataRoom = await db.dataRoom.findUniqueOrThrow({
-        where: {
-          id: dataRoomId,
-          companyId,
-        },
-      });
+      
+      const dataRoomResult = await db
+        .select()
+        .from(dataRooms)
+        .where(
+          and(
+            eq(dataRooms.id, dataRoomId),
+            eq(dataRooms.companyId, companyId)
+          )
+        )
+        .limit(1);
 
+      const dataRoom = dataRoomResult[0];
       if (!dataRoom) {
-        throw new Error("Data room not found");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Data room not found",
+        });
       }
 
-      await db.$transaction(async (tx) => {
-        await tx.dataRoomRecipient.delete({
-          where: {
-            id: recipientId,
-            dataRoomId,
-          },
-        });
+      await db.transaction(async (tx) => {
+        await tx
+          .delete(dataRoomRecipients)
+          .where(
+            and(
+              eq(dataRoomRecipients.id, recipientId),
+              eq(dataRoomRecipients.dataRoomId, dataRoomId)
+            )
+          );
 
         await Audit.create(
           {
@@ -362,7 +483,7 @@ export const dataRoomRouter = createTRPCRouter({
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "dataroom", id: dataRoom.id }],
             summary: `${user.name} deleted the data room ${dataRoom.name}`,
@@ -377,3 +498,4 @@ export const dataRoomRouter = createTRPCRouter({
       };
     }),
 });
+

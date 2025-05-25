@@ -1,6 +1,7 @@
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
+import { db, documentShares } from "@captable/db";
 import {
   DocumentShareMutationSchema,
   type TypeDocumentShareMutation,
@@ -21,15 +22,21 @@ export const createDocumentShareHandler = async ({
   const { recipients, ...rest } = input;
 
   try {
-    await ctx.db.$transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
-      const documentShare = await ctx.db.documentShare.create({
-        data: {
+      const [documentShare] = await tx
+        .insert(documentShares)
+        .values({
           ...rest,
           recipients: recipients ? [recipients] : [],
-        },
-      });
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      if (!documentShare) {
+        throw new Error("Failed to create document share");
+      }
 
       await Audit.create(
         {
@@ -37,7 +44,7 @@ export const createDocumentShareHandler = async ({
           action: "documentShare.created",
           actor: { type: "user", id: user.id },
           context: {
-            requestIp,
+            requestIp: requestIp || "",
             userAgent,
           },
           target: [{ type: "documentShare", id: documentShare.id }],

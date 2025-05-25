@@ -270,11 +270,13 @@ export const columns: ColumnDef<Share[number]>[] = [
                 key={doc.id}
                 className="hover:cursor-pointer"
                 onClick={async () => {
-                  await openFileOnTab(doc.bucket.key);
+                  if (doc.bucket.key) {
+                    await openFileOnTab(doc.bucket.key);
+                  }
                 }}
               >
                 <RiFileDownloadLine
-                  type={doc.bucket.mimeType}
+                  type={doc.bucket.mimeType || ""}
                   className="mx-3 cursor-pointer text-muted-foreground hover:text-primary/80"
                 />
                 {doc.name.slice(0, 12)}

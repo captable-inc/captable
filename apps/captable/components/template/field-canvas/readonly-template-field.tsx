@@ -36,9 +36,9 @@ export const ReadOnlyTemplateField = ({
   const color = colors?.[recipientId] ?? "";
 
   const selectValue =
-    type === "SELECT" && meta?.options
-      ? meta.options.find(
-          (item: NonNullable<typeof meta.options>[number]) => item.id === value,
+    type === "SELECT" && (meta as { options?: Array<{ id: string; value: string }> })?.options
+      ? (meta as { options: Array<{ id: string; value: string }> }).options.find(
+          (item) => item.id === value,
         )?.value || undefined
       : undefined;
 

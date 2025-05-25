@@ -2,6 +2,12 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  shares, 
+  documents
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodAddShareMutationSchema } from "../schema";
 
 export const addShareProcedure = withAuth
@@ -13,9 +19,9 @@ export const addShareProcedure = withAuth
 
     try {
       const user = ctx.session.user;
-      const documents = input.documents;
+      const documentInputs = input.documents;
 
-      await ctx.db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({
           session: ctx.session,
           tx,
@@ -25,7 +31,7 @@ export const addShareProcedure = withAuth
           companyId,
           stakeholderId: input.stakeholderId,
           shareClassId: input.shareClassId,
-          status: input.status,
+          status: input.status as "ACTIVE" | "PENDING" | "DRAFT" | "SIGNED",
           certificateId: input.certificateId,
           quantity: input.quantity,
           pricePerShare: input.pricePerShare,
@@ -35,27 +41,41 @@ export const addShareProcedure = withAuth
           otherContributions: input.otherContributions,
           cliffYears: input.cliffYears,
           vestingYears: input.vestingYears,
-          companyLegends: input.companyLegends,
+          companyLegends: input.companyLegends as ("US_SECURITIES_ACT" | "SALE_AND_ROFR" | "TRANSFER_RESTRICTIONS")[],
           issueDate: new Date(input.issueDate),
           rule144Date: new Date(input.rule144Date),
           vestingStartDate: new Date(input.vestingStartDate),
           boardApprovalDate: new Date(input.boardApprovalDate),
+          updatedAt: new Date(),
         };
-        const share = await tx.share.create({ data });
 
-        const bulkDocuments = documents.map((doc) => ({
-          companyId,
-          uploaderId: user.memberId,
-          publicId: generatePublicId(),
-          name: doc.name,
-          bucketId: doc.bucketId,
-          shareId: share.id,
-        }));
+        const [share] = await tx
+          .insert(shares)
+          .values(data)
+          .returning({ id: shares.id });
 
-        await tx.document.createMany({
-          data: bulkDocuments,
-          skipDuplicates: true,
-        });
+        if (!share) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create share",
+          });
+        }
+
+        if (documentInputs.length > 0) {
+          const bulkDocuments = documentInputs.map((doc) => ({
+            companyId,
+            uploaderId: user.memberId,
+            publicId: generatePublicId(),
+            name: doc.name,
+            bucketId: doc.bucketId,
+            shareId: share.id,
+            updatedAt: new Date(),
+          }));
+
+          await tx
+            .insert(documents)
+            .values(bulkDocuments);
+        }
 
         await Audit.create(
           {
@@ -64,7 +84,7 @@ export const addShareProcedure = withAuth
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "share", id: share.id }],
             summary: `${user.name} added share for stakeholder ${input.stakeholderId}`,

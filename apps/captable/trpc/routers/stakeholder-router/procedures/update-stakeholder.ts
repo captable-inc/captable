@@ -1,5 +1,7 @@
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { db, stakeholders, eq, and } from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodUpdateStakeholderMutationSchema } from "./../schema";
 
 export const updateStakeholderProcedure = withAccessControl
@@ -9,7 +11,6 @@ export const updateStakeholderProcedure = withAccessControl
     async ({
       ctx: {
         session,
-        db,
         requestIp,
         userAgent,
         membership: { companyId },
@@ -20,20 +21,43 @@ export const updateStakeholderProcedure = withAccessControl
         const { id: stakeholderId, ...rest } = input;
         const user = session.user;
 
-        await db.$transaction(async (tx) => {
-          const updated = await tx.stakeholder.update({
-            where: {
-              id: stakeholderId,
-              companyId,
-            },
-            data: {
-              ...rest,
-            },
-            select: {
-              id: true,
-              name: true,
-            },
+        if (!stakeholderId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Stakeholder ID is required for update",
           });
+        }
+
+        await db.transaction(async (tx) => {
+          const { stakeholderType, currentRelationship, ...otherFields } = rest;
+          
+          const updateData = {
+            ...otherFields,
+            updatedAt: new Date(),
+            ...(stakeholderType && { stakeholderType: stakeholderType as "INDIVIDUAL" | "INSTITUTION" }),
+            ...(currentRelationship && { currentRelationship: currentRelationship as "ADVISOR" | "BOARD_MEMBER" | "CONSULTANT" | "EMPLOYEE" | "EX_ADVISOR" | "EX_CONSULTANT" | "EX_EMPLOYEE" | "FOUNDER" | "INVESTOR" | "OTHER" }),
+          };
+
+          const [updated] = await tx
+            .update(stakeholders)
+            .set(updateData)
+            .where(
+              and(
+                eq(stakeholders.id, stakeholderId),
+                eq(stakeholders.companyId, companyId)
+              )
+            )
+            .returning({
+              id: stakeholders.id,
+              name: stakeholders.name,
+            });
+
+          if (!updated) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Stakeholder not found or update failed",
+            });
+          }
 
           await Audit.create(
             {
@@ -41,11 +65,11 @@ export const updateStakeholderProcedure = withAccessControl
               companyId: user.companyId,
               actor: { type: "user", id: user.id },
               context: {
-                requestIp,
+                requestIp: requestIp || "",
                 userAgent,
               },
               target: [{ type: "stakeholder", id: updated.id }],
-              summary: `${user.name} updated detailes of stakeholder : ${updated.name}`,
+              summary: `${user.name} updated details of stakeholder : ${updated.name}`,
             },
             tx,
           );
@@ -59,7 +83,7 @@ export const updateStakeholderProcedure = withAccessControl
         console.log(error);
         return {
           success: false,
-          message: "Something went up. Please try again later",
+          message: "Something went wrong. Please try again later",
         };
       }
     },

@@ -4,11 +4,12 @@ import {
   type UpdateSharePayloadType,
 } from "@/jobs/share-update-email";
 import { encode } from "@/lib/jwt";
-import { UpdateStatusEnum } from "@captable/db";
+import { UpdateStatusEnum, db, updates, updateRecipients, companies, eq, and } from "@captable/db";
 import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const shareUpdateProcedure = withAuth
@@ -20,28 +21,32 @@ export const shareUpdateProcedure = withAuth
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { session, db, userAgent, requestIp } = ctx;
+    const { session, userAgent, requestIp } = ctx;
     const { updateId, others, selectedContacts } = input;
     const { name: senderName, email: senderEmail, id } = session.user;
 
     const { companyId } = await checkMembership({ session, tx: db });
 
-    const update = await db.update.findUniqueOrThrow({
-      where: {
-        id: updateId,
-        companyId,
-      },
+    const updateResult = await db
+      .select({
+        id: updates.id,
+        title: updates.title,
+        publicId: updates.publicId,
+        status: updates.status,
+        companyName: companies.name,
+      })
+      .from(updates)
+      .leftJoin(companies, eq(updates.companyId, companies.id))
+      .where(and(eq(updates.id, updateId), eq(updates.companyId, companyId)))
+      .limit(1);
 
-      include: {
-        company: true,
-      },
-    });
-
+    const update = updateResult[0];
     if (!update) {
-      throw new Error("Update found");
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Update not found",
+      });
     }
-
-    const company = update.company;
 
     const upsertManyRecipients = async () => {
       const baseUrl = env.NEXT_PUBLIC_BASE_URL;
@@ -60,24 +65,53 @@ export const shareUpdateProcedure = withAuth
               ? { stakeholderId: recipient.id }
               : {};
 
-        const recipientRecord = await db.updateRecipient.upsert({
-          where: {
-            updateId_email: {
+        // Check if recipient already exists
+        const existingRecipient = await db
+          .select()
+          .from(updateRecipients)
+          .where(and(eq(updateRecipients.updateId, updateId), eq(updateRecipients.email, email)))
+          .limit(1);
+
+        let recipientRecord: typeof updateRecipients.$inferSelect;
+        if (existingRecipient.length > 0) {
+          // Update existing recipient
+          const existingId = existingRecipient[0]?.id;
+          if (!existingId) {
+            throw new Error("Existing recipient ID not found");
+          }
+          
+          const [updated] = await db
+            .update(updateRecipients)
+            .set({
+              name: recipient.name,
+              ...memberOrStakeholderId,
+              updatedAt: new Date(),
+            })
+            .where(eq(updateRecipients.id, existingId))
+            .returning();
+          
+          if (!updated) {
+            throw new Error("Failed to update recipient");
+          }
+          recipientRecord = updated;
+        } else {
+          // Create new recipient
+          const [created] = await db
+            .insert(updateRecipients)
+            .values({
               updateId,
+              name: recipient.name,
               email,
-            },
-          },
-          create: {
-            updateId,
-            name: recipient.name,
-            email,
-            ...memberOrStakeholderId,
-          },
-          update: {
-            name: recipient.name,
-            ...memberOrStakeholderId,
-          },
-        });
+              ...memberOrStakeholderId,
+              updatedAt: new Date(),
+            })
+            .returning();
+          
+          if (!created) {
+            throw new Error("Failed to create recipient");
+          }
+          recipientRecord = created;
+        }
 
         const token = await encode({
           companyId,
@@ -91,7 +125,7 @@ export const shareUpdateProcedure = withAuth
         const payload: UpdateSharePayloadType = {
           senderName: `${senderName}`,
           recipientName: recipient.name,
-          companyName: company.name,
+          companyName: update.companyName || "",
           update: {
             title: update.title,
           },
@@ -106,15 +140,14 @@ export const shareUpdateProcedure = withAuth
 
     await upsertManyRecipients();
 
-    if (update.status === UpdateStatusEnum.DRAFT) {
-      await db.update.update({
-        where: {
-          id: updateId,
-        },
-        data: {
+    if (update.status === UpdateStatusEnum.enumValues[0]) { // DRAFT
+      await db
+        .update(updates)
+        .set({
           status: "PRIVATE",
-        },
-      });
+          updatedAt: new Date(),
+        })
+        .where(eq(updates.id, updateId));
     }
 
     await Audit.create(
@@ -124,7 +157,7 @@ export const shareUpdateProcedure = withAuth
         actor: { type: "user", id },
         context: {
           userAgent,
-          requestIp,
+          requestIp: requestIp || "",
         },
         target: [{ type: "update", id: update.id }],
         summary: `${senderName} shared the Update ${update.title} for the company with id ${companyId}`,
@@ -146,28 +179,31 @@ export const unshareUpdateProcedure = withAuth
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { session, db, userAgent, requestIp } = ctx;
+    const { session, userAgent, requestIp } = ctx;
     const { updateId, recipientId } = input;
     const companyId = session.user.companyId;
     const { user } = session;
 
-    const update = await db.update.findUniqueOrThrow({
-      where: {
-        id: updateId,
-        companyId,
-      },
-    });
+    const updateResult = await db
+      .select({
+        id: updates.id,
+        title: updates.title,
+      })
+      .from(updates)
+      .where(and(eq(updates.id, updateId), eq(updates.companyId, companyId)))
+      .limit(1);
 
+    const update = updateResult[0];
     if (!update) {
-      throw new Error("Update not found");
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Update not found",
+      });
     }
 
-    await db.updateRecipient.delete({
-      where: {
-        id: recipientId,
-        updateId,
-      },
-    });
+    await db
+      .delete(updateRecipients)
+      .where(and(eq(updateRecipients.id, recipientId), eq(updateRecipients.updateId, updateId)));
 
     await Audit.create(
       {
@@ -176,7 +212,7 @@ export const unshareUpdateProcedure = withAuth
         actor: { type: "user", id: user.id },
         context: {
           userAgent,
-          requestIp,
+          requestIp: requestIp || "",
         },
         target: [{ type: "update", id: update.id }],
         summary: `${user.name} shared the Update ${update.title} for the company with id ${companyId}`,

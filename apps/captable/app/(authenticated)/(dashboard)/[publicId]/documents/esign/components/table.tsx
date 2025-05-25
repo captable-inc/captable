@@ -15,6 +15,7 @@ import Link from "next/link";
 import { TemplateCancelButton } from "./temp-cancel-btx";
 
 type DocumentsType = RouterOutputs["template"]["all"]["documents"];
+type SingleDocumentType = NonNullable<DocumentsType[number]>;
 
 type ESignTableProps = {
   documents: DocumentsType;
@@ -34,7 +35,7 @@ export const ESignTable = ({ documents, companyPublicId }: ESignTableProps) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {documents.map((item) => (
+        {(documents as SingleDocumentType[]).map((item) => (
           <TableRow key={item.id}>
             <TableCell className="flex items-center">
               <div className="mr-3">

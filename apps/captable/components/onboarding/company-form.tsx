@@ -70,7 +70,7 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
       user: {
         email: user?.user.email ?? "",
         name: user?.user.name ?? "",
-        title: data?.title,
+        title: data?.title ?? undefined,
       },
       company: {
         city: data?.company.city ?? "",
@@ -81,12 +81,12 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
         incorporationState: data?.company.incorporationState ?? "",
         incorporationType: data?.company.incorporationType ?? "",
         name: data?.company.name ?? "",
-        website: data?.company.website,
+        website: data?.company.website ?? undefined,
         state: data?.company.state ?? "",
         streetAddress: data?.company.streetAddress ?? "",
         zipcode: data?.company.zipcode ?? "",
         country: data?.company.country ?? "US",
-        logo: data?.company.logo,
+        logo: data?.company.logo ?? undefined,
       },
     },
   });

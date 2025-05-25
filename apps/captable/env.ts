@@ -131,7 +131,7 @@ export const env = createEnv({
     if (!isBrowser()) {
       console.error(
         "❌ Invalid environment variables:",
-        error.flatten().fieldErrors,
+        error && typeof error.flatten === 'function' ? error.flatten().fieldErrors : error,
       );
       throw new Error("Invalid environment variables");
     }

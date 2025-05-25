@@ -8,50 +8,78 @@ import {
   revokeExistingInviteTokens,
 } from "@/server/member";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  companies, 
+  members, 
+  users, 
+  verificationTokens,
+  eq, 
+  and 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodReInviteMutationSchema } from "../schema";
 
 export const reInviteProcedure = withAuth
   .input(ZodReInviteMutationSchema)
-  .mutation(async ({ ctx: { session, db, requestIp, userAgent }, input }) => {
+  .mutation(async ({ ctx: { session, requestIp, userAgent }, input }) => {
     const user = session.user;
 
     const { expires, memberInviteTokenHash } = await generateInviteToken();
 
     const { company, verificationToken, email, passwordResetToken } =
-      await db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({ session, tx });
 
-        const company = await tx.company.findFirstOrThrow({
-          where: {
-            id: companyId,
-          },
-          select: {
-            name: true,
-            id: true,
-          },
-        });
+        const [company] = await tx
+          .select({
+            name: companies.name,
+            id: companies.id,
+          })
+          .from(companies)
+          .where(eq(companies.id, companyId))
+          .limit(1);
 
-        const member = await tx.member.findFirstOrThrow({
-          where: {
-            id: input.memberId,
-            status: "PENDING",
-            companyId,
-          },
+        if (!company) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Company not found",
+          });
+        }
 
-          include: {
-            user: {
-              select: {
-                name: true,
-                email: true,
-              },
-            },
-          },
-        });
+        const memberResult = await tx
+          .select({
+            id: members.id,
+            userId: members.userId,
+            userName: users.name,
+            userEmail: users.email,
+          })
+          .from(members)
+          .innerJoin(users, eq(members.userId, users.id))
+          .where(
+            and(
+              eq(members.id, input.memberId),
+              eq(members.status, "PENDING"),
+              eq(members.companyId, companyId)
+            )
+          )
+          .limit(1);
 
-        const email = member.user.email;
+        const member = memberResult[0];
+        if (!member) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Member not found",
+          });
+        }
+
+        const email = member.userEmail;
 
         if (!email) {
-          throw new Error("invited email not found");
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "invited email not found",
+          });
         }
 
         await revokeExistingInviteTokens({
@@ -60,17 +88,29 @@ export const reInviteProcedure = withAuth
           tx,
         });
 
-        // custom verification token for member invitation
-        const { token: verificationToken } = await tx.verificationToken.create({
-          data: {
+        // Create verification token for member invitation
+        const [createdToken] = await tx
+          .insert(verificationTokens)
+          .values({
+            secondaryId: generateMemberIdentifier({
+              email,
+              memberId: member.id,
+            }),
             identifier: generateMemberIdentifier({
               email,
               memberId: member.id,
             }),
             token: memberInviteTokenHash,
             expires,
-          },
-        });
+          })
+          .returning({ token: verificationTokens.token });
+
+        if (!createdToken) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create verification token",
+          });
+        }
 
         await Audit.create(
           {
@@ -78,19 +118,29 @@ export const reInviteProcedure = withAuth
             companyId: company.id,
             actor: { type: "user", id: user.id },
             context: {
-              requestIp,
+              requestIp: requestIp || "",
               userAgent,
             },
             target: [{ type: "user", id: member.userId }],
-            summary: `${user.name} reinvited ${member.user?.name} to join ${company.name}`,
+            summary: `${user.name} reinvited ${member.userName} to join ${company.name}`,
           },
           tx,
         );
 
-        const { token: passwordResetToken } =
-          await generatePasswordResetToken(email);
+        const passwordResetTokenResult = await generatePasswordResetToken(email);
+        if (!passwordResetTokenResult) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to generate password reset token",
+          });
+        }
 
-        return { verificationToken, company, email, passwordResetToken };
+        return { 
+          verificationToken: createdToken.token, 
+          company, 
+          email, 
+          passwordResetToken: passwordResetTokenResult.token 
+        };
       });
 
     const payload = {

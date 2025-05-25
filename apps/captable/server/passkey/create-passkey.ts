@@ -47,7 +47,7 @@ export const createPasskey = async ({
 
   await db
     .delete(passkeyVerificationTokens)
-    .where(eq(passkeyVerificationTokens.userId, userId));
+    .where(eq(passkeyVerificationTokens.id, verificationToken.id));
 
   if (verificationToken.expiresAt < new Date()) {
     throw new Error("Challenge token expired");

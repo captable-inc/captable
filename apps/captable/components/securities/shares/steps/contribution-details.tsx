@@ -55,7 +55,7 @@ export const ContributionDetails = ({
   const stakeHoldersOpts = stakeholders.map(
     (stakeHolder: NonNullable<typeof stakeholders>[number]) => ({
       value: stakeHolder.id,
-      label: `${stakeHolder.company.name} - ${stakeHolder.name}`,
+      label: `${stakeHolder.company?.name || 'Unknown Company'} - ${stakeHolder.name}`,
     }),
   );
 

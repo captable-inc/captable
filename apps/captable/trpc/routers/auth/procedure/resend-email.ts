@@ -17,7 +17,15 @@ export const resendEmailProcedure = withoutAuth
         message: "Email not found!",
       });
     }
+    
     const verificationToken = await generateVerificationToken(input);
+
+    if (!verificationToken) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate verification token",
+      });
+    }
 
     await sendAuthVerificationEmail({
       email: verificationToken.identifier,

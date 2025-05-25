@@ -16,7 +16,17 @@ export const forgotPasswordProcedure = withoutAuth
         message: "Email not found!",
       });
     }
-    const { email, token } = await generatePasswordResetToken(input);
+    
+    const passwordResetToken = await generatePasswordResetToken(input);
+    
+    if (!passwordResetToken) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to generate password reset token",
+      });
+    }
+
+    const { email, token } = passwordResetToken;
 
     await new PasswordResetEmailJob().emit({ email, token });
 

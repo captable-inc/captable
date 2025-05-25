@@ -1,8 +1,7 @@
-import AccountVerificationEmail from "@/emails/AccountVerificationEmail";
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { AccountVerificationEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type AuthVerificationPayloadType = {
@@ -10,22 +9,21 @@ export type AuthVerificationPayloadType = {
   token: string;
 };
 
-export const sendAuthVerificationEmail = async (
-  payload: AuthVerificationPayloadType,
-) => {
-  const { email, token } = payload;
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL;
-  const confirmLink = `${baseUrl}/verify-email/${token}`;
+export const sendAuthVerificationEmail = async ({
+  email,
+  token,
+}: AuthVerificationPayloadType) => {
+  const verifyLink = `${env.NEXTAUTH_URL}/verify-email?token=${token}`;
 
   const html = await renderAsync(
     AccountVerificationEmail({
-      verifyLink: confirmLink,
+      verifyLink,
     }),
   );
 
   await sendMail({
-    to: email,
-    subject: "Confirm your email",
+    to: [email],
+    subject: "Verify your email address",
     html,
   });
 };

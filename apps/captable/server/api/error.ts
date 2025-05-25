@@ -99,7 +99,7 @@ export const ErrorResponses: ReturnType<typeof generateErrorResponse> = {
   }),
 };
 
-function codeToStatus(code: z.infer<typeof ErrorCode>): StatusCode {
+function codeToStatus(code: z.infer<typeof ErrorCode>): 400 | 401 | 403 | 404 | 405 | 409 | 429 | 500 {
   switch (code) {
     case "BAD_REQUEST":
       return 400;

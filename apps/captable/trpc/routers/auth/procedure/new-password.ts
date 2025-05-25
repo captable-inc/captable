@@ -1,10 +1,12 @@
 import { Audit } from "@/server/audit";
 import { getPasswordResetTokenByToken } from "@/server/password-reset-token";
 import { getUserByEmail } from "@/server/user";
+import { db, users, passwordResetTokens, eq } from "@captable/db";
 import { withoutAuth } from "@/trpc/api/trpc";
 import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { ZNewPasswordProcedureSchema } from "../schema";
+
 export const newPasswordProcedure = withoutAuth
   .input(ZNewPasswordProcedureSchema)
   .mutation(async ({ ctx, input }) => {
@@ -37,14 +39,22 @@ export const newPasswordProcedure = withoutAuth
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await ctx.db.user.update({
-      where: { id: existingUser.id },
-      data: {
+    const [user] = await db
+      .update(users)
+      .set({
         password: hashedPassword,
         // since the user can only reset using email, we can assume the email is verified
         emailVerified: new Date(),
-      },
-    });
+      })
+      .where(eq(users.id, existingUser.id))
+      .returning();
+
+    if (!user) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update user password",
+      });
+    }
 
     await Audit.create(
       {
@@ -53,17 +63,17 @@ export const newPasswordProcedure = withoutAuth
         actor: { type: "user", id: user.id },
         context: {
           userAgent,
-          requestIp,
+          requestIp: requestIp || "",
         },
         target: [{ type: "user", id: user.id }],
         summary: `${user.name} updated the password`,
       },
-      ctx.db,
+      db,
     );
 
-    await ctx.db.passwordResetToken.delete({
-      where: { id: existingToken.id },
-    });
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.id, existingToken.id));
 
     return {
       success: true,

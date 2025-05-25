@@ -1,7 +1,6 @@
-import ShareUpdateEmail from "@/emails/ShareUpdateEmail";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { ShareUpdateEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type UpdateSharePayloadType = {
@@ -16,33 +15,19 @@ export type UpdateSharePayloadType = {
   senderEmail?: string | null | undefined;
 };
 
-export const sendShareUpdateEmail = async (payload: UpdateSharePayloadType) => {
-  const {
-    update,
-    link,
-    companyName,
-    recipientName,
-    senderName,
-    email,
-    senderEmail,
-  } = payload;
+const sendShareUpdateEmail = async (payload: UpdateSharePayloadType) => {
   await sendMail({
-    to: email,
-    ...(senderEmail && { replyTo: senderEmail }),
-    subject: `${senderName} shared an update - ${update.title}`,
+    to: [payload.email],
+    subject: `${payload.senderName} shared an update with you`,
     html: await renderAsync(
       ShareUpdateEmail({
-        senderName: senderName,
-        recipientName,
-        companyName,
-        updateTitle: update.title,
-        link,
+        senderName: payload.senderName,
+        recipientName: payload.recipientName,
+        companyName: payload.companyName,
+        updateTitle: payload.update.title,
+        link: payload.link,
       }),
     ),
-
-    headers: {
-      "X-From-Name": senderName,
-    },
   });
 };
 

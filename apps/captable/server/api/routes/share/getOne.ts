@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, shares, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 import { ShareSchema, type ShareSchemaType } from "../../schema/shares";
 
@@ -52,16 +53,16 @@ export const getOne = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db } = c.get("services");
     const { membership } = c.get("session");
     const { id } = c.req.valid("param");
 
-    const share = await db.share.findUnique({
-      where: {
-        id,
-        companyId: membership.companyId,
-      },
-    });
+    const shareResult = await db
+      .select()
+      .from(shares)
+      .where(and(eq(shares.id, id), eq(shares.companyId, membership.companyId)))
+      .limit(1);
+
+    const share = shareResult[0];
 
     if (!share) {
       throw new ApiError({

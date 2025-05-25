@@ -1,8 +1,15 @@
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import { ShareClassMutationSchema } from "./schema";
-
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
+import { 
+  db, 
+  shareClasses, 
+  companies, 
+  eq, 
+  count 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 
 export const shareClassRouter = createTRPCRouter({
   create: withAuth
@@ -15,19 +22,18 @@ export const shareClassRouter = createTRPCRouter({
           | "CS"
           | "PS";
 
-        await ctx.db.$transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           const { companyId } = await checkMembership({
             tx,
             session: ctx.session,
           });
 
-          const maxIdx = await tx.shareClass.count({
-            where: {
-              companyId,
-            },
-          });
+          const [maxIdxResult] = await tx
+            .select({ count: count() })
+            .from(shareClasses)
+            .where(eq(shareClasses.companyId, companyId));
 
-          const idx = maxIdx + 1;
+          const idx = (maxIdxResult?.count || 0) + 1;
           const data = {
             idx,
             prefix,
@@ -45,9 +51,10 @@ export const shareClassRouter = createTRPCRouter({
             convertsToShareClassId: input.convertsToShareClassId,
             liquidationPreferenceMultiple: input.liquidationPreferenceMultiple,
             participationCapMultiple: input.participationCapMultiple,
+            updatedAt: new Date(),
           };
 
-          await tx.shareClass.create({ data });
+          await tx.insert(shareClasses).values(data);
 
           await Audit.create(
             {
@@ -56,7 +63,7 @@ export const shareClassRouter = createTRPCRouter({
               actor: { type: "user", id: ctx.session.user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "company", id: companyId }],
               summary: `${ctx.session.user.name} created a share class - ${input.name}`,
@@ -85,11 +92,18 @@ export const shareClassRouter = createTRPCRouter({
           | "CS"
           | "PS";
 
-        await ctx.db.$transaction(async (tx) => {
+        await db.transaction(async (tx) => {
           const { companyId } = await checkMembership({
             tx,
             session: ctx.session,
           });
+
+          if (!input.id) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Share class ID is required for update",
+            });
+          }
 
           const data = {
             prefix,
@@ -106,12 +120,13 @@ export const shareClassRouter = createTRPCRouter({
             convertsToShareClassId: input.convertsToShareClassId,
             liquidationPreferenceMultiple: input.liquidationPreferenceMultiple,
             participationCapMultiple: input.participationCapMultiple,
+            updatedAt: new Date(),
           };
 
-          await tx.shareClass.update({
-            where: { id: input.id },
-            data,
-          });
+          await tx
+            .update(shareClasses)
+            .set(data)
+            .where(eq(shareClasses.id, input.id));
 
           await Audit.create(
             {
@@ -120,7 +135,7 @@ export const shareClassRouter = createTRPCRouter({
               actor: { type: "user", id: ctx.session.user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "company", id: companyId }],
               summary: `${ctx.session.user.name} updated a share class - ${input.name}`,
@@ -139,24 +154,21 @@ export const shareClassRouter = createTRPCRouter({
       }
     }),
 
-  get: withAuth.query(async ({ ctx: { db, session } }) => {
-    const shareClass = await db.$transaction(async (tx) => {
+  get: withAuth.query(async ({ ctx: { session } }) => {
+    const shareClass = await db.transaction(async (tx) => {
       const { companyId } = await checkMembership({ session, tx });
 
-      return await tx.shareClass.findMany({
-        where: {
-          companyId,
-        },
-        select: {
-          id: true,
-          name: true,
+      return await tx
+        .select({
+          id: shareClasses.id,
+          name: shareClasses.name,
           company: {
-            select: {
-              name: true,
-            },
+            name: companies.name,
           },
-        },
-      });
+        })
+        .from(shareClasses)
+        .leftJoin(companies, eq(shareClasses.companyId, companies.id))
+        .where(eq(shareClasses.companyId, companyId));
     });
     return shareClass;
   }),

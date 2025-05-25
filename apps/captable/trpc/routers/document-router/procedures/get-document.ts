@@ -1,5 +1,7 @@
 import { getPresignedGetUrl } from "@/server/file-uploads";
-import { withAccessControl, withAuth } from "@/trpc/api/trpc";
+import { withAccessControl } from "@/trpc/api/trpc";
+import { db, documents, buckets, eq, and } from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodGetDocumentQuerySchema } from "../schema";
 
 export const getDocumentProcedure = withAccessControl
@@ -8,25 +10,39 @@ export const getDocumentProcedure = withAccessControl
   .query(
     async ({
       ctx: {
-        db,
         membership: { companyId },
       },
       input,
     }) => {
-      const data = await db.document.findFirstOrThrow({
-        where: {
-          publicId: input.publicId,
-          companyId,
-        },
-        select: {
-          bucket: {
-            select: {
-              key: true,
-            },
-          },
-        },
-      });
+      const result = await db
+        .select({
+          bucketKey: buckets.key,
+        })
+        .from(documents)
+        .innerJoin(buckets, eq(documents.bucketId, buckets.id))
+        .where(
+          and(
+            eq(documents.publicId, input.publicId),
+            eq(documents.companyId, companyId)
+          )
+        )
+        .limit(1);
 
-      return getPresignedGetUrl(data.bucket.key);
+      const data = result[0];
+      if (!data) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      if (!data.bucketKey) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Document bucket key not found",
+        });
+      }
+
+      return getPresignedGetUrl(data.bucketKey);
     },
   );

@@ -26,6 +26,7 @@ import {
 import type { RouterOutputs } from "@/trpc/shared";
 
 type DocumentType = RouterOutputs["document"]["getAll"];
+type SingleDocumentType = NonNullable<DocumentType[number]>;
 
 type DocumentTableProps = {
   documents: DocumentType;
@@ -53,7 +54,7 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {documents.map((document) => (
+            {documents.map((document: SingleDocumentType) => (
               <TableRow key={document.id}>
                 <TableCell
                   className="flex cursor-pointer items-center hover:underline"
@@ -64,7 +65,7 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                   }}
                 >
                   <div className="mr-3">
-                    <FileIcon type={document.bucket.mimeType} />
+                    <FileIcon type={document.bucket.mimeType || ""} />
                   </div>
                   <span className="flex">{document.name}</span>
                 </TableCell>
@@ -94,7 +95,7 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                           Share document
                         </DropdownMenuItem> */}
 
-                        {document.bucket.mimeType === "application/pdf" && (
+                        {(document.bucket.mimeType || "") === "application/pdf" && (
                           <DropdownMenuItem
                             onClick={() => {
                               console.log(
@@ -116,7 +117,9 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={async () => {
-                            await openFileOnTab(document.bucket.key);
+                            if (document.bucket.key) {
+                              await openFileOnTab(document.bucket.key);
+                            }
                           }}
                         >
                           Download

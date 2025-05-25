@@ -13,9 +13,9 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { META } from "@/lib/constants/meta";
+import { META } from "@/lib/constants";
 
-interface PasswordResetEmailProps {
+export interface PasswordResetEmailProps {
   resetLink: string;
 }
 

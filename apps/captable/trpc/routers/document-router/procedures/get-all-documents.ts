@@ -1,42 +1,58 @@
 import { withAccessControl } from "@/trpc/api/trpc";
+import { db, documents, buckets, members, users, eq, desc } from "@captable/db";
 
 export const getAllDocumentsProcedure = withAccessControl
   .meta({ policies: { documents: { allow: ["read"] } } })
   .query(
     async ({
       ctx: {
-        db,
         membership: { companyId },
       },
     }) => {
-      const data = await db.document.findMany({
-        where: {
-          companyId,
-        },
-        include: {
-          uploader: {
-            select: {
-              user: {
-                select: {
-                  name: true,
-                },
-              },
-            },
+      const rawData = await db
+        .select({
+          id: documents.id,
+          name: documents.name,
+          companyId: documents.companyId,
+          uploaderId: documents.uploaderId,
+          bucketId: documents.bucketId,
+          createdAt: documents.createdAt,
+          updatedAt: documents.updatedAt,
+          uploaderUserName: users.name,
+          bucketDetailId: buckets.id,
+          bucketKey: buckets.key,
+          bucketMimeType: buckets.mimeType,
+          bucketSize: buckets.size,
+          bucketName: buckets.name,
+        })
+        .from(documents)
+        .leftJoin(members, eq(documents.uploaderId, members.id))
+        .leftJoin(users, eq(members.userId, users.id))
+        .leftJoin(buckets, eq(documents.bucketId, buckets.id))
+        .where(eq(documents.companyId, companyId))
+        .orderBy(desc(documents.createdAt));
+
+      const data = rawData.map((row) => ({
+        id: row.id,
+        name: row.name,
+        companyId: row.companyId,
+        uploaderId: row.uploaderId,
+        bucketId: row.bucketId,
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+        uploader: {
+          user: {
+            name: row.uploaderUserName,
           },
-          bucket: {
-            select: {
-              id: true,
-              key: true,
-              mimeType: true,
-              size: true,
-              name: true,
-            },
-          },
         },
-        orderBy: {
-          createdAt: "desc",
+        bucket: {
+          id: row.bucketDetailId,
+          key: row.bucketKey,
+          mimeType: row.bucketMimeType,
+          size: row.bucketSize,
+          name: row.bucketName,
         },
-      });
+      }));
 
       return data;
     },

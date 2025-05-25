@@ -11,10 +11,11 @@ import { notFound } from "next/navigation";
 import { Fragment } from "react";
 
 const DocumentPreview = async ({
-  params: { publicId, bucketId },
+  params,
 }: {
-  params: { publicId: string; bucketId: string };
+  params: Promise<{ publicId: string; bucketId: string }>;
 }) => {
+  const { publicId, bucketId } = await params;
   const session = await withServerComponentSession();
   const companyId = session?.user?.companyId;
   const document = await db

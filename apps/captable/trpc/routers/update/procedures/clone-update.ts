@@ -1,6 +1,7 @@
 import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
+import { db, updates } from "@captable/db";
 import { UpdateMutationSchema } from "../schema";
 
 export const cloneUpdateProcedure = withAuth
@@ -21,17 +22,26 @@ export const cloneUpdateProcedure = withAuth
           message: "Title and content cannot be empty.",
         };
       }
-      await ctx.db.$transaction(async (tx) => {
-        const update = await tx.update.create({
-          data: {
+      await db.transaction(async (tx) => {
+        const [update] = await tx
+          .insert(updates)
+          .values({
             html,
             title: `Copy of - ${title}`,
             content,
             publicId,
             companyId,
             authorId,
-          },
-        });
+            updatedAt: new Date(),
+          })
+          .returning({
+            id: updates.id,
+          });
+
+        if (!update) {
+          throw new Error("Failed to create update");
+        }
+
         await Audit.create(
           {
             action: "update.cloned",
@@ -39,7 +49,7 @@ export const cloneUpdateProcedure = withAuth
             actor: { type: "user", id: userId },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "update", id: update.id }],
             summary: `${userName} Cloned the Update ${title} for the company with id ${companyId}`,

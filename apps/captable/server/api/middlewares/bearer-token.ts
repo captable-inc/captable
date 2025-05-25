@@ -1,4 +1,5 @@
 import { verifySecureHash } from "@/lib/crypto";
+import { db, members, accessTokens, users, eq, and } from "@captable/db";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
 import { ApiError } from "../error";
@@ -88,7 +89,6 @@ async function authenticateWithAccessToken(
 }
 
 async function checkMembership(userId: string, c: Context) {
-  const { db } = c.get("services");
   const companyId = c.req.param("companyId");
 
   if (!companyId || companyId === "") {
@@ -98,22 +98,22 @@ async function checkMembership(userId: string, c: Context) {
     });
   }
 
-  const membership = await db.member.findFirst({
-    where: { companyId, userId },
-    select: {
-      id: true,
-      companyId: true,
-      role: true,
-      customRoleId: true,
-      userId: true,
+  const [membership] = await db
+    .select({
+      id: members.id,
+      companyId: members.companyId,
+      role: members.role,
+      customRoleId: members.customRoleId,
+      userId: members.userId,
       user: {
-        select: {
-          name: true,
-          email: true,
-        },
+        name: users.name,
+        email: users.email,
       },
-    },
-  });
+    })
+    .from(members)
+    .innerJoin(users, eq(members.userId, users.id))
+    .where(and(eq(members.companyId, companyId), eq(members.userId, userId)))
+    .limit(1);
 
   if (!membership) {
     throw new ApiError({
@@ -126,18 +126,20 @@ async function checkMembership(userId: string, c: Context) {
 }
 
 function findAccessToken(clientId: string, c: Context) {
-  const { db } = c.get("services");
-
-  return db.accessToken.findFirst({
-    where: {
-      clientId,
-      typeEnum: "api",
-      active: true,
-    },
-    select: {
-      clientId: true,
-      clientSecret: true,
-      userId: true,
-    },
-  });
+  return db
+    .select({
+      clientId: accessTokens.clientId,
+      clientSecret: accessTokens.clientSecret,
+      userId: accessTokens.userId,
+    })
+    .from(accessTokens)
+    .where(
+      and(
+        eq(accessTokens.clientId, clientId),
+        eq(accessTokens.typeEnum, "api"),
+        eq(accessTokens.active, true)
+      )
+    )
+    .limit(1)
+    .then(results => results[0] || null);
 }

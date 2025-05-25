@@ -173,7 +173,13 @@ export const ProfileSettings = ({ memberProfile }: ProfileType) => {
 
   function onSubmit(values: z.infer<typeof profileSettingsSchema>) {
     // React Hook Form considers trailing-spaces as change in form-state
-    const hasChanged = compareFormDataWithInitial(memberProfile, values);
+    const memberProfileFormFields = {
+      fullName: memberProfile.fullName,
+      jobTitle: memberProfile.jobTitle ?? "",
+      loginEmail: memberProfile.loginEmail,
+      workEmail: memberProfile.workEmail ?? "",
+    };
+    const hasChanged = compareFormDataWithInitial(memberProfileFormFields, values);
 
     if (!hasChanged) return;
 

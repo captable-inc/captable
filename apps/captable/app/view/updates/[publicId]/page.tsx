@@ -16,18 +16,19 @@ import {
   eq,
   and,
 } from "@captable/db";
-import { renderAsync } from "@react-email/components";
 import { RiLock2Line } from "@remixicon/react";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
 
 const PublicUpdatePage = async ({
-  params: { publicId },
-  searchParams: { token },
+  params,
+  searchParams,
 }: {
-  params: { publicId: string };
-  searchParams: { token: string };
+  params: Promise<{ publicId: string }>;
+  searchParams: Promise<{ token: string }>;
 }) => {
+  const { publicId } = await params;
+  const { token } = await searchParams;
   let decodedToken: JWTVerifyResult | null = null;
 
   try {
@@ -138,7 +139,6 @@ const PublicUpdatePage = async ({
 
   const company = update?.company;
   const author = update?.author;
-  const html = await renderAsync(<UpdateRenderer html={update.html} />);
 
   return (
     <SharePageLayout
@@ -171,11 +171,7 @@ const PublicUpdatePage = async ({
         </div>
 
         <div className="mt-5">
-          <article
-            className="prose"
-            //biome-ignore lint/security/noDangerouslySetInnerHtml: allow dangerouslySetInnerHtml
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+          <UpdateRenderer html={update.html} />
         </div>
       </Fragment>
     </SharePageLayout>

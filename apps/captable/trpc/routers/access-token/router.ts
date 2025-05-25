@@ -1,57 +1,56 @@
 import { createSecureHash, initializeAccessToken } from "@/lib/crypto";
-import { AccessTokenTypeEnum } from "@captable/db";
+import { AccessTokenTypeEnum, db, accessTokens, eq, and, desc } from "@captable/db";
 import { Audit } from "@/server/audit";
 
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 
+const accessTokenTypeEnum = z.union(
+  // @ts-expect-error - AccessTokenTypeEnum.enumValues is not typed correctly
+  AccessTokenTypeEnum.enumValues.map(value => z.literal(value))
+)
+
 export const accessTokenRouter = createTRPCRouter({
   listAll: withAccessControl
     .input(
       z.object({
-        typeEnum: z.enum(
-          AccessTokenTypeEnum.enumValues as [string, ...string[]],
-        ),
+        typeEnum: accessTokenTypeEnum,
       }),
     )
     .query(async ({ ctx, input }) => {
       const {
-        db,
         membership: { userId },
       } = ctx;
 
       const { typeEnum } = input;
 
-      const accessTokens = await db.accessToken.findMany({
-        where: {
-          active: true,
-          userId,
-          typeEnum,
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
-
-        select: {
-          id: true,
-          clientId: true,
-          createdAt: true,
-          lastUsed: true,
-        },
-      });
+      const accessTokensResult = await db
+        .select({
+          id: accessTokens.id,
+          clientId: accessTokens.clientId,
+          createdAt: accessTokens.createdAt,
+          lastUsed: accessTokens.lastUsed,
+        })
+        .from(accessTokens)
+        .where(
+          and(
+            eq(accessTokens.active, true),
+            eq(accessTokens.userId, userId),
+            eq(accessTokens.typeEnum, typeEnum as AccessTokenTypeEnum)
+          )
+        )
+        .orderBy(desc(accessTokens.createdAt));
 
       return {
-        accessTokens,
+        accessTokens: accessTokensResult,
       };
     }),
 
   create: withAccessControl
-    .input(z.object({ typeEnum: z.nativeEnum(AccessTokenTypeEnum) }))
+    .input(z.object({ typeEnum: accessTokenTypeEnum }))
     .mutation(async ({ ctx, input }) => {
       const {
-        db,
         membership: { userId, companyId },
         userAgent,
         requestIp,
@@ -67,14 +66,23 @@ export const accessTokenRouter = createTRPCRouter({
       const user = session.user;
       const hashedClientSecret = await createSecureHash(clientSecret);
 
-      const key = await db.accessToken.create({
-        data: {
+      const [key] = await db
+        .insert(accessTokens)
+        .values({
           userId,
           typeEnum,
           clientId,
           clientSecret: hashedClientSecret,
-        },
-      });
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      if (!key) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create access token",
+        });
+      }
 
       await Audit.create(
         {
@@ -83,7 +91,7 @@ export const accessTokenRouter = createTRPCRouter({
           actor: { type: "user", id: user.id },
           context: {
             userAgent,
-            requestIp,
+            requestIp: requestIp ?? "",
           },
           target: [{ type: "accessToken", id: key.id }],
           summary: `${user.name} created an access token - ${clientId}`,
@@ -102,7 +110,6 @@ export const accessTokenRouter = createTRPCRouter({
     .input(z.object({ tokenId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const {
-        db,
         membership: { userId, companyId },
         session,
         requestIp,
@@ -111,12 +118,22 @@ export const accessTokenRouter = createTRPCRouter({
       const { tokenId } = input;
       const { user } = session;
       try {
-        const key = await db.accessToken.delete({
-          where: {
-            id: tokenId,
-            userId,
-          },
-        });
+        const [key] = await db
+          .delete(accessTokens)
+          .where(
+            and(
+              eq(accessTokens.id, tokenId),
+              eq(accessTokens.userId, userId)
+            )
+          )
+          .returning();
+
+        if (!key) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Access token not found",
+          });
+        }
 
         await Audit.create(
           {
@@ -125,7 +142,7 @@ export const accessTokenRouter = createTRPCRouter({
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp ?? "",
             },
             target: [{ type: "accessToken", id: key.id }],
             summary: `${user.name} deleted an access token - ${key.clientId}`,

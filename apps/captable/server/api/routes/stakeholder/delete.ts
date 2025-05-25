@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, stakeholders, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 
 import { authMiddleware, withAuthApiV1 } from "../../utils/endpoint-creator";
@@ -49,23 +50,26 @@ export const _delete = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client;
     const { id } = c.req.valid("param");
 
-    await db.$transaction(async (tx) => {
-      const stakeholder = await tx.stakeholder.findUnique({
-        where: {
-          id,
-          companyId: membership.companyId,
-        },
-        select: {
-          id: true,
-          companyId: true,
-          name: true,
-        },
-      });
+    await db.transaction(async (tx) => {
+      const [stakeholder] = await tx
+        .select({
+          id: stakeholders.id,
+          companyId: stakeholders.companyId,
+          name: stakeholders.name,
+        })
+        .from(stakeholders)
+        .where(
+          and(
+            eq(stakeholders.id, id),
+            eq(stakeholders.companyId, membership.companyId)
+          )
+        )
+        .limit(1);
 
       if (!stakeholder) {
         throw new ApiError({
@@ -74,11 +78,9 @@ export const _delete = withAuthApiV1
         });
       }
 
-      await tx.stakeholder.delete({
-        where: {
-          id: stakeholder.id,
-        },
-      });
+      await tx
+        .delete(stakeholders)
+        .where(eq(stakeholders.id, stakeholder.id));
 
       await audit.create(
         {
@@ -90,7 +92,7 @@ export const _delete = withAuthApiV1
             userAgent,
           },
           target: [{ type: "stakeholder", id }],
-          summary: `${membership.user.name} deleted the stakeholder ${stakeholder.name} - ${stakeholder.id}`,
+          summary: `${membership.user?.name || 'User'} deleted the stakeholder ${stakeholder.name} - ${stakeholder.id}`,
         },
         tx,
       );

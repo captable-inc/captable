@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, stakeholders, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 import {
   StakeholderSchema,
@@ -65,7 +66,7 @@ export const update = withAuthApiV1
   })
   .handler(async (c) => {
     const { id } = c.req.valid("param");
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client as {
       requestIp: string;
@@ -74,18 +75,21 @@ export const update = withAuthApiV1
 
     const body = await c.req.json<TUpdateStakeholderSchema>();
 
-    const updatedStakeHolder = await db.$transaction(async (tx) => {
-      const stakeholder = await tx.stakeholder.findUnique({
-        where: {
-          id,
-          companyId: membership.companyId,
-        },
-        select: {
-          id: true,
-          companyId: true,
-          name: true,
-        },
-      });
+    const updatedStakeHolder = await db.transaction(async (tx) => {
+      const [stakeholder] = await tx
+        .select({
+          id: stakeholders.id,
+          companyId: stakeholders.companyId,
+          name: stakeholders.name,
+        })
+        .from(stakeholders)
+        .where(
+          and(
+            eq(stakeholders.id, id),
+            eq(stakeholders.companyId, membership.companyId)
+          )
+        )
+        .limit(1);
 
       if (!stakeholder) {
         throw new ApiError({
@@ -94,12 +98,21 @@ export const update = withAuthApiV1
         });
       }
 
-      const updatedStakeHolder = await tx.stakeholder.update({
-        where: {
-          id: stakeholder.id,
-        },
-        data: body,
-      });
+      const [updatedStakeHolder] = await tx
+        .update(stakeholders)
+        .set({
+          ...body,
+          updatedAt: new Date(),
+        })
+        .where(eq(stakeholders.id, stakeholder.id))
+        .returning();
+
+      if (!updatedStakeHolder) {
+        throw new ApiError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update stakeholder",
+        });
+      }
 
       await audit.create(
         {
@@ -111,7 +124,7 @@ export const update = withAuthApiV1
             userAgent,
           },
           target: [{ type: "stakeholder", id: stakeholder.id }],
-          summary: `${membership.user.name} updated the stakeholder details in the company : ${updatedStakeHolder.name}`,
+          summary: `${membership.user?.name || 'User'} updated the stakeholder details in the company : ${updatedStakeHolder.name}`,
         },
         tx,
       );

@@ -1,6 +1,7 @@
 import { Audit } from "@/server/audit";
 import { getUserByEmail } from "@/server/user";
 import { getVerificationTokenByToken } from "@/server/verification-token";
+import { db, users, verificationTokens, eq } from "@captable/db";
 import { withoutAuth } from "@/trpc/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -34,13 +35,21 @@ export const verifyEmailProcedure = withoutAuth
       });
     }
 
-    const user = await ctx.db.user.update({
-      where: { id: existingUser.id },
-      data: {
+    const [user] = await db
+      .update(users)
+      .set({
         emailVerified: new Date(),
         email: existingToken.identifier,
-      },
-    });
+      })
+      .where(eq(users.id, existingUser.id))
+      .returning();
+
+    if (!user) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update user",
+      });
+    }
 
     await Audit.create(
       {
@@ -49,17 +58,17 @@ export const verifyEmailProcedure = withoutAuth
         actor: { type: "user", id: user.id },
         context: {
           userAgent,
-          requestIp,
+          requestIp: requestIp || "",
         },
         target: [{ type: "user", id: user.id }],
         summary: `${user.name} changed the password`,
       },
-      ctx.db,
+      db,
     );
 
-    await ctx.db.verificationToken.delete({
-      where: { id: existingToken.id },
-    });
+    await db
+      .delete(verificationTokens)
+      .where(eq(verificationTokens.id, existingToken.id));
 
     return {
       success: true,

@@ -1,4 +1,4 @@
-import { UpdateStatusEnum } from "@captable/db";
+import { UpdateStatusEnum, db, updates, eq, and } from "@captable/db";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
@@ -7,20 +7,26 @@ import { z } from "zod";
 
 export const toggleUpdateVisibilityProcedure = withAuth
   .input(z.object({ updateId: z.string() }))
-  .mutation(async ({ ctx: { db, session, requestIp, userAgent }, input }) => {
+  .mutation(async ({ ctx: { session, requestIp, userAgent }, input }) => {
     try {
       const authorId = session.user.memberId;
       const memberName = session.user.name;
 
-      const { isPublic } = await db.$transaction(async (tx) => {
+      const { isPublic } = await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({ session, tx });
 
-        const foundUpdate = await tx.update.findUnique({
-          where: {
-            id: input.updateId,
-            companyId,
-          },
-        });
+        const foundUpdateResult = await tx
+          .select({
+            id: updates.id,
+            title: updates.title,
+            public: updates.public,
+            status: updates.status,
+          })
+          .from(updates)
+          .where(and(eq(updates.id, input.updateId), eq(updates.companyId, companyId)))
+          .limit(1);
+
+        const foundUpdate = foundUpdateResult[0];
         if (!foundUpdate) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -34,18 +40,29 @@ export const toggleUpdateVisibilityProcedure = withAuth
               "You must share this update first to change visibility mode.",
           });
         }
-        const updated = await tx.update.update({
-          where: {
-            id: input.updateId,
-            companyId,
-          },
-          data: {
-            public: !foundUpdate.public,
-            status: foundUpdate.public
-              ? UpdateStatusEnum.PRIVATE
-              : UpdateStatusEnum.PUBLIC,
-          },
-        });
+
+        const newPublicStatus = !foundUpdate.public;
+        const newStatus = foundUpdate.public ? "PRIVATE" : "PUBLIC";
+
+        const [updated] = await tx
+          .update(updates)
+          .set({
+            public: newPublicStatus,
+            status: newStatus as "DRAFT" | "PUBLIC" | "PRIVATE",
+            updatedAt: new Date(),
+          })
+          .where(and(eq(updates.id, input.updateId), eq(updates.companyId, companyId)))
+          .returning({
+            id: updates.id,
+            title: updates.title,
+            public: updates.public,
+            status: updates.status,
+          });
+
+        if (!updated) {
+          throw new Error("Failed to update visibility");
+        }
+
         await Audit.create(
           {
             action: "update.updated",
@@ -53,7 +70,7 @@ export const toggleUpdateVisibilityProcedure = withAuth
             actor: { type: "user", id: authorId },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "update", id: updated.id }],
             summary: `${memberName} changed the visibility to ${
@@ -64,8 +81,7 @@ export const toggleUpdateVisibilityProcedure = withAuth
         );
 
         return {
-          isPublic:
-            updated.public && updated.status === UpdateStatusEnum.PUBLIC,
+          isPublic: updated.public && updated.status === "PUBLIC",
         };
       });
       return {

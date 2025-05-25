@@ -7,6 +7,17 @@ import { decode, encode } from "@/lib/jwt";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  templates, 
+  templateFields, 
+  esignRecipients, 
+  companies,
+  eq, 
+  and, 
+  inArray,
+  notInArray 
+} from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { ZodAddFieldMutationSchema } from "../schema";
@@ -56,31 +67,39 @@ export const addFieldProcedure = withAuth
         };
       }
 
-      const template = await ctx.db.$transaction(async (tx) => {
+      const template = await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({
           tx,
           session: ctx.session,
         });
 
-        const template = await tx.template.findFirstOrThrow({
-          where: {
-            publicId: input.templatePublicId,
-            companyId,
-            status: "DRAFT",
-          },
-          select: {
-            id: true,
-            name: true,
-            completedOn: true,
-            orderedDelivery: true,
-            company: {
-              select: {
-                name: true,
-                logo: true,
-              },
-            },
-          },
-        });
+        const templateResult = await tx
+          .select({
+            id: templates.id,
+            name: templates.name,
+            completedOn: templates.completedOn,
+            orderedDelivery: templates.orderedDelivery,
+            companyName: companies.name,
+            companyLogo: companies.logo,
+          })
+          .from(templates)
+          .leftJoin(companies, eq(templates.companyId, companies.id))
+          .where(
+            and(
+              eq(templates.publicId, input.templatePublicId),
+              eq(templates.companyId, companyId),
+              eq(templates.status, "DRAFT")
+            )
+          )
+          .limit(1);
+
+        const template = templateResult[0];
+        if (!template) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Template not found",
+          });
+        }
 
         if (template.completedOn) {
           throw new TRPCError({
@@ -89,38 +108,39 @@ export const addFieldProcedure = withAuth
           });
         }
 
-        await tx.templateField.deleteMany({
-          where: {
-            templateId: template.id,
-          },
-        });
+        await tx
+          .delete(templateFields)
+          .where(eq(templateFields.templateId, template.id));
 
         const recipientIdList = input.data.map((item) => item.recipientId);
-        const recipientList = await tx.esignRecipient.findMany({
-          where: {
-            templateId: template.id,
-            id: {
-              in: recipientIdList,
-            },
-          },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        });
+        const recipientList = await tx
+          .select({
+            id: esignRecipients.id,
+            name: esignRecipients.name,
+            email: esignRecipients.email,
+          })
+          .from(esignRecipients)
+          .where(
+            and(
+              eq(esignRecipients.templateId, template.id),
+              inArray(esignRecipients.id, recipientIdList)
+            )
+          );
 
         const fieldsList = [];
 
         for (const field of input.data) {
           if (field) {
-            fieldsList.push({ ...field, templateId: template.id });
+            fieldsList.push({ 
+              ...field, 
+              type: field.type as "TEXT" | "RADIO" | "EMAIL" | "DATE" | "DATETIME" | "TEXTAREA" | "CHECKBOX" | "SIGNATURE" | "SELECT",
+              templateId: template.id,
+              updatedAt: new Date(),
+            });
           }
         }
 
-        await tx.templateField.createMany({
-          data: fieldsList,
-        });
+        await tx.insert(templateFields).values(fieldsList);
 
         await Audit.create(
           {
@@ -129,7 +149,7 @@ export const addFieldProcedure = withAuth
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "template", id: template.id }],
             summary: `${user.name} added templateField for template ID ${template.id}`,
@@ -137,28 +157,27 @@ export const addFieldProcedure = withAuth
           tx,
         );
 
-        await tx.template.update({
-          where: {
-            id: template.id,
-          },
-          data: {
-            status: input.status,
+        await tx
+          .update(templates)
+          .set({
+            status: input.status as "DRAFT" | "COMPLETE" | "SENT" | "WAITING" | "CANCELLED",
             message: input.message,
-          },
-        });
+            updatedAt: new Date(),
+          })
+          .where(eq(templates.id, template.id));
 
         if (input.status === "COMPLETE") {
           const nonDeletableRecipientIdList = recipientList.map(
             (item) => item.id,
           );
-          await tx.esignRecipient.deleteMany({
-            where: {
-              templateId: template.id,
-              id: {
-                notIn: nonDeletableRecipientIdList,
-              },
-            },
-          });
+          await tx
+            .delete(esignRecipients)
+            .where(
+              and(
+                eq(esignRecipients.templateId, template.id),
+                notInArray(esignRecipients.id, nonDeletableRecipientIdList)
+              )
+            );
 
           for (const recipient of recipientList) {
             if (!recipient) {
@@ -170,11 +189,8 @@ export const addFieldProcedure = withAuth
               templateId: template.id,
             });
 
-            const email = recipient.email;
-
             mails.push({
               token,
-              email,
               recipient: {
                 id: recipient.id,
                 name: recipient?.name,
@@ -187,8 +203,8 @@ export const addFieldProcedure = withAuth
               message: input?.message,
               documentName: template.name,
               company: {
-                name: template.company.name,
-                logo: template.company.logo,
+                name: template.companyName || "",
+                logo: template.companyLogo,
               },
             });
 

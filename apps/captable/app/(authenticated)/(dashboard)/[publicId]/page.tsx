@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   title: "Overview",
 };
 
-const OverviewPage = ({
-  params: { publicId },
+const OverviewPage = async ({
+  params,
 }: {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 }) => {
+  const { publicId } = await params;
   return (
     <>
       {/* <EmptyOverview firstName={firstName} publicCompanyId={publicCompanyId} /> */}

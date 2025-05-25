@@ -2,6 +2,12 @@ import { generatePublicId } from "@/lib/common/id";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { 
+  db, 
+  options, 
+  documents
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodAddOptionMutationSchema } from "../schema";
 
 export const addOptionProcedure = withAuth
@@ -10,9 +16,9 @@ export const addOptionProcedure = withAuth
     const { userAgent, requestIp } = ctx;
     try {
       const user = ctx.session.user;
-      const documents = input.documents;
+      const documentInputs = input.documents;
 
-      await ctx.db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({
           tx,
           session: ctx.session,
@@ -26,8 +32,8 @@ export const addOptionProcedure = withAuth
           grantId: input.grantId,
           quantity: input.quantity,
           exercisePrice: input.exercisePrice,
-          type: input.type,
-          status: input.status,
+          type: input.type as "ISO" | "NSO" | "RSU",
+          status: input.status as "ACTIVE" | "DRAFT" | "CANCELLED" | "EXERCISED" | "EXPIRED",
           cliffYears: input.cliffYears,
           vestingYears: input.vestingYears,
           issueDate: new Date(input.issueDate),
@@ -35,23 +41,36 @@ export const addOptionProcedure = withAuth
           vestingStartDate: new Date(input.vestingStartDate),
           boardApprovalDate: new Date(input.boardApprovalDate),
           rule144Date: new Date(input.rule144Date),
+          updatedAt: new Date(),
         };
 
-        const option = await tx.option.create({ data });
+        const [option] = await tx
+          .insert(options)
+          .values(data)
+          .returning({ id: options.id });
 
-        const bulkDocuments = documents.map((doc) => ({
-          companyId,
-          uploaderId: user.memberId,
-          publicId: generatePublicId(),
-          name: doc.name,
-          bucketId: doc.bucketId,
-          optionId: option.id,
-        }));
+        if (!option) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create option",
+          });
+        }
 
-        await tx.document.createMany({
-          data: bulkDocuments,
-          skipDuplicates: true,
-        });
+        if (documentInputs.length > 0) {
+          const bulkDocuments = documentInputs.map((doc) => ({
+            companyId,
+            uploaderId: user.memberId,
+            publicId: generatePublicId(),
+            name: doc.name,
+            bucketId: doc.bucketId,
+            optionId: option.id,
+            updatedAt: new Date(),
+          }));
+
+          await tx
+            .insert(documents)
+            .values(bulkDocuments);
+        }
 
         await Audit.create(
           {
@@ -60,7 +79,7 @@ export const addOptionProcedure = withAuth
             actor: { type: "user", id: user.id },
             context: {
               userAgent,
-              requestIp,
+              requestIp: requestIp || "",
             },
             target: [{ type: "company", id: companyId }],
             summary: `${user.name} added stock option for stakeholder ${input.stakeholderId}`,

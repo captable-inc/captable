@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, shares, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 
 import {
@@ -65,20 +66,21 @@ export const update = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db, audit, client } = c.get("services");
+    const { audit, client } = c.get("services");
     const { membership } = c.get("session");
     const { requestIp, userAgent } = client;
     const { id } = c.req.valid("param");
 
     const body = c.req.valid("json");
 
-    const updatedShare = await db.$transaction(async (tx) => {
-      const share = await db.share.findUnique({
-        where: {
-          id,
-          companyId: membership.companyId,
-        },
-      });
+    const updatedShare = await db.transaction(async (tx) => {
+      const shareResult = await tx
+        .select()
+        .from(shares)
+        .where(and(eq(shares.id, id), eq(shares.companyId, membership.companyId)))
+        .limit(1);
+
+      const share = shareResult[0];
 
       if (!share) {
         throw new ApiError({
@@ -87,12 +89,32 @@ export const update = withAuthApiV1
         });
       }
 
-      const updatedShare = await tx.share.update({
-        where: {
-          id: share.id,
-        },
-        data: body,
-      });
+      // Convert string dates to Date objects for database
+      const { issueDate, rule144Date, vestingStartDate, boardApprovalDate, ...bodyWithoutDates } = body;
+      
+      const updateData = {
+        ...bodyWithoutDates,
+        updatedAt: new Date(),
+        ...(issueDate && { issueDate: new Date(issueDate) }),
+        ...(rule144Date && { rule144Date: new Date(rule144Date) }),
+        ...(vestingStartDate && { vestingStartDate: new Date(vestingStartDate) }),
+        ...(boardApprovalDate && { boardApprovalDate: new Date(boardApprovalDate) }),
+      };
+
+      const updatedShareResult = await tx
+        .update(shares)
+        .set(updateData)
+        .where(eq(shares.id, share.id))
+        .returning();
+
+      const updatedShare = updatedShareResult[0];
+
+      if (!updatedShare) {
+        throw new ApiError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update share",
+        });
+      }
 
       await audit.create(
         {
@@ -104,13 +126,20 @@ export const update = withAuthApiV1
             requestIp: requestIp,
           },
           target: [{ type: "share", id: share.id }],
-          summary: `${membership.user.name} updated share the share ID ${updatedShare.id}`,
+          summary: `${membership.user?.name || 'User'} updated share the share ID ${updatedShare.id}`,
         },
         tx,
       );
 
       return updatedShare;
     });
+
+    if (!updatedShare) {
+      throw new ApiError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update share",
+      });
+    }
 
     const data: ShareSchemaType = {
       ...updatedShare,

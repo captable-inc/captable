@@ -12,10 +12,11 @@ export const metadata: Metadata = {
 };
 
 const UpdatesPage = async ({
-  params: { publicId },
+  params,
 }: {
-  params: { publicId: string };
+  params: Promise<{ publicId: string }>;
 }) => {
+  const { publicId } = await params;
   const updates = await api.update.get.query();
 
   if (updates.data.length === 0) {

@@ -1,26 +1,23 @@
 import { checkMembership } from "@/server/auth";
 import { withAuth } from "@/trpc/api/trpc";
+import { db, templates, eq, desc } from "@captable/db";
 
 export const getAllTemplateProcedure = withAuth.query(async ({ ctx }) => {
-  const { documents } = await ctx.db.$transaction(async (tx) => {
+  const { documents } = await db.transaction(async (tx) => {
     const { companyId } = await checkMembership({ tx, session: ctx.session });
 
-    const documents = await tx.template.findMany({
-      where: {
-        companyId,
-      },
-      select: {
-        id: true,
-        publicId: true,
-        status: true,
-        completedOn: true,
-        name: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const documents = await tx
+      .select({
+        id: templates.id,
+        publicId: templates.publicId,
+        status: templates.status,
+        completedOn: templates.completedOn,
+        name: templates.name,
+        createdAt: templates.createdAt,
+      })
+      .from(templates)
+      .where(eq(templates.companyId, companyId))
+      .orderBy(desc(templates.createdAt));
 
     return { documents };
   });

@@ -1,6 +1,14 @@
 import { generatePublicId } from "@/lib/common/id";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import { ZodOnboardingMutationSchema } from "./schema";
+import { 
+  db, 
+  companies, 
+  users, 
+  members,
+  eq 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 
 import { Audit } from "@/server/audit";
 
@@ -11,41 +19,59 @@ export const onboardingRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { userAgent, requestIp } = ctx;
       try {
-        const { publicId } = await ctx.db.$transaction(async (tx) => {
+        const { publicId } = await db.transaction(async (tx) => {
           const publicId = generatePublicId();
 
-          const company = await tx.company.create({
-            data: {
+          const [company] = await tx
+            .insert(companies)
+            .values({
               ...input.company,
               incorporationDate: new Date(input.company.incorporationDate),
               publicId,
-            },
-          });
+              updatedAt: new Date(),
+            })
+            .returning({
+              id: companies.id,
+              name: companies.name,
+            });
 
-          const user = await tx.user.update({
-            where: {
-              id: ctx.session.user.id,
-            },
-            data: {
+          if (!company) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to create company",
+            });
+          }
+
+          const [user] = await tx
+            .update(users)
+            .set({
               name: `${input.user.name}`,
               email: `${input.user.email}`,
-            },
-            select: {
-              id: true,
-              name: true,
-            },
-          });
+            })
+            .where(eq(users.id, ctx.session.user.id))
+            .returning({
+              id: users.id,
+              name: users.name,
+            });
 
-          await tx.member.create({
-            data: {
+          if (!user) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Failed to update user",
+            });
+          }
+
+          await tx
+            .insert(members)
+            .values({
               isOnboarded: true,
               status: "ACTIVE",
               title: input.user.title,
               userId: user.id,
               companyId: company.id,
               lastAccessed: new Date(),
-            },
-          });
+              updatedAt: new Date(),
+            });
 
           await Audit.create(
             {
@@ -54,7 +80,7 @@ export const onboardingRouter = createTRPCRouter({
               actor: { type: "user", id: user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "company", id: company.id }],
               summary: `${user.name} onboarded ${company.name}`,
@@ -69,7 +95,7 @@ export const onboardingRouter = createTRPCRouter({
               actor: { type: "user", id: user.id },
               context: {
                 userAgent,
-                requestIp,
+                requestIp: requestIp || "",
               },
               target: [{ type: "company", id: company.id }],
               summary: `${user.name} created company ${company.name}`,

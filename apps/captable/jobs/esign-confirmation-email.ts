@@ -1,7 +1,6 @@
-import ESignConfirmationEmail from "@/emails/EsignConfirmationEmail";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { EsignConfirmationEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type ConfirmationEmailPayloadType = {
@@ -16,11 +15,11 @@ export type ConfirmationEmailPayloadType = {
   recipient: { name?: string | null; email: string };
 };
 
-export const sendEsignConfirmationEmail = async (
+const sendEsignConfirmationEmail = async (
   payload: ConfirmationEmailPayloadType,
 ) => {
   const html = await renderAsync(
-    ESignConfirmationEmail({
+    EsignConfirmationEmail({
       documentName: payload.documentName,
       recipient: payload.recipient,
       senderName: payload.senderName,
@@ -28,21 +27,17 @@ export const sendEsignConfirmationEmail = async (
       company: payload.company,
     }),
   );
+
   await sendMail({
-    to: payload.recipient.email,
-    ...(payload.senderEmail && { replyTo: payload.senderEmail }),
-    subject: "Completed e-signed documents from all parties",
+    to: [payload.recipient.email],
+    subject: `Document signed: ${payload.documentName}`,
     html,
     attachments: [
       {
-        filename: payload.documentName,
+        filename: `${payload.documentName}.pdf`,
         path: payload.fileUrl,
       },
     ],
-
-    headers: {
-      "X-From-Name": payload.senderName || "Captable",
-    },
   });
 };
 

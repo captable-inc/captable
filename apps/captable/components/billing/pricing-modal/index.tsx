@@ -36,8 +36,8 @@ function Plans({ products, subscription }: PricingProps) {
   const router = useRouter();
   const intervals = Array.from(
     new Set(
-      products.flatMap((product: Products) =>
-        product?.prices?.map((price: Products["prices"]) => price?.interval),
+      products.flatMap((product) =>
+        product?.prices?.map((price) => price?.interval),
       ),
     ),
   );
@@ -112,10 +112,9 @@ function Plans({ products, subscription }: PricingProps) {
             },
           })}
         />
-        {products.map((product: Products[number]) => {
+        {products.map((product) => {
           const price = product?.prices?.find(
-            (price: Products[number]["prices"][number]) =>
-              price.interval === billingInterval,
+            (price) => price.interval === billingInterval,
           );
           if (!price) return null;
 

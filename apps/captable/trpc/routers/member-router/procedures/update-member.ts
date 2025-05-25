@@ -1,6 +1,14 @@
 import { getRoleById } from "@/lib/rbac/access-control";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
+import { 
+  db, 
+  members, 
+  users,
+  eq, 
+  and 
+} from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import { ZodUpdateMemberMutationSchema } from "../schema";
 
 export const updateMemberProcedure = withAccessControl
@@ -12,49 +20,57 @@ export const updateMemberProcedure = withAccessControl
   })
   .mutation(
     async ({
-      ctx: { session, db, requestIp, userAgent, membership },
+      ctx: { session, requestIp, userAgent, membership },
       input,
     }) => {
       const { memberId, name, roleId, ...rest } = input;
       const { companyId } = membership;
       const user = session.user;
 
-      await db.$transaction(async (tx) => {
+      await db.transaction(async (tx) => {
         const role = await getRoleById({ tx, id: roleId });
 
-        const member = await tx.member.update({
-          where: {
-            status: "ACTIVE",
-            id: memberId,
-            companyId,
-          },
-          data: {
+        // Update member
+        const [updatedMember] = await tx
+          .update(members)
+          .set({
             ...rest,
-            ...(role && { role: role.role }),
-            customRole: {
-              ...(role.customRoleId
-                ? {
-                    connect: {
-                      id: role.customRoleId,
-                    },
-                  }
-                : { disconnect: true }),
-            },
-            user: {
-              update: {
-                name,
-              },
-            },
-          },
-          select: {
-            userId: true,
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
-        });
+            role: role.role as "ADMIN" | "CUSTOM" | null,
+            customRoleId: role.customRoleId,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(members.status, "ACTIVE"),
+              eq(members.id, memberId),
+              eq(members.companyId, companyId)
+            )
+          )
+          .returning({
+            userId: members.userId,
+          });
+
+        if (!updatedMember) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Member not found",
+          });
+        }
+
+        // Update user name
+        if (name) {
+          await tx
+            .update(users)
+            .set({ name })
+            .where(eq(users.id, updatedMember.userId));
+        }
+
+        // Get updated user name for audit
+        const [memberUser] = await tx
+          .select({ name: users.name })
+          .from(users)
+          .where(eq(users.id, updatedMember.userId))
+          .limit(1);
 
         await Audit.create(
           {
@@ -62,11 +78,11 @@ export const updateMemberProcedure = withAccessControl
             companyId: user.companyId,
             actor: { type: "user", id: user.id },
             context: {
-              requestIp,
+              requestIp: requestIp || "",
               userAgent,
             },
-            target: [{ type: "user", id: member.userId }],
-            summary: `${user.name} updated ${member.user?.name} details`,
+            target: [{ type: "user", id: updatedMember.userId }],
+            summary: `${user.name} updated ${memberUser?.name} details`,
           },
           tx,
         );

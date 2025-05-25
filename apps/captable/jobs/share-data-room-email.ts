@@ -1,7 +1,6 @@
-import ShareDataRoomEmail from "@/emails/ShareDataRoomEmail";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { ShareDataRoomEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type DataRoomEmailPayloadType = {
@@ -14,35 +13,19 @@ export type DataRoomEmailPayloadType = {
   senderEmail?: string | null | undefined;
 };
 
-export const sendShareDataRoomEmail = async (
-  payload: DataRoomEmailPayloadType,
-) => {
-  const {
-    dataRoom,
-    link,
-    companyName,
-    recipientName,
-    senderName,
-    email,
-    senderEmail,
-  } = payload;
+const sendShareDataRoomEmail = async (payload: DataRoomEmailPayloadType) => {
   await sendMail({
-    to: email,
-    ...(senderEmail && { replyTo: senderEmail }),
-    subject: `${senderName} shared a data room - ${dataRoom}`,
+    to: [payload.email],
+    subject: `${payload.senderName} shared a data room with you`,
     html: await renderAsync(
       ShareDataRoomEmail({
-        senderName: senderName,
-        recipientName,
-        companyName,
-        dataRoom,
-        link,
+        senderName: payload.senderName,
+        recipientName: payload.recipientName,
+        companyName: payload.companyName,
+        dataRoom: payload.dataRoom,
+        link: payload.link,
       }),
     ),
-
-    headers: {
-      "X-From-Name": senderName,
-    },
   });
 };
 

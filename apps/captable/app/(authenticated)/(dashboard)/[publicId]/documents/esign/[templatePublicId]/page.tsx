@@ -7,10 +7,11 @@ import { withServerComponentSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 
 const EsignTemplateDetailPage = async ({
-  params: { templatePublicId },
+  params,
 }: {
-  params: { templatePublicId: string };
+  params: Promise<{ templatePublicId: string }>;
 }) => {
+  const { templatePublicId } = await params;
   const session = await withServerComponentSession();
 
   const { name, status, url, fields, recipients } =

@@ -1,25 +1,31 @@
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
+import { db, users, eq } from "@captable/db";
+import { TRPCError } from "@trpc/server";
 import bcrypt from "bcryptjs";
 import { ZUpdatePasswordMutationSchema } from "../schema";
+
 export const updatePasswordProcedure = withAuth
   .input(ZUpdatePasswordMutationSchema)
-  .mutation(async ({ ctx: { session, db, userAgent, requestIp }, input }) => {
+  .mutation(async ({ ctx: { session, userAgent, requestIp }, input }) => {
     const companyId = session.user.companyId;
     const userId = session.user.id;
     const { currentPassword, newPassword } = input;
 
-    const user = await db.user.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        password: true,
-      },
-    });
+    const userResult = await db
+      .select({
+        password: users.password,
+      })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
+    const user = userResult[0];
     if (!user?.password) {
-      throw new Error("User has no password");
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User has no password",
+      });
     }
 
     const isCurrentPasswordValid = await bcrypt.compare(
@@ -27,28 +33,31 @@ export const updatePasswordProcedure = withAuth
       user.password,
     );
     if (!isCurrentPasswordValid) {
-      throw new Error("Current password is incorrect.");
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Current password is incorrect.",
+      });
     }
 
     // Compare the new password with the old password
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword) {
-      throw new Error(
-        "Your new password cannot be the same as your old password.",
-      );
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Your new password cannot be the same as your old password.",
+      });
     }
     const SALT_ROUNDS = await bcrypt.genSalt(10);
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-    await db.$transaction(async (tx) => {
-      await tx.user.update({
-        where: {
-          id: userId,
-        },
-        data: {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(users)
+        .set({
           password: hashedNewPassword,
-        },
-      });
+        })
+        .where(eq(users.id, userId));
+
       await Audit.create(
         {
           action: "password.updated",
@@ -56,7 +65,7 @@ export const updatePasswordProcedure = withAuth
           actor: { type: "user", id: userId },
           context: {
             userAgent,
-            requestIp,
+            requestIp: requestIp || "",
           },
           target: [{ type: "user", id: userId }],
           summary: `${session.user.name} updated a new password.`,

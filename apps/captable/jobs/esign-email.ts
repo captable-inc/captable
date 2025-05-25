@@ -1,9 +1,8 @@
-import EsignEmail from "@/emails/EsignEmail";
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { db, esignRecipients, templates, eq } from "@captable/db";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@react-email/components";
+import { EsignEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export interface EsignEmailPayloadType {
@@ -24,32 +23,29 @@ export interface EsignEmailPayloadType {
   };
 }
 
-interface AdditionalPayloadType {
-  email: string;
+export type ExtendedEsignPayloadType = EsignEmailPayloadType & {
   token: string;
-}
+};
 
-export type ExtendedEsignPayloadType = EsignEmailPayloadType &
-  AdditionalPayloadType;
+const sendEsignEmail = async (payload: ExtendedEsignPayloadType) => {
+  const { token, ...rest } = payload;
+  const signingLink = `${env.NEXTAUTH_URL}/esign/${token}`;
 
-export const sendEsignEmail = async (payload: ExtendedEsignPayloadType) => {
-  const { email, token, sender, ...rest } = payload;
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL;
   const html = await renderAsync(
     EsignEmail({
-      signingLink: `${baseUrl}/esign/${token}`,
-      sender,
-      ...rest,
+      signingLink,
+      documentName: rest.documentName,
+      message: rest.message,
+      recipient: rest.recipient,
+      sender: rest.sender,
+      company: rest.company,
     }),
   );
+
   await sendMail({
-    to: email,
-    ...(sender?.email && { replyTo: sender.email }),
-    subject: "eSign Document Request",
+    to: [payload.recipient.email],
+    subject: `${payload.sender?.name} has sent you a document to sign`,
     html,
-    headers: {
-      "X-From-Name": sender?.name || "Captable",
-    },
   });
 };
 

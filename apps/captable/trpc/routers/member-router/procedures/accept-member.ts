@@ -1,5 +1,6 @@
 import { Audit } from "@/server/audit";
 import { withAuth } from "@/trpc/api/trpc";
+import { db, verificationTokens, users, members, companies, eq } from "@captable/db";
 import { ZodAcceptMemberMutationSchema } from "../schema";
 
 export const acceptMemberProcedure = withAuth
@@ -8,66 +9,74 @@ export const acceptMemberProcedure = withAuth
     const user = ctx.session.user;
     const { userAgent, requestIp } = ctx;
 
-    const { publicId } = await ctx.db.$transaction(async (trx) => {
-      await trx.verificationToken.delete({
-        where: {
-          token: input.token,
-        },
-      });
+    const { publicId } = await db.transaction(async (trx) => {
+      await trx
+        .delete(verificationTokens)
+        .where(eq(verificationTokens.token, input.token));
 
-      await trx.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
+      await trx
+        .update(users)
+        .set({
           name: input.name,
-        },
-      });
+        })
+        .where(eq(users.id, user.id));
 
-      const member = await trx.member.update({
-        where: {
-          id: input.memberId,
-        },
-        data: {
+      const [updatedMember] = await trx
+        .update(members)
+        .set({
           status: "ACTIVE",
           lastAccessed: new Date(),
           isOnboarded: true,
           userId: user.id,
           workEmail: input.workEmail,
-        },
-        select: {
-          company: {
-            select: {
-              publicId: true,
-              name: true,
-              id: true,
-            },
-          },
-          userId: true,
-          user: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
+        })
+        .where(eq(members.id, input.memberId))
+        .returning();
+
+      if (!updatedMember) {
+        throw new Error("Failed to update member");
+      }
+
+      // Get company details
+      const [company] = await trx
+        .select({
+          publicId: companies.publicId,
+          name: companies.name,
+          id: companies.id,
+        })
+        .from(companies)
+        .where(eq(companies.id, updatedMember.companyId))
+        .limit(1);
+
+      if (!company) {
+        throw new Error("Company not found");
+      }
+
+      // Get user details
+      const [memberUser] = await trx
+        .select({
+          name: users.name,
+        })
+        .from(users)
+        .where(eq(users.id, updatedMember.userId))
+        .limit(1);
 
       await Audit.create(
         {
           action: "member.accepted",
-          companyId: member.company.id,
+          companyId: company.id,
           actor: { type: "user", id: user.id },
           context: {
-            requestIp,
+            requestIp: requestIp || "",
             userAgent,
           },
-          target: [{ type: "user", id: member.userId }],
-          summary: `${member?.user?.name} joined ${member.company.name}`,
+          target: [{ type: "user", id: updatedMember.userId }],
+          summary: `${memberUser?.name} joined ${company.name}`,
         },
         trx,
       );
 
-      return { publicId: member.company.publicId };
+      return { publicId: company.publicId };
     });
 
     return { success: true, publicId };

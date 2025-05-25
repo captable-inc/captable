@@ -1,4 +1,5 @@
 import { CompanySchema } from "@/server/api/schema/company";
+import { db, members, companies, eq, inArray } from "@captable/db";
 import { z } from "@hono/zod-openapi";
 import { authMiddleware, withAuthApiV1 } from "../../utils/endpoint-creator";
 
@@ -22,19 +23,19 @@ export const getMany = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db } = c.get("services");
     const { membership } = c.get("session");
 
-    const userMemberships = await db.member.findMany({
-      where: { userId: membership.userId },
-      select: { companyId: true },
-    });
+    const userMemberships = await db
+      .select({ companyId: members.companyId })
+      .from(members)
+      .where(eq(members.userId, membership.userId));
 
-    const companies = await db.company.findMany({
-      where: {
-        id: { in: userMemberships.map((item) => item.companyId) },
-      },
-    });
+    const companyIds = userMemberships.map((item) => item.companyId);
 
-    return c.json(companies, 200);
+    const companiesResult = await db
+      .select()
+      .from(companies)
+      .where(inArray(companies.id, companyIds));
+
+    return c.json(companiesResult, 200);
   });

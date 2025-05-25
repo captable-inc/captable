@@ -131,8 +131,8 @@ export function FieldRenderer({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {meta.options?.map(
-                    (item: NonNullable<typeof meta.options>[number]) => (
+                  {(meta as { options?: Array<{ id: string; value: string }> })?.options?.map(
+                    (item) => (
                       <SelectItem key={item.id} value={item.id}>
                         {item.value}
                       </SelectItem>

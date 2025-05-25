@@ -24,10 +24,8 @@ import {
 } from "@/lib/types";
 
 import type { MemberStatusEnum } from "@captable/db";
-import {
-  verifyAuthenticationResponse,
-  type AuthenticatorTransportFuture,
-} from "@simplewebauthn/server";
+import { verifyAuthenticationResponse } from "@simplewebauthn/server";
+import type { AuthenticatorTransportFuture } from "@simplewebauthn/types";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { cache } from "react";
@@ -256,9 +254,9 @@ export const authOptions: NextAuthOptions = {
           expectedChallenge: challengeToken.token,
           expectedOrigin: origin,
           expectedRPID: rpId,
-          credential: {
-            id: credentialIdString,
-            publicKey: publicKeyArray,
+          authenticator: {
+            credentialID: credentialIdString,
+            credentialPublicKey: publicKeyArray,
             counter: Number(passkeyRecord.counter),
             transports:
               passkeyRecord.transports as AuthenticatorTransportFuture[],

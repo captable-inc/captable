@@ -2,6 +2,7 @@ import { getAuthenticatorOptions } from "@/lib/authenticator";
 import { db } from "@captable/db";
 import { passkeyVerificationTokens } from "@captable/db";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
 
 type CreatePasskeySigninOptions = {
   sessionId: string;
@@ -9,7 +10,7 @@ type CreatePasskeySigninOptions = {
 
 export const createPasskeySigninOptions = async ({
   sessionId,
-}: CreatePasskeySigninOptions) => {
+}: CreatePasskeySigninOptions): Promise<PublicKeyCredentialRequestOptionsJSON> => {
   const { rpId, timeout } = getAuthenticatorOptions();
 
   const options = await generateAuthenticationOptions({

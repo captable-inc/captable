@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { db, stakeholders, eq, and } from "@captable/db";
 import { ApiError } from "../../error";
 import {
   StakeholderSchema,
@@ -54,16 +55,19 @@ export const getOne = withAuthApiV1
     },
   })
   .handler(async (c) => {
-    const { db } = c.get("services");
     const { membership } = c.get("session");
     const { id } = c.req.valid("param");
 
-    const stakeholder = await db.stakeholder.findUnique({
-      where: {
-        id,
-        companyId: membership.companyId,
-      },
-    });
+    const [stakeholder] = await db
+      .select()
+      .from(stakeholders)
+      .where(
+        and(
+          eq(stakeholders.id, id),
+          eq(stakeholders.companyId, membership.companyId)
+        )
+      )
+      .limit(1);
 
     if (!stakeholder) {
       throw new ApiError({
