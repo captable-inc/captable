@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { PasswordResetEmail, renderAsync } from "@captable/email";
+import { renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type PasswordResetPayloadType = {
@@ -15,6 +15,9 @@ const sendPasswordResetEmail = async ({
 }: PasswordResetPayloadType) => {
   const resetLink = `${env.NEXTAUTH_URL}/reset-password?token=${token}`;
 
+  // Dynamic import to avoid build-time processing
+  const { PasswordResetEmail } = await import("@captable/email");
+  
   const html = await renderAsync(
     PasswordResetEmail({
       resetLink,

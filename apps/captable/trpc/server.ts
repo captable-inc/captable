@@ -46,13 +46,13 @@ export const api = createTRPCProxyClient<AppRouter>({
               const caller = appRouter.createCaller(ctx);
 
               // Navigate to the correct procedure and call it
-              // Using explicit any types for dynamic procedure access in RSC context
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              // Using Record<string, unknown> for dynamic procedure access in RSC context
               const procedure = op.path
                 .split(".")
-                .reduce((acc: any, segment) => acc[segment], caller as any);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return (procedure as any)(op.input);
+                .reduce((acc: Record<string, unknown>, segment) => acc[segment] as Record<string, unknown>, caller as Record<string, unknown>);
+              
+              // Call the procedure with proper typing
+              return (procedure as unknown as (input: unknown) => Promise<unknown>)(op.input);
             })
             .then((data) => {
               observer.next({ result: { data } });

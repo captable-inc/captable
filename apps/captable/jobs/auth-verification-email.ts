@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { AccountVerificationEmail, renderAsync } from "@captable/email";
+import { renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
 export type AuthVerificationPayloadType = {
@@ -9,11 +9,14 @@ export type AuthVerificationPayloadType = {
   token: string;
 };
 
-export const sendAuthVerificationEmail = async ({
+const sendAuthVerificationEmail = async ({
   email,
   token,
 }: AuthVerificationPayloadType) => {
-  const verifyLink = `${env.NEXTAUTH_URL}/verify-email?token=${token}`;
+  const verifyLink = `${env.NEXTAUTH_URL}/verify-email/${token}`;
+
+  // Dynamic import to avoid build-time processing
+  const { AccountVerificationEmail } = await import("@captable/email");
 
   const html = await renderAsync(
     AccountVerificationEmail({
@@ -23,10 +26,12 @@ export const sendAuthVerificationEmail = async ({
 
   await sendMail({
     to: [email],
-    subject: "Verify your email address",
+    subject: "Verify your email",
     html,
   });
 };
+
+export { sendAuthVerificationEmail };
 
 export class AuthVerificationEmailJob extends BaseJob<AuthVerificationPayloadType> {
   readonly type = "email.auth-verify";

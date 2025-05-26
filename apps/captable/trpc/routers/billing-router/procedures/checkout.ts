@@ -9,6 +9,11 @@ import { ZodCheckoutMutationSchema } from "../schema";
 export const checkoutProcedure = withAuth
   .input(ZodCheckoutMutationSchema)
   .mutation(async ({ ctx, input }) => {
+    if (!stripe) {
+      throw new Error("Stripe not configured");
+    }
+
+    const stripeClient = stripe;
     const { priceId, priceType } = input;
     const { db, session } = ctx;
 
@@ -43,7 +48,7 @@ export const checkoutProcedure = withAuth
 
       let stripeSession: Stripe.Checkout.Session | undefined;
       try {
-        stripeSession = await stripe.checkout.sessions.create(params);
+        stripeSession = await stripeClient.checkout.sessions.create(params);
       } catch (err) {
         console.error(err);
         throw new Error("Unable to create checkout session.");

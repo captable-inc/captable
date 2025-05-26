@@ -17,10 +17,13 @@ const toDateTime = (secs: number) => {
   return t;
 };
 
-export const stripe = new Stripe(env.STRIPE_API_KEY ?? "", {
-  typescript: true,
-  apiVersion: "2025-04-30.basil",
-});
+// Only initialize Stripe if API key is available
+export const stripe = env.STRIPE_API_KEY 
+  ? new Stripe(env.STRIPE_API_KEY, {
+      typescript: true,
+      apiVersion: "2025-04-30.basil",
+    })
+  : null;
 
 export { Stripe };
 
@@ -79,6 +82,10 @@ export const manageSubscriptionStatusChange = async (
   customerId: string,
   createAction = false,
 ) => {
+  if (!stripe) {
+    throw new Error("Stripe not configured");
+  }
+
   const customer = await db.query.billingCustomers.findFirst({
     where: eq(billingCustomers.id, customerId),
   });
@@ -168,6 +175,10 @@ const createCustomerInStripe = async ({
   email,
   companyId,
 }: createCustomerInStripeOptions) => {
+  if (!stripe) {
+    throw new Error("Stripe not configured");
+  }
+
   const customerData = { metadata: { companyId }, email: email };
   const newCustomer = await stripe.customers.create(customerData);
 
@@ -187,6 +198,10 @@ export async function createOrRetrieveCustomer({
   tx,
   email,
 }: createOrRetrieveCustomerOptions) {
+  if (!stripe) {
+    throw new Error("Stripe not configured");
+  }
+
   const existingCustomer = await tx.query.billingCustomers.findFirst({
     where: eq(billingCustomers.companyId, companyId),
   });

@@ -23,6 +23,11 @@ const relevantEvents = new Set([
 ]);
 
 export async function POST(req: Request) {
+  // Check if Stripe is configured
+  if (!stripe) {
+    return new Response("Stripe not configured", { status: 503 });
+  }
+
   const body = await req.text();
   const sig = req.headers.get("stripe-signature") as string;
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET;

@@ -13,8 +13,8 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "email build",
-    "build:tsc": "tsc && tsc-alias",
+    "build": "tsc && tsc-alias",
+    "build:email": "email build",
     "dev": "email dev --port 3001",
     "export": "email export"
   },

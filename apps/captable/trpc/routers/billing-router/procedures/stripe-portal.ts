@@ -8,6 +8,11 @@ import { ZodStripePortalMutationSchema } from "../schema";
 export const stripePortalProcedure = withAuth
   .input(ZodStripePortalMutationSchema)
   .mutation(async ({ ctx, input }) => {
+    if (!stripe) {
+      throw new Error("Stripe not configured");
+    }
+
+    const stripeClient = stripe;
     const { db, session } = ctx;
 
     const { url } = await db.transaction(async (tx) => {
@@ -28,7 +33,7 @@ export const stripePortalProcedure = withAuth
       console.log({ input });
 
       try {
-        const { url } = await stripe.billingPortal.sessions.create({
+        const { url } = await stripeClient.billingPortal.sessions.create({
           customer,
           return_url: `${env.NEXT_PUBLIC_BASE_URL}/${session.user.companyPublicId}/settings/billing`,
           flow_data: {

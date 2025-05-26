@@ -22,4 +22,45 @@ export type { MagicLinkEmailProps } from "./emails/MagicLinkEmail";
 export type { MemberInviteEmailProps } from "./emails/MemberInviteEmail";
 export type { PasswordResetEmailProps } from "./emails/PasswordResetEmail";
 export type { ShareDataRoomEmailProps } from "./emails/ShareDataRoomEmail";
-export type { ShareUpdateEmailProps } from "./emails/ShareUpdateEmail"; 
+export type { ShareUpdateEmailProps } from "./emails/ShareUpdateEmail";
+
+// Dynamic email template loaders to avoid build-time Html component conflicts
+export const getAccountVerificationEmail = async () => {
+  const { default: AccountVerificationEmail } = await import("./emails/AccountVerificationEmail");
+  return AccountVerificationEmail;
+};
+
+export const getEsignConfirmationEmail = async () => {
+  const { default: EsignConfirmationEmail } = await import("./emails/EsignConfirmationEmail");
+  return EsignConfirmationEmail;
+};
+
+export const getEsignEmail = async () => {
+  const { default: EsignEmail } = await import("./emails/EsignEmail");
+  return EsignEmail;
+};
+
+export const getMagicLinkEmail = async () => {
+  const { default: MagicLinkEmail } = await import("./emails/MagicLinkEmail");
+  return MagicLinkEmail;
+};
+
+export const getMemberInviteEmail = async () => {
+  const { default: MemberInviteEmail } = await import("./emails/MemberInviteEmail");
+  return MemberInviteEmail;
+};
+
+export const getPasswordResetEmail = async () => {
+  const { default: PasswordResetEmail } = await import("./emails/PasswordResetEmail");
+  return PasswordResetEmail;
+};
+
+export const getShareDataRoomEmail = async () => {
+  const { default: ShareDataRoomEmail } = await import("./emails/ShareDataRoomEmail");
+  return ShareDataRoomEmail;
+};
+
+export const getShareUpdateEmail = async () => {
+  const { default: ShareUpdateEmail } = await import("./emails/ShareUpdateEmail");
+  return ShareUpdateEmail;
+}; 
