@@ -1,7 +1,7 @@
 import { env } from "@/env";
 import {
   ShareUpdateEmailJob,
-  type UpdateSharePayloadType,
+  type ShareUpdateEmailPayloadType,
 } from "@/jobs/share-update-email";
 import { encode } from "@/lib/jwt";
 import {
@@ -135,16 +135,13 @@ export const shareUpdateProcedure = withAuth
 
         const link = `${baseUrl}/updates/${update.publicId}?token=${token}`;
 
-        const payload: UpdateSharePayloadType = {
+        const payload: ShareUpdateEmailPayloadType = {
+          to: email,
           senderName: `${senderName}`,
-          recipientName: recipient.name,
+          recipientName: recipient.name ?? null,
           companyName: update.companyName || "",
-          update: {
-            title: update.title,
-          },
+          updateTitle: update.title,
           link,
-          email,
-          senderEmail,
         };
 
         await new ShareUpdateEmailJob().emit(payload);

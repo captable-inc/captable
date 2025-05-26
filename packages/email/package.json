@@ -9,16 +9,22 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./templates": {
+      "import": "./dist/templates/index.js",
+      "require": "./dist/templates/index.js",
+      "types": "./dist/templates/index.d.ts"
     }
   },
   "sideEffects": false,
   "scripts": {
     "build": "tsc && tsc-alias",
-    "build:email": "email build",
-    "dev": "email dev --port 3001",
-    "export": "email export"
+    "build:email": "email build --dir templates",
+    "dev": "email dev --port 3001 --dir templates",
+    "export": "email export --dir templates"
   },
   "dependencies": {
+    "@captable/utils": "workspace:*",
     "@react-email/components": "0.0.41",
     "react-dom": "^19.0.0",
     "react": "^19.0.0"

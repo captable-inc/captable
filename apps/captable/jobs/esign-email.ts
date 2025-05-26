@@ -2,10 +2,9 @@ import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { db, esignRecipients, templates, eq } from "@captable/db";
 import { sendMail } from "@/server/mailer";
-import { EsignEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export interface EsignEmailPayloadType {
+export type EsignEmailPayloadType = {
   documentName?: string;
   message?: string | null;
   recipient: {
@@ -21,24 +20,22 @@ export interface EsignEmailPayloadType {
     name: string;
     logo: string | null | undefined;
   };
-}
-
-export type ExtendedEsignPayloadType = EsignEmailPayloadType & {
-  token: string;
+  signingLink: string;
 };
 
-const sendEsignEmail = async (payload: ExtendedEsignPayloadType) => {
-  const { token, ...rest } = payload;
-  const signingLink = `${env.NEXTAUTH_URL}/esign/${token}`;
+const sendEsignEmail = async (payload: EsignEmailPayloadType) => {
+  // Dynamic import to avoid build-time processing
+  const { getEsignEmail, render } = await import("@captable/email");
+  const EsignEmail = await getEsignEmail();
 
-  const html = await renderAsync(
+  const html = await render(
     EsignEmail({
-      signingLink,
-      documentName: rest.documentName,
-      message: rest.message,
-      recipient: rest.recipient,
-      sender: rest.sender,
-      company: rest.company,
+      signingLink: payload.signingLink,
+      documentName: payload.documentName,
+      message: payload.message,
+      recipient: payload.recipient,
+      sender: payload.sender,
+      company: payload.company,
     }),
   );
 
@@ -49,27 +46,10 @@ const sendEsignEmail = async (payload: ExtendedEsignPayloadType) => {
   });
 };
 
-export class EsignNotificationEmailJob extends BaseJob<ExtendedEsignPayloadType> {
+export class EsignEmailJob extends BaseJob<EsignEmailPayloadType> {
   readonly type = "email.esign-notification";
 
-  async work(job: Job<ExtendedEsignPayloadType>): Promise<void> {
-    await db.transaction(async (tx) => {
-      const [recipient] = await tx
-        .update(esignRecipients)
-        .set({ status: "SENT" })
-        .where(eq(esignRecipients.id, job.data.recipient.id))
-        .returning();
-
-      if (!recipient) {
-        throw new Error(`Recipient with id ${job.data.recipient.id} not found`);
-      }
-
-      await tx
-        .update(templates)
-        .set({ status: "SENT" })
-        .where(eq(templates.id, recipient.templateId));
-    });
-
+  async work(job: Job<EsignEmailPayloadType>): Promise<void> {
     await sendEsignEmail(job.data);
   }
 }

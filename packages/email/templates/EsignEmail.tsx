@@ -5,7 +5,7 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
+  Html as ReactEmailHtml,
   Link,
   Preview,
   Section,
@@ -42,7 +42,7 @@ const EsignEmail = ({
   company,
 }: EsignEmailProps) => {
   return (
-    <Html>
+    <ReactEmailHtml>
       <Head />
       <Preview>{sender?.name ?? ""} has sent you a document to sign.</Preview>
       <Tailwind>
@@ -101,7 +101,7 @@ const EsignEmail = ({
           </Container>
         </Body>
       </Tailwind>
-    </Html>
+    </ReactEmailHtml>
   );
 };
 

@@ -4,7 +4,7 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
+  Html as ReactEmailHtml,
   Preview,
   Tailwind,
   Text,
@@ -32,7 +32,7 @@ const ESignConfirmationEmail = ({
   company,
 }: EsignConfirmationEmailProps) => {
   return (
-    <Html>
+    <ReactEmailHtml>
       <Head />
       <Preview>
         {senderName ?? ""} has sent you a confirmation email with completed
@@ -66,7 +66,7 @@ const ESignConfirmationEmail = ({
           </Container>
         </Body>
       </Tailwind>
-    </Html>
+    </ReactEmailHtml>
   );
 };
 

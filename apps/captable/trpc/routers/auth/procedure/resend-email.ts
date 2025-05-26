@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { sendAuthVerificationEmail } from "@/jobs/auth-verification-email";
 
 import { generateVerificationToken } from "@/lib/token";
@@ -27,9 +28,11 @@ export const resendEmailProcedure = withoutAuth
       });
     }
 
+    const verifyLink = `${env.NEXTAUTH_URL}/verify-email/${verificationToken.token}`;
+
     await sendAuthVerificationEmail({
       email: verificationToken.identifier,
-      token: verificationToken.token,
+      verifyLink,
     });
 
     return {

@@ -5,7 +5,7 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
+  Html as ReactEmailHtml,
   Link,
   Preview,
   Section,
@@ -13,14 +13,14 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { META } from "@/lib/constants";
+import { META } from "@captable/utils/constants";
 
 export interface MagicLinkEmailProps {
   magicLink: string;
 }
 
 export const MagicLinkEmail = ({ magicLink }: MagicLinkEmailProps) => (
-  <Html>
+  <ReactEmailHtml>
     <Head />
     <Preview>Your magic link for {META.title}</Preview>
     <Tailwind>
@@ -55,7 +55,7 @@ export const MagicLinkEmail = ({ magicLink }: MagicLinkEmailProps) => (
         </Container>
       </Body>
     </Tailwind>
-  </Html>
+  </ReactEmailHtml>
 );
 
 MagicLinkEmail.PreviewProps = {

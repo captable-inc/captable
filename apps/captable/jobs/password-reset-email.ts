@@ -1,40 +1,35 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export type PasswordResetPayloadType = {
+export type PasswordResetEmailPayloadType = {
   email: string;
-  token: string;
+  resetLink: string;
 };
 
-const sendPasswordResetEmail = async ({
-  email,
-  token,
-}: PasswordResetPayloadType) => {
-  const resetLink = `${env.NEXTAUTH_URL}/reset-password?token=${token}`;
-
+const sendPasswordResetEmail = async (payload: PasswordResetEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { PasswordResetEmail } = await import("@captable/email");
-  
-  const html = await renderAsync(
+  const { getPasswordResetEmail, render } = await import("@captable/email");
+  const PasswordResetEmail = await getPasswordResetEmail();
+
+  const html = await render(
     PasswordResetEmail({
-      resetLink,
+      resetLink: payload.resetLink,
     }),
   );
 
   await sendMail({
-    to: [email],
+    to: [payload.email],
     subject: "Reset your password",
     html,
   });
 };
 
-export class PasswordResetEmailJob extends BaseJob<PasswordResetPayloadType> {
+export class PasswordResetEmailJob extends BaseJob<PasswordResetEmailPayloadType> {
   readonly type = "email.password-reset";
 
-  async work(job: Job<PasswordResetPayloadType>): Promise<void> {
+  async work(job: Job<PasswordResetEmailPayloadType>): Promise<void> {
     await sendPasswordResetEmail(job.data);
   }
 }

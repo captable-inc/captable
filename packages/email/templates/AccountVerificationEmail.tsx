@@ -5,15 +5,15 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
   Link,
   Preview,
   Section,
   Tailwind,
   Text,
+  Html as ReactEmailHtml,
 } from "@react-email/components";
 import * as React from "react";
-import { META } from "@/lib/constants";
+import { META } from "@captable/utils/constants";
 
 export interface AccountVerificationEmailProps {
   verifyLink: string;
@@ -22,7 +22,7 @@ export interface AccountVerificationEmailProps {
 export const AccountVerificationEmail = ({
   verifyLink,
 }: AccountVerificationEmailProps) => (
-  <Html>
+  <ReactEmailHtml>
     <Head />
     <Preview>Your email verification link for {META.title}</Preview>
     <Tailwind>
@@ -57,6 +57,6 @@ export const AccountVerificationEmail = ({
         </Container>
       </Body>
     </Tailwind>
-  </Html>
+  </ReactEmailHtml>
 );
 export default AccountVerificationEmail;

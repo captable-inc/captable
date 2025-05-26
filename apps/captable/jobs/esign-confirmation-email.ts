@@ -1,10 +1,9 @@
+import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { EsignConfirmationEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export type ConfirmationEmailPayloadType = {
-  fileUrl: string;
+export type EsignConfirmationEmailPayloadType = {
   documentName: string;
   senderName: string | null;
   senderEmail: string | null;
@@ -15,10 +14,12 @@ export type ConfirmationEmailPayloadType = {
   recipient: { name?: string | null; email: string };
 };
 
-const sendEsignConfirmationEmail = async (
-  payload: ConfirmationEmailPayloadType,
-) => {
-  const html = await renderAsync(
+const sendEsignConfirmationEmail = async (payload: EsignConfirmationEmailPayloadType) => {
+  // Dynamic import to avoid build-time processing
+  const { getEsignConfirmationEmail, render } = await import("@captable/email");
+  const EsignConfirmationEmail = await getEsignConfirmationEmail();
+
+  const html = await render(
     EsignConfirmationEmail({
       documentName: payload.documentName,
       recipient: payload.recipient,
@@ -32,19 +33,13 @@ const sendEsignConfirmationEmail = async (
     to: [payload.recipient.email],
     subject: `Document signed: ${payload.documentName}`,
     html,
-    attachments: [
-      {
-        filename: `${payload.documentName}.pdf`,
-        path: payload.fileUrl,
-      },
-    ],
   });
 };
 
-export class EsignConfirmationEmailJob extends BaseJob<ConfirmationEmailPayloadType> {
+export class EsignConfirmationEmailJob extends BaseJob<EsignConfirmationEmailPayloadType> {
   readonly type = "email.esign-confirmation";
 
-  async work(job: Job<ConfirmationEmailPayloadType>): Promise<void> {
+  async work(job: Job<EsignConfirmationEmailPayloadType>): Promise<void> {
     await sendEsignConfirmationEmail(job.data);
   }
 }

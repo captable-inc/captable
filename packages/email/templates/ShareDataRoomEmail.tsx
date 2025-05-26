@@ -5,7 +5,7 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
+  Html as ReactEmailHtml,
   Link,
   Preview,
   Section,
@@ -13,76 +13,81 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { META } from "@/lib/constants";
+import { META } from "@captable/utils/constants";
 
-export interface MemberInviteEmailProps {
-  invitedBy: string;
+export interface ShareDataRoomEmailProps {
+  senderName: string;
+  recipientName: string | null | undefined;
   companyName: string;
-  inviteLink: string;
+  dataRoom: string;
+  link: string;
 }
 
-export const MemberInviteEmail = ({
-  invitedBy,
+export const ShareDataRoomEmail = ({
+  senderName,
+  recipientName,
   companyName,
-  inviteLink,
-}: MemberInviteEmailProps) => {
-  const previewText = `Join ${invitedBy} on ${META.title}`;
+  dataRoom,
+  link,
+}: ShareDataRoomEmailProps) => {
+  const recipientFirstName = recipientName?.split(" ")[0] || "there";
+  const previewText = `${senderName} at ${companyName} shared ${dataRoom} with you.`;
 
   return (
-    <Html>
+    <ReactEmailHtml>
       <Head />
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] max-w-[465px] border-separate rounded border border-solid border-neutral-200 p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
-              Join <strong>{companyName}</strong> on{" "}
-              <strong>{META.title}</strong>
+              {companyName} - <strong>{dataRoom}</strong>
             </Heading>
             <Text className="text-[14px] leading-[24px] text-black">
-              Hello ,
+              Hello {recipientFirstName},
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
-              <strong>{invitedBy}</strong> has invited you to join{" "}
-              <strong>{companyName}</strong> on <strong>Captable, Inc.</strong>.
+              <strong>{senderName}</strong> has shared a data room{" "}
+              <strong>{dataRoom}</strong> on <strong>{META.title}</strong>
             </Text>
 
             <Section className="mb-[32px] mt-[32px]">
               <Button
                 className="rounded bg-black px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
-                href={inviteLink}
+                href={link}
               >
-                Join the team
+                Access {dataRoom}
               </Button>
             </Section>
+
             <Text className="!text-[14px] leading-[24px] text-black">
               or copy and paste this URL into your browser:{" "}
               <Link
-                href={inviteLink}
+                href={link}
                 className="break-all text-blue-600 no-underline"
               >
-                {inviteLink}
+                {link}
               </Link>
             </Text>
 
             <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
-            <Link
-              href={META.url}
-              className="text-sm !text-gray-400 no-underline"
-            >
-              {META.title}
+            <Link href={META.url} className="text-sm no-underline">
+              <span className="text-xs !text-gray-400">Powered by</span>
+              <span>{` ${META.title}`}</span>
             </Link>
           </Container>
         </Body>
       </Tailwind>
-    </Html>
+    </ReactEmailHtml>
   );
 };
 
-MemberInviteEmail.PreviewProps = {
-  invitedBy: "joker",
-  companyName: "Batmobile",
-  inviteLink: "https://captable.inc/...",
-} as MemberInviteEmailProps;
+ShareDataRoomEmail.PreviewProps = {
+  senderName: "John Doe",
+  recipientName: "Will Smith",
+  companyName: "Captable, Inc.",
+  dataRoom: "Q1 2024 Financials",
+  link: "https://captable.inc/...",
+} as ShareDataRoomEmailProps;
 
-export default MemberInviteEmail;
+export default ShareDataRoomEmail;

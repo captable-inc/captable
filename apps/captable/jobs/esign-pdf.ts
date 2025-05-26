@@ -9,7 +9,7 @@ import {
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import type { Job } from "pg-boss";
 import {
-  type ConfirmationEmailPayloadType,
+  type EsignConfirmationEmailPayloadType,
   EsignConfirmationEmailJob,
 } from "./esign-confirmation-email";
 
@@ -83,7 +83,7 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
 
     const file = await getPresignedGetUrl(bucketData.key);
 
-    const recipientData: { data: ConfirmationEmailPayloadType }[] =
+    const recipientData: { data: EsignConfirmationEmailPayloadType }[] =
       recipients.map((recipient) => ({
         data: {
           fileUrl: file.url,

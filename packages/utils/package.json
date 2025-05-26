@@ -1,0 +1,27 @@
+{
+  "name": "@captable/utils",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./constants": {
+      "import": "./dist/lib/constants.js",
+      "require": "./dist/lib/constants.js",
+      "types": "./dist/lib/constants.d.ts"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && tsc-alias"
+  },
+  "devDependencies": {
+    "tsc-alias": "^1.8.16",
+    "typescript": "5.8.2"
+  }
+}

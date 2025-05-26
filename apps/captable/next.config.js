@@ -3,6 +3,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: 'standalone',
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // For client-side builds, externalize Node.js built-ins
@@ -23,6 +24,7 @@ const nextConfig = {
       mysql2: "commonjs mysql2",
       sqlite3: "commonjs sqlite3",
       "better-sqlite3": "commonjs better-sqlite3",
+      "@captable/email": "commonjs @captable/email",
     });
 
     return config;

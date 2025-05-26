@@ -1,42 +1,37 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export type AuthVerificationPayloadType = {
+export type AuthVerificationEmailPayloadType = {
   email: string;
-  token: string;
+  verifyLink: string;
 };
 
-const sendAuthVerificationEmail = async ({
-  email,
-  token,
-}: AuthVerificationPayloadType) => {
-  const verifyLink = `${env.NEXTAUTH_URL}/verify-email/${token}`;
-
+const sendAuthVerificationEmail = async (payload: AuthVerificationEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { AccountVerificationEmail } = await import("@captable/email");
+  const { getAccountVerificationEmail, render } = await import("@captable/email");
+  const AccountVerificationEmail = await getAccountVerificationEmail();
 
-  const html = await renderAsync(
+  const html = await render(
     AccountVerificationEmail({
-      verifyLink,
+      verifyLink: payload.verifyLink,
     }),
   );
 
   await sendMail({
-    to: [email],
-    subject: "Verify your email",
+    to: [payload.email],
+    subject: "Verify your account",
     html,
   });
 };
 
 export { sendAuthVerificationEmail };
 
-export class AuthVerificationEmailJob extends BaseJob<AuthVerificationPayloadType> {
+export class AuthVerificationEmailJob extends BaseJob<AuthVerificationEmailPayloadType> {
   readonly type = "email.auth-verify";
 
-  async work(job: Job<AuthVerificationPayloadType>): Promise<void> {
+  async work(job: Job<AuthVerificationEmailPayloadType>): Promise<void> {
     await sendAuthVerificationEmail(job.data);
   }
 }

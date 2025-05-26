@@ -1,44 +1,39 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
-import { META } from "@/lib/constants/meta";
 import { sendMail } from "@/server/mailer";
-import { MemberInviteEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-type MemberInvitePayloadType = {
+export type MemberInviteEmailPayloadType = {
+  invitedBy: string;
+  companyName: string;
+  inviteLink: string;
   email: string;
-  passwordResetToken: string;
-  user: {
-    email?: string | null | undefined;
-    name?: string | null | undefined;
-  };
-  verificationToken: string;
-  company: {
-    name: string;
-    id: string;
-  };
 };
 
-const sendMemberInviteEmail = async (payload: MemberInvitePayloadType) => {
-  const inviteLink = `${env.NEXTAUTH_URL}/verify-member?token=${payload.verificationToken}&passwordResetToken=${payload.passwordResetToken}`;
+const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
+  // Dynamic import to avoid build-time processing
+  const { getMemberInviteEmail, render } = await import("@captable/email");
+  const MemberInviteEmail = await getMemberInviteEmail();
+
+  const html = await render(
+    MemberInviteEmail({
+      invitedBy: payload.invitedBy,
+      companyName: payload.companyName,
+      inviteLink: payload.inviteLink,
+    }),
+  );
 
   await sendMail({
     to: [payload.email],
-    subject: `You're invited to join ${payload.company.name} on ${META.title}`,
-    html: await renderAsync(
-      MemberInviteEmail({
-        invitedBy: payload.user.name || "Someone",
-        companyName: payload.company.name,
-        inviteLink,
-      }),
-    ),
+    subject: `${payload.invitedBy} invited you to join ${payload.companyName}`,
+    html,
   });
 };
 
-export class SendMemberInviteEmailJob extends BaseJob<MemberInvitePayloadType> {
+export class MemberInviteEmailJob extends BaseJob<MemberInviteEmailPayloadType> {
   readonly type = "email.member-invite";
 
-  async work(job: Job<MemberInvitePayloadType>): Promise<void> {
+  async work(job: Job<MemberInviteEmailPayloadType>): Promise<void> {
     await sendMemberInviteEmail(job.data);
   }
 }

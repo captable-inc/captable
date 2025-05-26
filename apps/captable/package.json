@@ -21,6 +21,7 @@
     "@captable/db": "*",
     "@captable/email": "*",
     "@captable/logger": "*",
+    "@captable/utils": "*",
     "@hono/zod-openapi": "^0.19.6",
     "@hookform/resolvers": "^5.0.1",
     "@paralleldrive/cuid2": "^2.2.2",

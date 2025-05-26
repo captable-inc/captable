@@ -1,38 +1,47 @@
+import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { ShareDataRoomEmail, renderAsync } from "@captable/email";
+import { render, ShareDataRoomEmail } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export type DataRoomEmailPayloadType = {
-  link: string;
+export type ShareDataRoomEmailPayloadType = {
+  to: string;
   dataRoom: string;
-  email: string;
-  senderName: string;
   companyName: string;
-  recipientName?: string | null | undefined;
-  senderEmail?: string | null | undefined;
+  senderName: string;
+  link: string;
+  recipientName?: string | null;
 };
 
-const sendShareDataRoomEmail = async (payload: DataRoomEmailPayloadType) => {
+const sendShareDataRoomEmail = async ({
+  to,
+  dataRoom,
+  companyName,
+  senderName,
+  link,
+  recipientName,
+}: ShareDataRoomEmailPayloadType) => {
+  const html = await render(
+    ShareDataRoomEmail({
+      dataRoom,
+      companyName,
+      senderName,
+      link,
+      recipientName,
+    }),
+  );
+
   await sendMail({
-    to: [payload.email],
-    subject: `${payload.senderName} shared a data room with you`,
-    html: await renderAsync(
-      ShareDataRoomEmail({
-        senderName: payload.senderName,
-        recipientName: payload.recipientName,
-        companyName: payload.companyName,
-        dataRoom: payload.dataRoom,
-        link: payload.link,
-      }),
-    ),
+    to: [to],
+    subject: `${senderName} shared a data room with you`,
+    html,
   });
 };
 
-export class ShareDataRoomEmailJob extends BaseJob<DataRoomEmailPayloadType> {
+export class ShareDataRoomEmailJob extends BaseJob<ShareDataRoomEmailPayloadType> {
   readonly type = "email.share-data-room";
 
-  async work(job: Job<DataRoomEmailPayloadType>): Promise<void> {
+  async work(job: Job<ShareDataRoomEmailPayloadType>): Promise<void> {
     await sendShareDataRoomEmail(job.data);
   }
 }

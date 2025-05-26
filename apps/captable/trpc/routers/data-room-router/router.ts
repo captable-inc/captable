@@ -1,7 +1,7 @@
 import { generatePublicId } from "@/lib/common/id";
 import { env } from "@/env";
 import {
-  type DataRoomEmailPayloadType,
+  type ShareDataRoomEmailPayloadType,
   ShareDataRoomEmailJob,
 } from "@/jobs/share-data-room-email";
 import { encode } from "@/lib/jwt";
@@ -392,14 +392,13 @@ export const dataRoomRouter = createTRPCRouter({
 
           const link = `${baseUrl}/data-rooms/${dataRoom.publicId}?token=${token}`;
 
-          const payload: DataRoomEmailPayloadType = {
+          const payload: ShareDataRoomEmailPayloadType = {
+            to: email,
             senderName: `${senderName}`,
             recipientName: recipient.name,
             companyName: company.name,
             dataRoom: dataRoom.name,
             link,
-            email,
-            senderEmail,
           };
 
           await new ShareDataRoomEmailJob().emit(payload);

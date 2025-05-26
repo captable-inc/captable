@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
+import { env } from "@/env";
 import {
-  EsignNotificationEmailJob,
-  type ExtendedEsignPayloadType,
+  EsignEmailJob,
+  type EsignEmailPayloadType,
 } from "@/jobs/esign-email";
 import { decode, encode } from "@/lib/jwt";
 import { Audit } from "@/server/audit";
@@ -57,7 +58,7 @@ export const addFieldProcedure = withAuth
     try {
       const user = ctx.session.user;
       const { userAgent, requestIp } = ctx;
-      const mails: ExtendedEsignPayloadType[] = [];
+      const mails: EsignEmailPayloadType[] = [];
 
       if (input.status === "COMPLETE" && (!user.email || !user.name)) {
         return {
@@ -203,8 +204,10 @@ export const addFieldProcedure = withAuth
               templateId: template.id,
             });
 
+            const signingLink = `${env.NEXTAUTH_URL}/esign/${token}`;
+
             mails.push({
-              token,
+              signingLink,
               recipient: {
                 id: recipient.id,
                 name: recipient?.name,
@@ -232,7 +235,7 @@ export const addFieldProcedure = withAuth
       });
 
       if (mails.length) {
-        new EsignNotificationEmailJob().bulkEmit(
+        new EsignEmailJob().bulkEmit(
           mails.map((data) => ({
             data,
             singletonKey: `esign-notify-${template.id}-${data.recipient.id}`,

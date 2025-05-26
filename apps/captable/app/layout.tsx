@@ -9,7 +9,7 @@ import { PublicEnvScript } from "@/components/public-env-script";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "sonner";
 import logo from "@/assets/logo.svg";
-import { META } from "@/lib/constants/meta";
+import { META } from "@captable/utils/constants";
 import ScreenSize from "@/components/screen-size";
 
 export const metadata: Metadata = {

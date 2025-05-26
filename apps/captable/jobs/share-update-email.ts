@@ -1,40 +1,43 @@
+import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { ShareUpdateEmail, renderAsync } from "@captable/email";
 import type { Job } from "pg-boss";
 
-export type UpdateSharePayloadType = {
-  update: {
-    title: string;
-  };
-  link: string;
-  companyName: string;
+export type ShareUpdateEmailPayloadType = {
+  to: string;
   senderName: string;
-  email: string;
-  recipientName?: string | null | undefined;
-  senderEmail?: string | null | undefined;
+  recipientName: string | null;
+  companyName: string;
+  updateTitle: string;
+  link: string;
 };
 
-const sendShareUpdateEmail = async (payload: UpdateSharePayloadType) => {
+const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
+  // Dynamic import to avoid build-time processing
+  const { getShareUpdateEmail, render } = await import("@captable/email");
+  const ShareUpdateEmail = await getShareUpdateEmail();
+
+  const html = await render(
+    ShareUpdateEmail({
+      senderName: payload.senderName,
+      recipientName: payload.recipientName,
+      companyName: payload.companyName,
+      updateTitle: payload.updateTitle,
+      link: payload.link,
+    }),
+  );
+
   await sendMail({
-    to: [payload.email],
+    to: [payload.to],
     subject: `${payload.senderName} shared an update with you`,
-    html: await renderAsync(
-      ShareUpdateEmail({
-        senderName: payload.senderName,
-        recipientName: payload.recipientName,
-        companyName: payload.companyName,
-        updateTitle: payload.update.title,
-        link: payload.link,
-      }),
-    ),
+    html,
   });
 };
 
-export class ShareUpdateEmailJob extends BaseJob<UpdateSharePayloadType> {
+export class ShareUpdateEmailJob extends BaseJob<ShareUpdateEmailPayloadType> {
   readonly type = "email.share-update";
 
-  async work(job: Job<UpdateSharePayloadType>): Promise<void> {
+  async work(job: Job<ShareUpdateEmailPayloadType>): Promise<void> {
     await sendShareUpdateEmail(job.data);
   }
 }

@@ -1,4 +1,5 @@
-import { SendMemberInviteEmailJob } from "@/jobs/member-inivite-email";
+import { env } from "@/env";
+import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
 import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";
@@ -144,18 +145,16 @@ export const reInviteProcedure = withAuth
         };
       });
 
+    const inviteLink = `${env.NEXTAUTH_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetToken}`;
+
     const payload = {
-      verificationToken,
-      passwordResetToken,
-      email,
-      company,
-      user: {
-        email: user.email,
-        name: user.name,
-      },
+      invitedBy: user.name || "Someone",
+      companyName: company.name,
+      inviteLink,
+      email: email,
     };
 
-    await new SendMemberInviteEmailJob().emit(payload);
+    await new MemberInviteEmailJob().emit(payload);
 
     return { success: true };
   });

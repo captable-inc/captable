@@ -1,4 +1,4 @@
-import { SendMemberInviteEmailJob } from "@/jobs/member-inivite-email";
+import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
 import { getRoleById } from "@/lib/rbac/access-control";
 import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
@@ -15,6 +15,7 @@ import {
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodInviteMemberMutationSchema } from "../schema";
+import { env } from "@/env";
 
 export const inviteMemberProcedure = withAccessControl
   .input(ZodInviteMemberMutationSchema)
@@ -223,18 +224,16 @@ export const inviteMemberProcedure = withAccessControl
       return { verificationToken: createdToken.token, company };
     });
 
+    const inviteLink = `${env.NEXTAUTH_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetTokenResult.token}`;
+
     const payload = {
-      verificationToken,
-      passwordResetToken: passwordResetTokenResult.token,
+      invitedBy: user.name || "Someone",
+      companyName: company.name,
+      inviteLink,
       email,
-      company,
-      user: {
-        email: user.email,
-        name: user.name,
-      },
     };
 
-    await new SendMemberInviteEmailJob().emit(payload);
+    await new MemberInviteEmailJob().emit(payload);
 
     return { success: true };
   });

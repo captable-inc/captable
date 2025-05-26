@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { PasswordResetEmailJob } from "@/jobs/password-reset-email";
 import { generatePasswordResetToken } from "@/lib/token";
 import { getUserByEmail } from "@/server/user";
@@ -28,7 +29,9 @@ export const forgotPasswordProcedure = withoutAuth
 
     const { email, token } = passwordResetToken;
 
-    await new PasswordResetEmailJob().emit({ email, token });
+    const resetLink = `${env.NEXTAUTH_URL}/reset-password?token=${token}`;
+
+    await new PasswordResetEmailJob().emit({ email, resetLink });
 
     return {
       success: true,

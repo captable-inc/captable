@@ -5,7 +5,7 @@ import {
   Head,
   Heading,
   Hr,
-  Html,
+  Html as ReactEmailHtml,
   Link,
   Preview,
   Section,
@@ -13,14 +13,14 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { META } from "@/lib/constants";
+import { META } from "@captable/utils/constants";
 
 export interface PasswordResetEmailProps {
   resetLink: string;
 }
 
 export const PasswordResetEmail = ({ resetLink }: PasswordResetEmailProps) => (
-  <Html>
+  <ReactEmailHtml>
     <Head />
     <Preview>Your password reset link for {META.title}</Preview>
     <Tailwind>
@@ -55,6 +55,6 @@ export const PasswordResetEmail = ({ resetLink }: PasswordResetEmailProps) => (
         </Container>
       </Body>
     </Tailwind>
-  </Html>
+  </ReactEmailHtml>
 );
 export default PasswordResetEmail;

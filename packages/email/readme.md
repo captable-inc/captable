@@ -24,7 +24,7 @@ This package is part of the Captable monorepo and is intended for internal use.
 ### Basic Import
 
 ```typescript
-import { MagicLinkEmail, render, renderAsync } from "@captable/email";
+import { MagicLinkEmail, render } from "@captable/email";
 ```
 
 ### Email Templates
@@ -41,7 +41,7 @@ import {
   ShareDataRoomEmail,
   EsignEmail,
   EsignConfirmationEmail,
-  renderAsync,
+  render,
   type MagicLinkEmailProps,
   type AccountVerificationEmailProps
 } from "@captable/email";
@@ -51,21 +51,34 @@ const props: MagicLinkEmailProps = {
   magicLink: "https://captable.inc/auth/callback?token=..."
 };
 
-const html = await renderAsync(MagicLinkEmail(props));
+const html = await render(MagicLinkEmail(props));
 ```
+
+### Available Templates
+
+The package includes the following email templates:
+
+- **AccountVerificationEmail** - Email verification for new accounts
+- **EsignConfirmationEmail** - Confirmation email after document signing
+- **EsignEmail** - Email with document signing request
+- **MagicLinkEmail** - Magic link authentication email
+- **MemberInviteEmail** - Team member invitation email
+- **PasswordResetEmail** - Password reset email
+- **ShareDataRoomEmail** - Data room sharing notification
+- **ShareUpdateEmail** - Company update sharing notification
 
 ### Render Functions
 
 The package re-exports the commonly used render functions from `@react-email/components`:
 
 ```typescript
-import { render, renderAsync } from "@captable/email";
+import { render } from "@captable/email";
 
 // Synchronous rendering
 const html = render(MagicLinkEmail({ magicLink: "..." }));
 
 // Asynchronous rendering (recommended)
-const html = await renderAsync(MagicLinkEmail({ magicLink: "..." }));
+const html = await render(MagicLinkEmail({ magicLink: "..." }));
 ```
 
 ### Constants
@@ -90,13 +103,15 @@ cd packages/email
 npm run dev
 ```
 
+This will start the React Email preview server on port 3001 and watch for changes in the `templates/` directory.
+
 ### Build Package
 
 Build the TypeScript package:
 
 ```bash
 cd packages/email
-npm run build:tsc
+npm run build
 ```
 
 ### Build Email Templates
@@ -105,7 +120,7 @@ Build static email templates for preview:
 
 ```bash
 cd packages/email
-npm run build
+npm run build:email
 ```
 
 ### Export Emails
@@ -117,13 +132,34 @@ cd packages/email
 npm run export
 ```
 
+## Package Structure
+
+```
+packages/email/
+├── templates/           # Email template components
+│   ├── index.ts        # Template exports
+│   ├── AccountVerificationEmail.tsx
+│   ├── EsignConfirmationEmail.tsx
+│   ├── EsignEmail.tsx
+│   ├── MagicLinkEmail.tsx
+│   ├── MemberInviteEmail.tsx
+│   ├── PasswordResetEmail.tsx
+│   ├── ShareDataRoomEmail.tsx
+│   └── ShareUpdateEmail.tsx
+├── lib/                # Shared utilities and constants
+├── dist/               # Built package output
+├── index.ts            # Main package exports
+├── package.json        # Package configuration
+└── tsconfig.json       # TypeScript configuration
+```
+
 ## Tree Shaking
 
 This package is designed to be tree-shakable. You can import only the components you need:
 
 ```typescript
 // ✅ Good - only imports what you need
-import { MagicLinkEmail, renderAsync } from "@captable/email";
+import { MagicLinkEmail, render } from "@captable/email";
 
 // ❌ Avoid - imports everything
 import * as EmailPackage from "@captable/email";
@@ -137,18 +173,45 @@ All email templates come with full TypeScript support. Import the types you need
 import type { 
   MagicLinkEmailProps,
   AccountVerificationEmailProps,
-  PasswordResetEmailProps 
+  PasswordResetEmailProps,
+  EsignEmailProps,
+  EsignConfirmationEmailProps,
+  MemberInviteEmailProps,
+  ShareDataRoomEmailProps,
+  ShareUpdateEmailProps
 } from "@captable/email";
+```
+
+## Package Exports
+
+The package provides multiple export paths:
+
+```typescript
+// Main exports (all templates and utilities)
+import { MagicLinkEmail, render } from "@captable/email";
+
+// Direct template imports
+import { MagicLinkEmail } from "@captable/email/templates";
 ```
 
 ## Contributing
 
 When adding new email templates:
 
-1. Create the template in `emails/` directory
-2. Export the component and its props interface
-3. Add exports to `index.ts`
-4. Rebuild the package with `npm run build:tsc`
+1. Create the template in `templates/` directory
+2. Export the component and its props interface in the template file
+3. Add exports to `templates/index.ts`
+4. Update this README with the new template (optional)
+5. Rebuild the package with `npm run build`
+
+**Note**: The main `index.ts` uses `export * from "./templates"` so you don't need to manually add each template export there.
+
+## Scripts
+
+- `npm run dev` - Start development server with template preview
+- `npm run build` - Build the TypeScript package
+- `npm run build:email` - Build email templates for preview
+- `npm run export` - Export emails as static HTML files
 
 ## License
 
