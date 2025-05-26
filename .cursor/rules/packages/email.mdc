@@ -1,0 +1,205 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Email Package Rules
+
+## Tech Stack
+React Email for templates, Tailwind CSS for styling, SMTP for sending
+
+## Template Pattern with Tailwind
+```tsx
+import { Html, Head, Body, Container, Text, Button, Tailwind } from "@react-email/components"
+
+interface WelcomeEmailProps {
+  userName: string
+  companyName: string
+  loginUrl: string
+}
+
+export function WelcomeEmail({ userName, companyName, loginUrl }: WelcomeEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Tailwind>
+        <Body className="bg-gray-50 font-sans">
+          <Container className="bg-white mx-auto p-5 max-w-xl">
+            <Text className="text-2xl font-bold text-gray-900 mb-5">
+              Welcome to {companyName}!
+            </Text>
+            
+            <Text className="text-base text-gray-700 leading-6 mb-5">
+              Hi {userName}, welcome to {companyName}! 
+              Click below to access your dashboard.
+            </Text>
+            
+            <Button 
+              href={loginUrl} 
+              className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg no-underline inline-block"
+            >
+              Access Dashboard
+            </Button>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  )
+}
+```
+
+## Advanced Template with Custom Config
+```tsx
+import { Html, Head, Body, Container, Text, Button, Tailwind } from "@react-email/components"
+
+const tailwindConfig = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          primary: "#3b82f6",
+          secondary: "#1f2937"
+        }
+      }
+    }
+  }
+}
+
+export function InvitationEmail({ inviterName, companyName, inviteUrl }: InvitationEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Tailwind config={tailwindConfig}>
+        <Body className="bg-gray-50 font-sans">
+          <Container className="bg-white mx-auto p-8 max-w-2xl rounded-lg shadow-sm">
+            <Text className="text-2xl font-bold text-brand-secondary mb-6">
+              You're invited to join {companyName}
+            </Text>
+            
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-6 mb-6">
+              <Text className="text-base text-gray-700 m-0">
+                <strong>Company:</strong> {companyName}<br />
+                <strong>Invited by:</strong> {inviterName}
+              </Text>
+            </div>
+            
+            <Button 
+              href={inviteUrl}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg no-underline inline-block transition-colors"
+            >
+              Accept Invitation
+            </Button>
+            
+            <Text className="text-sm text-gray-500 mt-6">
+              This invitation will expire in 7 days. If you weren't expecting this invitation, 
+              you can safely ignore this email.
+            </Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  )
+}
+```
+
+## Responsive Email Template
+```tsx
+export function PasswordResetEmail({ userName, resetUrl }: PasswordResetEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Tailwind>
+        <Body className="bg-gray-50 font-sans">
+          <Container className="bg-white mx-auto p-4 sm:p-8 max-w-xl">
+            <Text className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+              Reset your password
+            </Text>
+            
+            <Text className="text-base text-gray-700 leading-6 mb-6">
+              Hi {userName}, we received a request to reset your password.
+            </Text>
+            
+            <div className="text-center mb-6">
+              <Button 
+                href={resetUrl}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 sm:px-8 rounded-lg no-underline inline-block transition-colors"
+              >
+                Reset Password
+              </Button>
+            </div>
+            
+            <Text className="text-sm text-gray-500 leading-5">
+              This link will expire in 1 hour. If you're having trouble clicking the button, 
+              copy and paste the following URL into your browser:
+            </Text>
+            
+            <Text className="text-sm text-blue-600 break-all mt-2">
+              {resetUrl}
+            </Text>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  )
+}
+```
+
+## Sending Logic
+```typescript
+import { render } from "@react-email/render"
+import nodemailer from "nodemailer"
+
+const transporter = nodemailer.createTransporter({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+})
+
+export async function sendEmail({
+  to,
+  subject,
+  template
+}: {
+  to: string
+  subject: string
+  template: React.ReactElement
+}) {
+  const html = render(template)
+  
+  await transporter.sendMail({
+    from: process.env.FROM_EMAIL,
+    to,
+    subject,
+    html
+  })
+}
+```
+
+## Usage
+```typescript
+import { sendEmail } from "@captable/email"
+import { WelcomeEmail } from "@captable/email/templates"
+
+await sendEmail({
+  to: "user@example.com",
+  subject: "Welcome to Captable",
+  template: <WelcomeEmail 
+    userName="John Doe"
+    companyName="Acme Corp"
+    loginUrl="https://app.captable.com/login"
+  />
+})
+```
+
+## Best Practices
+- Wrap templates with `<Tailwind>` component for CSS support
+- Use responsive classes (sm:, md:, lg:) for mobile compatibility
+- Stick to email-safe Tailwind classes (avoid complex layouts)
+- Test across different email clients
+- Use custom Tailwind config for brand colors
+- Include fallback text for accessibility
+- Use semantic HTML structure with proper headings
+

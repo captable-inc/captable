@@ -1,0 +1,104 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Utils Package Rules
+
+## Tech Stack
+TypeScript utilities, shared functions and constants
+
+## Utility Patterns
+
+### String Utilities
+```typescript
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
+
+export function truncate(str: string, length: number): string {
+  return str.length <= length ? str : str.slice(0, length) + "..."
+}
+```
+
+### Number Utilities
+```typescript
+export function formatCurrency(amount: number, currency = "USD"): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency
+  }).format(amount)
+}
+
+export function formatPercentage(num: number, decimals = 2): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "percent",
+    minimumFractionDigits: decimals
+  }).format(num)
+}
+```
+
+### Array Utilities
+```typescript
+export function unique<T>(array: T[]): T[] {
+  return [...new Set(array)]
+}
+
+export function groupBy<T, K extends string | number>(
+  array: T[],
+  key: (item: T) => K
+): Record<K, T[]> {
+  return array.reduce((groups, item) => {
+    const groupKey = key(item)
+    groups[groupKey] = groups[groupKey] || []
+    groups[groupKey].push(item)
+    return groups
+  }, {} as Record<K, T[]>)
+}
+```
+
+### Validation
+```typescript
+export function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+export function isValidUrl(url: string): boolean {
+  try {
+    new URL(url)
+    return true
+  } catch {
+    return false
+  }
+}
+```
+
+## Constants
+```typescript
+export const COMPANY_TYPES = [
+  "C-Corp", "S-Corp", "LLC", "Partnership"
+] as const
+
+export const USER_ROLES = [
+  "owner", "admin", "member", "viewer"
+] as const
+
+export const SECURITY_TYPES = [
+  "Common Stock", "Preferred Stock", "Stock Option", "Warrant"
+] as const
+```
+
+## Best Practices
+- Write pure functions when possible
+- Use proper TypeScript types
+- Add JSDoc comments for complex functions
+- Export all necessary types and constants

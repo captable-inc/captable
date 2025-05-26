@@ -1,0 +1,146 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Captable App Rules
+
+## Tech Stack
+Next.js 15 + App Router, NextAuth.js, Tailwind + Radix UI, tRPC, TanStack Query, Drizzle ORM
+
+## Key Patterns
+
+### Component Structure
+```typescript
+"use client" // Only when needed
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+
+interface Props {
+  title: string
+  onAction: () => Promise<void>
+}
+
+export function Component({ title, onAction }: Props) {
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+
+  const handleAction = async () => {
+    try {
+      setIsLoading(true)
+      await onAction()
+      toast({ title: "Success" })
+    } catch (error) {
+      toast({ title: "Error", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <Button onClick={handleAction} disabled={isLoading}>
+        {isLoading ? "Loading..." : "Action"}
+      </Button>
+    </div>
+  )
+}
+```
+
+### API Routes
+```typescript
+import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
+import { auth } from "@/lib/auth"
+import { db } from "@captable/db"
+
+const schema = z.object({
+  name: z.string().min(1),
+  email: z.string().email()
+})
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const data = schema.parse(body)
+    
+    const result = await db.insert(table).values({
+      ...data,
+      userId: session.user.id
+    }).returning()
+    
+    return NextResponse.json({ success: true, data: result[0] })
+  } catch (error) {
+    return NextResponse.json({ error: "Internal error" }, { status: 500 })
+  }
+}
+```
+
+### Forms with react-hook-form
+```typescript
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+
+const schema = z.object({
+  name: z.string().min(1, "Required"),
+  email: z.string().email("Invalid email")
+})
+
+export function MyForm() {
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "", email: "" }
+  })
+
+  const onSubmit = (data) => {
+    // Handle submission
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  )
+}
+```
+
+## File Organization
+- `app/(authenticated)/` - Protected routes
+- `app/(unauthenticated)/` - Public routes  
+- `components/ui/` - Base components
+- `components/[feature]/` - Feature components
+- `lib/` - Utilities
+- `trpc/` - API layer
+
+## Best Practices
+- Use Server Components by default
+- Add "use client" only when needed
+- Validate inputs with Zod
+- Use proper TypeScript interfaces
+- Follow Tailwind utility-first approach
+- Implement proper error handling
+- Use `cn()` for conditional classes

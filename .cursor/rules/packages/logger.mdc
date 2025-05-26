@@ -1,0 +1,95 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Logger Package Rules
+
+## Tech Stack
+Pino for structured, high-performance logging
+
+## Logger Setup
+```typescript
+import pino from "pino"
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || "info",
+  redact: ["password", "token", "authorization", "*.password"],
+  base: {
+    service: "captable",
+    environment: process.env.NODE_ENV
+  },
+  transport: process.env.NODE_ENV === "development" ? {
+    target: "pino-pretty",
+    options: {
+      colorize: true,
+      translateTime: "yyyy-mm-dd HH:MM:ss"
+    }
+  } : undefined
+})
+
+export { logger }
+```
+
+## Usage Patterns
+```typescript
+import { logger } from "@captable/logger"
+
+// Structured logging
+logger.info({
+  action: "user_login",
+  userId: "user-123",
+  email: "user@example.com"
+}, "User logged in successfully")
+
+// Error logging
+logger.error({
+  error: new Error("Database connection failed"),
+  operation: "user_fetch",
+  userId: "user-123"
+}, "Failed to fetch user data")
+
+// Child loggers for context
+const userLogger = logger.child({
+  userId: "user-123",
+  email: "user@example.com"
+})
+
+userLogger.info("User action performed")
+```
+
+## Middleware Pattern
+```typescript
+export function withLogging(handler: Function) {
+  return async (req: NextRequest, ...args: any[]) => {
+    const start = Date.now()
+    const requestLogger = logger.child({
+      method: req.method,
+      path: req.nextUrl.pathname
+    })
+
+    try {
+      requestLogger.info("Request started")
+      const response = await handler(req, ...args)
+      
+      requestLogger.info({
+        statusCode: response.status,
+        duration: Date.now() - start
+      }, "Request completed")
+      
+      return response
+    } catch (error) {
+      requestLogger.error({ error }, "Request failed")
+      throw error
+    }
+  }
+}
+```
+
+## Best Practices
+- Use structured logging with consistent field names
+- Include correlation IDs for request tracing
+- Redact sensitive information (passwords, tokens)
+- Use child loggers for scoped contexts
+- Log both successes and failures
+- Include timing information for performance monitoring

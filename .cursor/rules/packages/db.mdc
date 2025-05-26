@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Database Package Rules
+
+## Tech Stack
+Drizzle ORM + PostgreSQL, Drizzle Zod, Faker.js for seeding
+
+## Best Practices
+- Use CUID for primary keys
+- Always include createdAt and updatedAt
+- Define relations for type-safe joins
+- Use Drizzle Zod for validation
+- Use transactions for multi-table operations
+- Export proper TypeScript types
