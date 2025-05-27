@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -17,6 +18,21 @@ const nextConfig = {
       };
     }
 
+    // Ignore OpenTelemetry and Sentry dynamic require warnings
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      {
+        module: /node_modules\/@opentelemetry/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+      {
+        module: /node_modules\/@sentry/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+      // Also ignore any other dynamic require warnings from instrumentation
+      /Critical dependency: the request of a dependency is an expression/,
+    ];
+
     // External database drivers for both client and server builds
     config.externals.push({
       postgres: "commonjs postgres",
@@ -31,4 +47,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default nextConfig; 
