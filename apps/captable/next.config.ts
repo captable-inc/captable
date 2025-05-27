@@ -1,10 +1,10 @@
-import type { NextConfig } from 'next'
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  output: 'standalone',
+  output: "standalone",
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // For client-side builds, externalize Node.js built-ins
@@ -23,11 +23,13 @@ const nextConfig: NextConfig = {
       ...(config.ignoreWarnings || []),
       {
         module: /node_modules\/@opentelemetry/,
-        message: /Critical dependency: the request of a dependency is an expression/,
+        message:
+          /Critical dependency: the request of a dependency is an expression/,
       },
       {
         module: /node_modules\/@sentry/,
-        message: /Critical dependency: the request of a dependency is an expression/,
+        message:
+          /Critical dependency: the request of a dependency is an expression/,
       },
       // Also ignore any other dynamic require warnings from instrumentation
       /Critical dependency: the request of a dependency is an expression/,
@@ -47,4 +49,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig; 
+export default nextConfig;

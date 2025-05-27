@@ -18,7 +18,7 @@ const toDateTime = (secs: number) => {
 };
 
 // Only initialize Stripe if API key is available
-export const stripe = env.STRIPE_API_KEY 
+export const stripe = env.STRIPE_API_KEY
   ? new Stripe(env.STRIPE_API_KEY, {
       typescript: true,
       apiVersion: "2025-04-30.basil",

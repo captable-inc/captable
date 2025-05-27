@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Forgot Password",
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
   return <ForgotPassword />;

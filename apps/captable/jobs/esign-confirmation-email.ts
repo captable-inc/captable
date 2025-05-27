@@ -14,7 +14,9 @@ export type EsignConfirmationEmailPayloadType = {
   recipient: { name?: string | null; email: string };
 };
 
-const sendEsignConfirmationEmail = async (payload: EsignConfirmationEmailPayloadType) => {
+const sendEsignConfirmationEmail = async (
+  payload: EsignConfirmationEmailPayloadType,
+) => {
   // Dynamic import to avoid build-time processing
   const { EsignConfirmationEmail, render } = await import("@captable/email");
 

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Check Email",
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function CheckEmail() {
   return (

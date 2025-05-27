@@ -8,7 +8,9 @@ export type PasswordResetEmailPayloadType = {
   resetLink: string;
 };
 
-const sendPasswordResetEmail = async (payload: PasswordResetEmailPayloadType) => {
+const sendPasswordResetEmail = async (
+  payload: PasswordResetEmailPayloadType,
+) => {
   // Dynamic import to avoid build-time processing
   const { PasswordResetEmail, render } = await import("@captable/email");
 

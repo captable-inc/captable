@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import { env } from "@/env";
-import {
-  EsignEmailJob,
-  type EsignEmailPayloadType,
-} from "@/jobs/esign-email";
+import { EsignEmailJob, type EsignEmailPayloadType } from "@/jobs/esign-email";
 import { decode, encode } from "@/lib/jwt";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/auth";

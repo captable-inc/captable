@@ -49,10 +49,16 @@ export const api = createTRPCProxyClient<AppRouter>({
               // Using Record<string, unknown> for dynamic procedure access in RSC context
               const procedure = op.path
                 .split(".")
-                .reduce((acc: Record<string, unknown>, segment) => acc[segment] as Record<string, unknown>, caller as Record<string, unknown>);
-              
+                .reduce(
+                  (acc: Record<string, unknown>, segment) =>
+                    acc[segment] as Record<string, unknown>,
+                  caller as Record<string, unknown>,
+                );
+
               // Call the procedure with proper typing
-              return (procedure as unknown as (input: unknown) => Promise<unknown>)(op.input);
+              return (
+                procedure as unknown as (input: unknown) => Promise<unknown>
+              )(op.input);
             })
             .then((data) => {
               observer.next({ result: { data } });
