@@ -4,9 +4,6 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   output: 'standalone',
-  experimental: {
-    esmExternals: 'loose',
-  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // For client-side builds, externalize Node.js built-ins
