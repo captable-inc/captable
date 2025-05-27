@@ -1,6 +1,6 @@
 import type { JOB_TYPES } from "@/lib/constants/job";
 import { env } from "@/env";
-import { logger } from "@/lib/logger";
+import { logger } from "@captable/logger";
 import { singleton } from "@/lib/singleton";
 import pgBoss from "pg-boss";
 

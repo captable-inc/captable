@@ -1,4 +1,4 @@
-import { logger } from "@/lib/logger";
+import { logger } from "@captable/logger";
 import { NextResponse } from "next/server";
 import { type NextRequest, userAgent } from "next/server";
 import { env } from "./env";

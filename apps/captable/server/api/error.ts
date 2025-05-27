@@ -1,4 +1,4 @@
-import { logger } from "@/lib/logger";
+import { logger } from "@captable/logger";
 import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { StatusCode } from "hono/utils/http-status";
