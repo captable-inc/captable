@@ -25,6 +25,7 @@ This package is part of the Captable monorepo and is intended for internal use.
 
 ```typescript
 import { MagicLinkEmail, render } from "@captable/email";
+import { META } from "@captable/utils/constants";
 ```
 
 ### Email Templates
@@ -79,17 +80,6 @@ const html = render(MagicLinkEmail({ magicLink: "..." }));
 
 // Asynchronous rendering (recommended)
 const html = await render(MagicLinkEmail({ magicLink: "..." }));
-```
-
-### Constants
-
-Access shared constants used across email templates:
-
-```typescript
-import { META } from "@captable/email";
-
-console.log(META.title); // "Captable, Inc."
-console.log(META.url);   // "https://captable.inc"
 ```
 
 ## Development

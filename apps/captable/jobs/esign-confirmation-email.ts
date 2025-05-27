@@ -16,8 +16,7 @@ export type EsignConfirmationEmailPayloadType = {
 
 const sendEsignConfirmationEmail = async (payload: EsignConfirmationEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { getEsignConfirmationEmail, render } = await import("@captable/email");
-  const EsignConfirmationEmail = await getEsignConfirmationEmail();
+  const { EsignConfirmationEmail, render } = await import("@captable/email");
 
   const html = await render(
     EsignConfirmationEmail({

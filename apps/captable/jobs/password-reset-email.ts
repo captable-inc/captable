@@ -10,8 +10,7 @@ export type PasswordResetEmailPayloadType = {
 
 const sendPasswordResetEmail = async (payload: PasswordResetEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { getPasswordResetEmail, render } = await import("@captable/email");
-  const PasswordResetEmail = await getPasswordResetEmail();
+  const { PasswordResetEmail, render } = await import("@captable/email");
 
   const html = await render(
     PasswordResetEmail({
@@ -25,6 +24,8 @@ const sendPasswordResetEmail = async (payload: PasswordResetEmailPayloadType) =>
     html,
   });
 };
+
+export { sendPasswordResetEmail };
 
 export class PasswordResetEmailJob extends BaseJob<PasswordResetEmailPayloadType> {
   readonly type = "email.password-reset";

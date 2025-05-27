@@ -14,8 +14,7 @@ export type ShareUpdateEmailPayloadType = {
 
 const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { getShareUpdateEmail, render } = await import("@captable/email");
-  const ShareUpdateEmail = await getShareUpdateEmail();
+  const { ShareUpdateEmail, render } = await import("@captable/email");
 
   const html = await render(
     ShareUpdateEmail({

@@ -10,8 +10,7 @@ export type AuthVerificationEmailPayloadType = {
 
 const sendAuthVerificationEmail = async (payload: AuthVerificationEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { getAccountVerificationEmail, render } = await import("@captable/email");
-  const AccountVerificationEmail = await getAccountVerificationEmail();
+  const { AccountVerificationEmail, render } = await import("@captable/email");
 
   const html = await render(
     AccountVerificationEmail({

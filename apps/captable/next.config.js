@@ -4,6 +4,9 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   output: 'standalone',
+  experimental: {
+    esmExternals: 'loose',
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // For client-side builds, externalize Node.js built-ins
@@ -24,7 +27,7 @@ const nextConfig = {
       mysql2: "commonjs mysql2",
       sqlite3: "commonjs sqlite3",
       "better-sqlite3": "commonjs better-sqlite3",
-      "@captable/email": "commonjs @captable/email",
+      "@captable/email": "module @captable/email",
     });
 
     return config;
