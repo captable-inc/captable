@@ -6,7 +6,7 @@ import { env } from "./env";
 const log = logger.child({ module: "middleware" });
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  if (env.LOGS || env.NODE_ENV === "production" || env.NODE_ENV === "staging") {
+  if (env.LOGS || env.NODE_ENV === "production") {
     const { url, method } = request;
     const time = new Date().toISOString();
     const { device, browser, isBot } = userAgent(request);
