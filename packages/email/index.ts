@@ -1,24 +1,43 @@
 import type { ReactElement } from "react";
 
 // Export all email templates and their types explicitly
-export { default as AccountVerificationEmail } from "./templates/AccountVerificationEmail.js";
-export { default as EsignConfirmationEmail } from "./templates/EsignConfirmationEmail.js";
-export { default as EsignEmail } from "./templates/EsignEmail.js";
-export { default as MagicLinkEmail } from "./templates/MagicLinkEmail.js";
-export { default as MemberInviteEmail } from "./templates/MemberInviteEmail.js";
-export { default as PasswordResetEmail } from "./templates/PasswordResetEmail.js";
-export { default as ShareDataRoomEmail } from "./templates/ShareDataRoomEmail.js";
-export { default as ShareUpdateEmail } from "./templates/ShareUpdateEmail.js";
+export { default as AccountVerificationEmail } from "./templates/account-verification-email.js";
+export { default as EsignConfirmationEmail } from "./templates/esign-confirmation-email.js";
+export { default as EsignEmail } from "./templates/esign-email.js";
+export { default as MagicLinkEmail } from "./templates/magic-link-email.js";
+export { default as MemberInviteEmail } from "./templates/member-invite-email.js";
+export { default as PasswordResetEmail } from "./templates/password-reset-email.js";
+export { default as ShareDataRoomEmail } from "./templates/share-data-room-email.js";
+export { default as ShareUpdateEmail } from "./templates/share-update-email.js";
 
 // Export types
-export type { AccountVerificationEmailProps } from "./templates/AccountVerificationEmail.js";
-export type { EsignConfirmationEmailProps } from "./templates/EsignConfirmationEmail.js";
-export type { EsignEmailProps } from "./templates/EsignEmail.js";
-export type { MagicLinkEmailProps } from "./templates/MagicLinkEmail.js";
-export type { MemberInviteEmailProps } from "./templates/MemberInviteEmail.js";
-export type { PasswordResetEmailProps } from "./templates/PasswordResetEmail.js";
-export type { ShareDataRoomEmailProps } from "./templates/ShareDataRoomEmail.js";
-export type { ShareUpdateEmailProps } from "./templates/ShareUpdateEmail.js";
+export type { AccountVerificationEmailProps } from "./templates/account-verification-email.js";
+export type { EsignConfirmationEmailProps } from "./templates/esign-confirmation-email.js";
+export type { EsignEmailProps } from "./templates/esign-email.js";
+export type { MagicLinkEmailProps } from "./templates/magic-link-email.js";
+export type { MemberInviteEmailProps } from "./templates/member-invite-email.js";
+export type { PasswordResetEmailProps } from "./templates/password-reset-email.js";
+export type { ShareDataRoomEmailProps } from "./templates/share-data-room-email.js";
+export type { ShareUpdateEmailProps } from "./templates/share-update-email.js";
+
+// Export email components
+export {
+  Layout,
+  Button,
+  Heading,
+  Text,
+  Link,
+  Footer,
+} from "./components/index.js";
+
+export type {
+  LayoutProps,
+  ButtonProps,
+  HeadingProps,
+  TextProps,
+  LinkProps,
+  FooterProps,
+} from "./components/index.js";
 
 // Dynamic import for React Email render function to avoid ES module issues
 export async function render(component: ReactElement, options?: { pretty?: boolean; plainText?: boolean }) {
