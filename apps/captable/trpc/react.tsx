@@ -29,7 +29,7 @@ export function TRPCReactProvider(props: {
           transformer,
           headers() {
             return {
-              cookie: props.cookies,
+              cookie: typeof window !== "undefined" ? document.cookie : "",
               "x-trpc-source": "react",
             };
           },

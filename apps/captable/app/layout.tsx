@@ -5,6 +5,7 @@ import { robotoMono, satoshi } from "@/styles/fonts";
 import { NextAuthProvider } from "@/providers/next-auth";
 import { ProgressBarProvider } from "@/providers/progress-bar";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { TRPCProvider } from "@/providers/trpc-provider";
 import { PublicEnvScript } from "@/components/public-env-script";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "sonner";
@@ -59,16 +60,18 @@ export default function RootLayout({
         <PublicEnvScript />
       </head>
       <body className="min-h-screen bg-background text-foreground">
-        <ThemeProvider defaultTheme="system" storageKey="captable-theme">
-          <main>
-            <div className="absolute top-4 right-4 z-50">
-              <ThemeToggle />
-            </div>
-            {children}
-            <Toaster richColors position="bottom-right" />
-            {isDev && <ScreenSize />}
-          </main>
-        </ThemeProvider>
+        <TRPCProvider cookies="">
+          <ThemeProvider defaultTheme="system" storageKey="captable-theme">
+            <main>
+              <div className="absolute top-4 right-4 z-50">
+                <ThemeToggle />
+              </div>
+              {children}
+              <Toaster richColors position="bottom-right" />
+              {isDev && <ScreenSize />}
+            </main>
+          </ThemeProvider>
+        </TRPCProvider>
       </body>
     </html>
   );
