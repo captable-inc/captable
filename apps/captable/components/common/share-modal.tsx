@@ -81,7 +81,7 @@ const Share = ({
           <div className="my-3">
             <MultipleSelector
               customLabel={true}
-              className="bg-white py-3"
+              className="bg-card py-3"
               selected={selected}
               setSelected={setSelected}
               options={contacts?.map((contact) => ({

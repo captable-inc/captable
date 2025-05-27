@@ -47,7 +47,7 @@ const Modal = ({
     <Dialog {...dialogProps}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
-        className={cn("mb-10 mt-10 gap-0 bg-white p-0", sizes[size])}
+        className={cn("mb-10 mt-10 gap-0 bg-card p-0", sizes[size])}
       >
         <div
           className={cn(

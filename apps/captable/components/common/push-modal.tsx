@@ -28,7 +28,7 @@ const Modal = ({
   return (
     <DialogContent
       className={cn(
-        "mb-10 mt-10 gap-0 bg-white p-0",
+        "mb-10 mt-10 gap-0 bg-card p-0",
         size === "sm" && "sm:max-w-sm",
         size === "md" && "sm:max-w-md",
         size === "lg" && "sm:max-w-lg",
