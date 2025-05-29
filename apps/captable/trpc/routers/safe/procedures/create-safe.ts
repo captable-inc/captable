@@ -5,7 +5,7 @@ import { uploadFile } from "@/lib/common/uploads";
 import { invariant } from "@/lib/error";
 import { TAG } from "@/lib/tags";
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { withAuth } from "@/trpc/api/trpc";
 import { db, safes } from "@captable/db";
 import { createBucketHandler } from "../../bucket-router/procedures/create-bucket";

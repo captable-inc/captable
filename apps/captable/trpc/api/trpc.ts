@@ -18,7 +18,7 @@ import {
   checkAccessControlMembership,
   getPermissions,
 } from "@/lib/rbac/access-control";
-import { getServerAuthSession } from "@/server/auth";
+import { serverSideSession } from "@/server/auth";
 import { db } from "@captable/db";
 import * as Sentry from "@sentry/nextjs";
 
@@ -39,7 +39,7 @@ export interface Meta {
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await getServerAuthSession();
+  const session = await serverSideSession();
 
   return {
     db,

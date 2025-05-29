@@ -1,4 +1,4 @@
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { db, audits, eq, desc } from "@captable/db";
 import { createTRPCRouter, withAccessControl } from "@/trpc/api/trpc";
 import { allEsignAuditsProcedure } from "./procedures/all-esign-audits";

@@ -1,8 +1,8 @@
-import { getServerComponentAuthSession } from "@/server/auth";
+import { cachedServerSideSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 
 export default async function HomePage() {
-  const session = await getServerComponentAuthSession();
+  const session = await cachedServerSideSession();
 
   if (session?.user?.companyPublicId) {
     return redirect(`/${session.user.companyPublicId}`);

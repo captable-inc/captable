@@ -1,0 +1,17 @@
+{
+  "name": "@captable/auth",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "dotenv": "^16.5.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@captable/db": "workspace:*`",
+    "better-auth": "^1.2.8",
+    "pg": "^8.16.0"
+  }
+}

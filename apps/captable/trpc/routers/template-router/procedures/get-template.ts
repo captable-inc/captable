@@ -1,4 +1,4 @@
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { withAuth } from "@/trpc/api/trpc";
 import {

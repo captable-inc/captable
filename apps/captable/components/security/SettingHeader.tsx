@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { withServerComponentSession } from "@/server/auth";
+import { withServerSideSession } from "@/server/auth";
 import { RiArrowLeftLine } from "@remixicon/react";
 import Link from "next/link";
 import type React from "react";
@@ -19,7 +19,7 @@ export const SettingsHeader = async ({
   showBackArrow = true,
   className,
 }: SettingsHeaderProps) => {
-  const session = await withServerComponentSession();
+  const session = await withServerSideSession();
 
   const href = `/${session?.user.companyPublicId}/settings/security`;
   return (

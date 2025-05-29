@@ -1,4 +1,4 @@
-import { withServerComponentSession } from "@/server/auth";
+import { withServerSideSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 
 export default async function OnboardedLayout({
@@ -6,7 +6,7 @@ export default async function OnboardedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await withServerComponentSession();
+  const session = await withServerSideSession();
 
   if (!session.user.isOnboarded) {
     redirect("/onboarding");

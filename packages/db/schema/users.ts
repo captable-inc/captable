@@ -1,4 +1,4 @@
-import { timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { createSelectSchema } from "drizzle-zod";
 import { createTable } from "./index";
 import { createId } from "@paralleldrive/cuid2";

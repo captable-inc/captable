@@ -1,5 +1,5 @@
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { withAuth, type withAuthTrpcContextType } from "@/trpc/api/trpc";
 import { db, documentShares } from "@captable/db";
 import {

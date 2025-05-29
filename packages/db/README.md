@@ -327,6 +327,27 @@ bun run db:studio
 bun run db:seed
 ```
 
+### Better Auth Schema Generation
+
+To generate the authentication schema from better-auth configuration:
+
+```bash
+# Generate auth schema from better-auth config
+pnpx @better-auth/cli@latest generate --config=../auth/index.ts --output=schema/auth.ts
+```
+
+This command:
+- Reads the better-auth configuration from `../auth/index.ts`
+- Generates the corresponding Drizzle schema
+- Outputs the schema to `schema/auth.ts`
+- Automatically includes all necessary tables for authentication (users, sessions, accounts, etc.)
+
+After running this command, make sure to:
+1. Review the generated `schema/auth.ts` file
+2. Update `schema/index.ts` to export the new auth tables if needed
+3. Run `bun run generate` to create any necessary migrations
+4. Run `bun run migrate` to apply the migrations
+
 ### Project Structure
 
 ```

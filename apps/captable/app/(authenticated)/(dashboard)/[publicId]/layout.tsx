@@ -1,7 +1,7 @@
 import { NavBar } from "@/components/dashboard/navbar";
 import { SideBar } from "@/components/dashboard/sidebar";
 import { ModalProvider } from "@/components/modals";
-import { withServerComponentSession } from "@/server/auth";
+import { withServerSideSession } from "@/server/auth";
 import { getCompanyList } from "@/server/company";
 import { redirect } from "next/navigation";
 import "@/styles/hint.css";
@@ -16,7 +16,7 @@ type DashboardLayoutProps = {
 
 const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
   const { publicId } = await params;
-  const { user } = await withServerComponentSession();
+  const { user } = await withServerSideSession();
 
   if (user.companyPublicId !== publicId) {
     redirect(`/${user.companyPublicId}`);

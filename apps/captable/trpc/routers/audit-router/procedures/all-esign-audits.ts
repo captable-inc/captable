@@ -1,4 +1,4 @@
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { db, templates, esignAudits, eq, and } from "@captable/db";
 import { withAccessControl } from "@/trpc/api/trpc";
 import { TRPCError } from "@trpc/server";

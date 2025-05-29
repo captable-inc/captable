@@ -1,7 +1,7 @@
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import { ShareClassMutationSchema } from "./schema";
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { db, shareClasses, companies, eq, count } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 

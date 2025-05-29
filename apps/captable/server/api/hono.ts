@@ -3,7 +3,7 @@ import { handleError, handleZodError } from "@/server/api/error";
 import type { DB } from "@captable/db";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import type { Audit } from "@/server/audit";
-import type { checkMembership } from "@/server/auth";
+import type { checkMembership } from "@/server/member";
 import { SECURITY_SCHEME_NAME } from "./const";
 
 declare module "hono" {

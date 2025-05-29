@@ -2,7 +2,7 @@ import { env } from "@/env";
 import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
 import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import {
   generateInviteToken,
   generateMemberIdentifier,

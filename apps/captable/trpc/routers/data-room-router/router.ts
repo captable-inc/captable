@@ -7,7 +7,7 @@ import {
 import { encode } from "@/lib/jwt";
 import { ShareRecipientSchema } from "@/schema/contacts";
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import {
   db,

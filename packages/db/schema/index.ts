@@ -1,6 +1,7 @@
 export { createTable } from "./table";
 
 export * from "./enums";
+export * from "./auth";
 export * from "./accounts";
 export * from "./sessions";
 export * from "./users";

@@ -38,6 +38,8 @@ export const env = createEnv({
       .transform((s) => s !== "false" && s !== "0"),
     NEXTAUTH_URL: z.string(),
     NEXTAUTH_SECRET: z.string(),
+    BETTER_AUTH_SECRET: z.string(),
+    BETTER_AUTH_URL: z.string(),
     EMAIL_SERVER: z.string().optional(),
     EMAIL_FROM: z.string(),
 
@@ -89,6 +91,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
     EMAIL_FROM: process.env.EMAIL_FROM,
 

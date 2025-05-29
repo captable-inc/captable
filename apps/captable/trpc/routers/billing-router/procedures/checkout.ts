@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import { invariant } from "@/lib/error";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { createOrRetrieveCustomer, stripe } from "@/server/stripe";
 import { withAuth } from "@/trpc/api/trpc";
 import type Stripe from "stripe";

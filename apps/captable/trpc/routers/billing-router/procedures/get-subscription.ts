@@ -1,4 +1,4 @@
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import {
   db,
   billingCustomers,

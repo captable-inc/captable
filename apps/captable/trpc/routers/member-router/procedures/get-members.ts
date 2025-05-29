@@ -1,4 +1,4 @@
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { withAccessControl } from "@/trpc/api/trpc";
 import { db, members, users, eq, asc } from "@captable/db";
 

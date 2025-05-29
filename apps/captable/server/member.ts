@@ -1,10 +1,14 @@
 import { createHash } from "@/lib/crypto";
 import { nanoid } from "nanoid";
+import type { Session } from "next-auth";
 import {
   db,
   type DBTransaction,
   eq,
+  and,
   inArray,
+  members,
+  users,
   verificationTokens,
 } from "@captable/db";
 
@@ -90,4 +94,52 @@ export async function revokeExistingInviteTokens({
       verificationToken.map((item) => item.token),
     ),
   );
+}
+
+export interface checkMembershipOptions {
+  session: Session;
+  tx: DBTransaction;
+}
+
+export async function checkMembership({ session, tx }: checkMembershipOptions) {
+  const memberRecord = await tx.query.members.findFirst({
+    where: and(
+      eq(members.id, session.user.memberId),
+      eq(members.companyId, session.user.companyId),
+      eq(members.isOnboarded, true),
+    ),
+    columns: {
+      id: true,
+      companyId: true,
+      role: true,
+      customRoleId: true,
+      userId: true,
+    },
+  });
+
+  if (!memberRecord) {
+    throw new Error("Membership not found");
+  }
+
+  // Get user data separately
+  const userRecord = await tx
+    .select({
+      name: users.name,
+      email: users.email,
+    })
+    .from(users)
+    .where(eq(users.id, memberRecord.userId))
+    .limit(1);
+
+  const user =
+    userRecord.length > 0 ? userRecord[0] : { name: null, email: null };
+
+  const { companyId, id: memberId, ...rest } = memberRecord;
+
+  return {
+    companyId,
+    memberId,
+    ...rest,
+    user,
+  };
 }

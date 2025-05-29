@@ -1,5 +1,5 @@
 import { Audit } from "@/server/audit";
-import { checkMembership } from "@/server/auth";
+import { checkMembership } from "@/server/member";
 import { db, members, companies, eq, and } from "@captable/db";
 import { createTRPCRouter, withAccessControl, withAuth } from "@/trpc/api/trpc";
 import { TRPCError } from "@trpc/server";

@@ -1,6 +1,6 @@
-import { withServerSession } from "@/server/auth";
+import { withServerSideSession } from "@/server/auth";
 
 export const POST = async (req: Request) => {
-  const session = await withServerSession();
+  const session = await withServerSideSession();
   const { user } = session;
 };

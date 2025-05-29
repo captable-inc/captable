@@ -309,24 +309,12 @@ export const authOptions: NextAuthOptions = {
  * @see https://next-auth.js.org/configuration/nextjs
  */
 
-export const getServerAuthSession = () => getServerSession(authOptions);
+export const serverSideSession = () => getServerSession(authOptions);
 
-export const getServerComponentAuthSession = cache(() =>
-  getServerAuthSession(),
-);
+export const cachedServerSideSession = cache(() => serverSideSession());
 
-export const withServerSession = async () => {
-  const session = await getServerAuthSession();
-
-  if (!session) {
-    throw new Error("session not found");
-  }
-
-  return session;
-};
-
-export const withServerComponentSession = cache(async () => {
-  const session = await getServerComponentAuthSession();
+export const withServerSideSession = cache(async () => {
+  const session = await cachedServerSideSession();
 
   if (!session) {
     throw new Error("session not found");
@@ -334,51 +322,3 @@ export const withServerComponentSession = cache(async () => {
 
   return session;
 });
-
-export interface checkMembershipOptions {
-  session: Session;
-  tx: DBTransaction;
-}
-
-export async function checkMembership({ session, tx }: checkMembershipOptions) {
-  const memberRecord = await tx.query.members.findFirst({
-    where: and(
-      eq(members.id, session.user.memberId),
-      eq(members.companyId, session.user.companyId),
-      eq(members.isOnboarded, true),
-    ),
-    columns: {
-      id: true,
-      companyId: true,
-      role: true,
-      customRoleId: true,
-      userId: true,
-    },
-  });
-
-  if (!memberRecord) {
-    throw new Error("Membership not found");
-  }
-
-  // Get user data separately
-  const userRecord = await tx
-    .select({
-      name: users.name,
-      email: users.email,
-    })
-    .from(users)
-    .where(eq(users.id, memberRecord.userId))
-    .limit(1);
-
-  const user =
-    userRecord.length > 0 ? userRecord[0] : { name: null, email: null };
-
-  const { companyId, id: memberId, ...rest } = memberRecord;
-
-  return {
-    companyId,
-    memberId,
-    ...rest,
-    user,
-  };
-}

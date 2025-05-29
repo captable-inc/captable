@@ -3,7 +3,7 @@ import { PageLayout } from "@/components/dashboard/page-layout";
 import { Card } from "@/components/ui/card";
 import { UnAuthorizedState } from "@/components/ui/un-authorized-state";
 import { serverAccessControl } from "@/lib/rbac/access-control";
-import { withServerComponentSession } from "@/server/auth";
+import { withServerSideSession } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { RiUploadCloudLine } from "@remixicon/react";
 import type { Metadata } from "next";
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 const DocumentsPage = async () => {
   const { allow } = await serverAccessControl();
-  const session = await withServerComponentSession();
+  const session = await withServerSideSession();
 
   const documents = await allow(api.document.getAll.query(), [
     "documents",
