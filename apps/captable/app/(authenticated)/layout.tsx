@@ -1,4 +1,4 @@
-import { cachedServerSideSession } from "@/server/auth";
+import { serverSideSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 
 export default async function AuthenticatedLayout({
@@ -6,7 +6,7 @@ export default async function AuthenticatedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await cachedServerSideSession();
+  const session = await serverSideSession();
 
   if (!session) {
     redirect("/login");

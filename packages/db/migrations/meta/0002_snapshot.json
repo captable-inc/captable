@@ -93,12 +93,8 @@
           "name": "cap_better_auth_accounts_user_id_cap_better_auth_users_id_fk",
           "tableFrom": "cap_better_auth_accounts",
           "tableTo": "cap_better_auth_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -168,12 +164,8 @@
           "name": "cap_better_auth_sessions_user_id_cap_better_auth_users_id_fk",
           "tableFrom": "cap_better_auth_sessions",
           "tableTo": "cap_better_auth_users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -183,9 +175,7 @@
         "cap_better_auth_sessions_token_unique": {
           "name": "cap_better_auth_sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -246,9 +236,7 @@
         "cap_better_auth_users_email_unique": {
           "name": "cap_better_auth_users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -712,9 +700,7 @@
         "cap_passkey_verification_tokens_token_unique": {
           "name": "cap_passkey_verification_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -779,9 +765,7 @@
         "cap_password_reset_tokens_token_unique": {
           "name": "cap_password_reset_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -880,16 +864,12 @@
         "cap_verification_tokens_secondary_id_unique": {
           "name": "cap_verification_tokens_secondary_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "secondary_id"
-          ]
+          "columns": ["secondary_id"]
         },
         "cap_verification_tokens_token_unique": {
           "name": "cap_verification_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -1021,9 +1001,7 @@
         "cap_companies_public_id_unique": {
           "name": "cap_companies_public_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_id"
-          ]
+          "columns": ["public_id"]
         }
       },
       "policies": {},
@@ -1492,9 +1470,7 @@
         "cap_stakeholders_email_unique": {
           "name": "cap_stakeholders_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -2201,9 +2177,7 @@
         "cap_documents_public_id_unique": {
           "name": "cap_documents_public_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_id"
-          ]
+          "columns": ["public_id"]
         }
       },
       "policies": {},
@@ -2558,9 +2532,7 @@
         "cap_data_rooms_public_id_unique": {
           "name": "cap_data_rooms_public_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_id"
-          ]
+          "columns": ["public_id"]
         }
       },
       "policies": {},
@@ -4177,9 +4149,7 @@
         "cap_updates_public_id_unique": {
           "name": "cap_updates_public_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_id"
-          ]
+          "columns": ["public_id"]
         }
       },
       "policies": {},
@@ -4624,29 +4594,17 @@
     "public.AccessTokenType": {
       "name": "AccessTokenType",
       "schema": "public",
-      "values": [
-        "sig",
-        "doc",
-        "api",
-        "upd"
-      ]
+      "values": ["sig", "doc", "api", "upd"]
     },
     "public.AuditAction": {
       "name": "AuditAction",
       "schema": "public",
-      "values": [
-        "CREATE",
-        "UPDATE",
-        "DELETE"
-      ]
+      "values": ["CREATE", "UPDATE", "DELETE"]
     },
     "public.BankAccountTypeEnum": {
       "name": "BankAccountTypeEnum",
       "schema": "public",
-      "values": [
-        "CHECKING",
-        "SAVINGS"
-      ]
+      "values": ["CHECKING", "SAVINGS"]
     },
     "public.CancellationBehaviorEnum": {
       "name": "CancellationBehaviorEnum",
@@ -4661,10 +4619,7 @@
     "public.ConversionRightsEnum": {
       "name": "ConversionRightsEnum",
       "schema": "public",
-      "values": [
-        "CONVERTS_TO_FUTURE_ROUND",
-        "CONVERTS_TO_SHARE_CLASS_ID"
-      ]
+      "values": ["CONVERTS_TO_FUTURE_ROUND", "CONVERTS_TO_SHARE_CLASS_ID"]
     },
     "public.ConvertibleInterestAccrualEnum": {
       "name": "ConvertibleInterestAccrualEnum",
@@ -4681,55 +4636,32 @@
     "public.ConvertibleInterestMethodEnum": {
       "name": "ConvertibleInterestMethodEnum",
       "schema": "public",
-      "values": [
-        "SIMPLE",
-        "COMPOUND"
-      ]
+      "values": ["SIMPLE", "COMPOUND"]
     },
     "public.ConvertibleInterestPaymentScheduleEnum": {
       "name": "ConvertibleInterestPaymentScheduleEnum",
       "schema": "public",
-      "values": [
-        "DEFERRED",
-        "PAY_AT_MATURITY"
-      ]
+      "values": ["DEFERRED", "PAY_AT_MATURITY"]
     },
     "public.ConvertibleStatusEnum": {
       "name": "ConvertibleStatusEnum",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "ACTIVE",
-        "PENDING",
-        "EXPIRED",
-        "CANCELLED"
-      ]
+      "values": ["DRAFT", "ACTIVE", "PENDING", "EXPIRED", "CANCELLED"]
     },
     "public.ConvertibleTypeEnum": {
       "name": "ConvertibleTypeEnum",
       "schema": "public",
-      "values": [
-        "CCD",
-        "OCD",
-        "NOTE"
-      ]
+      "values": ["CCD", "OCD", "NOTE"]
     },
     "public.CredentialDeviceTypeEnum": {
       "name": "CredentialDeviceTypeEnum",
       "schema": "public",
-      "values": [
-        "SINGLE_DEVICE",
-        "MULTI_DEVICE"
-      ]
+      "values": ["SINGLE_DEVICE", "MULTI_DEVICE"]
     },
     "public.EsignRecipientStatus": {
       "name": "EsignRecipientStatus",
       "schema": "public",
-      "values": [
-        "SENT",
-        "SIGNED",
-        "PENDING"
-      ]
+      "values": ["SENT", "SIGNED", "PENDING"]
     },
     "public.FieldTypes": {
       "name": "FieldTypes",
@@ -4749,68 +4681,37 @@
     "public.MemberStatusEnum": {
       "name": "MemberStatusEnum",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "INACTIVE",
-        "PENDING"
-      ]
+      "values": ["ACTIVE", "INACTIVE", "PENDING"]
     },
     "public.OptionStatusEnum": {
       "name": "OptionStatusEnum",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "ACTIVE",
-        "EXERCISED",
-        "EXPIRED",
-        "CANCELLED"
-      ]
+      "values": ["DRAFT", "ACTIVE", "EXERCISED", "EXPIRED", "CANCELLED"]
     },
     "public.OptionTypeEnum": {
       "name": "OptionTypeEnum",
       "schema": "public",
-      "values": [
-        "ISO",
-        "NSO",
-        "RSU"
-      ]
+      "values": ["ISO", "NSO", "RSU"]
     },
     "public.PricingPlanInterval": {
       "name": "PricingPlanInterval",
       "schema": "public",
-      "values": [
-        "day",
-        "week",
-        "month",
-        "year"
-      ]
+      "values": ["day", "week", "month", "year"]
     },
     "public.PricingType": {
       "name": "PricingType",
       "schema": "public",
-      "values": [
-        "one_time",
-        "recurring"
-      ]
+      "values": ["one_time", "recurring"]
     },
     "public.Roles": {
       "name": "Roles",
       "schema": "public",
-      "values": [
-        "ADMIN",
-        "CUSTOM"
-      ]
+      "values": ["ADMIN", "CUSTOM"]
     },
     "public.SafeStatusEnum": {
       "name": "SafeStatusEnum",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "ACTIVE",
-        "PENDING",
-        "EXPIRED",
-        "CANCELLED"
-      ]
+      "values": ["DRAFT", "ACTIVE", "PENDING", "EXPIRED", "CANCELLED"]
     },
     "public.SafeTemplateEnum": {
       "name": "SafeTemplateEnum",
@@ -4828,45 +4729,27 @@
     "public.SafeTypeEnum": {
       "name": "SafeTypeEnum",
       "schema": "public",
-      "values": [
-        "PRE_MONEY",
-        "POST_MONEY"
-      ]
+      "values": ["PRE_MONEY", "POST_MONEY"]
     },
     "public.SecuritiesStatusEnum": {
       "name": "SecuritiesStatusEnum",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "DRAFT",
-        "SIGNED",
-        "PENDING"
-      ]
+      "values": ["ACTIVE", "DRAFT", "SIGNED", "PENDING"]
     },
     "public.ShareLegendsEnum": {
       "name": "ShareLegendsEnum",
       "schema": "public",
-      "values": [
-        "US_SECURITIES_ACT",
-        "SALE_AND_ROFR",
-        "TRANSFER_RESTRICTIONS"
-      ]
+      "values": ["US_SECURITIES_ACT", "SALE_AND_ROFR", "TRANSFER_RESTRICTIONS"]
     },
     "public.SharePrefixEnum": {
       "name": "SharePrefixEnum",
       "schema": "public",
-      "values": [
-        "CS",
-        "PS"
-      ]
+      "values": ["CS", "PS"]
     },
     "public.ShareTypeEnum": {
       "name": "ShareTypeEnum",
       "schema": "public",
-      "values": [
-        "COMMON",
-        "PREFERRED"
-      ]
+      "values": ["COMMON", "PREFERRED"]
     },
     "public.StakeholderRelationshipEnum": {
       "name": "StakeholderRelationshipEnum",
@@ -4890,10 +4773,7 @@
     "public.StakeholderTypeEnum": {
       "name": "StakeholderTypeEnum",
       "schema": "public",
-      "values": [
-        "INDIVIDUAL",
-        "INSTITUTION"
-      ]
+      "values": ["INDIVIDUAL", "INSTITUTION"]
     },
     "public.SubscriptionStatus": {
       "name": "SubscriptionStatus",
@@ -4912,22 +4792,12 @@
     "public.TemplateStatus": {
       "name": "TemplateStatus",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "COMPLETE",
-        "SENT",
-        "WAITING",
-        "CANCELLED"
-      ]
+      "values": ["DRAFT", "COMPLETE", "SENT", "WAITING", "CANCELLED"]
     },
     "public.UpdateStatusEnum": {
       "name": "UpdateStatusEnum",
       "schema": "public",
-      "values": [
-        "DRAFT",
-        "PUBLIC",
-        "PRIVATE"
-      ]
+      "values": ["DRAFT", "PUBLIC", "PRIVATE"]
     }
   },
   "schemas": {},

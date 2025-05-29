@@ -1,7 +1,7 @@
 import EmptyState from "@/components/common/empty-state";
 import { PageLayout } from "@/components/dashboard/page-layout";
 import { Card } from "@/components/ui/card";
-import { withServerSideSession } from "@/server/auth";
+import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { api } from "@/trpc/server";
 import { RiUploadCloudLine } from "@remixicon/react";
 import type { Metadata } from "next";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 const EsignDocumentPage = async () => {
-  const session = await withServerSideSession();
+  const session = await useServerSideSession();
   const { documents } = await api.template.all.query();
 
   if (documents.length === 0) {

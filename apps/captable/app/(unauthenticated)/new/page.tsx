@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { cachedServerSideSession } from "@/server/auth";
+import { serverSideSession } from "@/server/auth";
 import { RiCheckboxCircleFill as CheckIcon } from "@remixicon/react";
 
 import { redirect } from "next/navigation";
@@ -11,7 +11,7 @@ export default async function CapPage() {
     return notFound();
   }
 
-  const session = await cachedServerSideSession();
+  const session = await serverSideSession();
 
   if (session?.user) {
     return redirect("/company/new");

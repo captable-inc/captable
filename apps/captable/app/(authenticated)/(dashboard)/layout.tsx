@@ -1,4 +1,4 @@
-import { withServerSideSession } from "@/server/auth";
+import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { redirect } from "next/navigation";
 
 export default async function OnboardedLayout({
@@ -6,7 +6,7 @@ export default async function OnboardedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await withServerSideSession();
+  const session = await useServerSideSession();
 
   if (!session.user.isOnboarded) {
     redirect("/onboarding");

@@ -310,15 +310,3 @@ export const authOptions: NextAuthOptions = {
  */
 
 export const serverSideSession = () => getServerSession(authOptions);
-
-export const cachedServerSideSession = cache(() => serverSideSession());
-
-export const withServerSideSession = cache(async () => {
-  const session = await cachedServerSideSession();
-
-  if (!session) {
-    throw new Error("session not found");
-  }
-
-  return session;
-});

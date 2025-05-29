@@ -6,7 +6,7 @@ import {
   DEFAULT_PERMISSION,
 } from "@/lib/rbac/constants";
 import type { RoleEnum } from "@captable/db";
-import { withServerSideSession } from "@/server/auth";
+import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { checkMembership } from "@/server/member";
 import { db, type DBTransaction, customRoles, eq, and } from "@captable/db";
 import type { Session } from "next-auth";
@@ -167,7 +167,7 @@ export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
 };
 
 export const getServerPermissions = cache(async () => {
-  const session = await withServerSideSession();
+  const session = await useServerSideSession();
   const { err, val } = await getPermissions({ session, db });
   if (err) {
     throw err;

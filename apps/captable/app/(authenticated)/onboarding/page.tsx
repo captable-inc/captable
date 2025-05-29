@@ -1,5 +1,5 @@
 import { CompanyForm } from "@/components/onboarding/company-form";
-import { withServerSideSession } from "@/server/auth";
+import { useServerSideSession } from "@/hooks/use-server-side-session";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 const OnboardingPage = async () => {
-  const session = await withServerSideSession();
+  const session = await useServerSideSession();
   const user = session.user;
 
   if (user.isOnboarded) {

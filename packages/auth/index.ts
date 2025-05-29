@@ -1,10 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db, schema } from "@captable/db";
-// import { config } from "dotenv";
-// config({
-//   path: "../../.env",
-// });
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -54,3 +50,22 @@ export const auth = betterAuth({
 		cookiePrefix: "captable",
 	},
 });
+
+type ServerSideSessionProps = { request: Request };
+
+export const serverSideSession = async ({
+  request,
+}: ServerSideSessionProps) => {
+  const headers = new Headers(request.headers);
+  const session = await auth.api.getSession({
+    headers,
+  });
+
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  return session;
+};
+
+export type Session = Awaited<ReturnType<typeof serverSideSession>>;

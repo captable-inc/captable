@@ -2,7 +2,7 @@
 
 import EmptyState from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
-import { cachedServerSideSession } from "@/server/auth";
+import { serverSideSession } from "@/server/auth";
 import {
   db,
   dataRooms,
@@ -46,7 +46,7 @@ const getDataRooms = async (companyId: string) => {
 };
 
 const DataRoomPage = async () => {
-  const session = await cachedServerSideSession();
+  const session = await serverSideSession();
 
   if (!session || !session.user) {
     return null;
