@@ -12,7 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "@captable/auth";
 import Link from "next/link";
 
 type UserDropdownProps = {

@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db, schema } from "@captable/db";
+import { createAuthClient } from "better-auth/react";
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -67,5 +68,9 @@ export const serverSideSession = async ({
 
   return session;
 };
+
+export const { useSession, signIn, signOut } = createAuthClient({
+	baseURL: process.env.NEXT_PUBLIC_BASE_URL as string,
+});
 
 export type Session = Awaited<ReturnType<typeof serverSideSession>>;

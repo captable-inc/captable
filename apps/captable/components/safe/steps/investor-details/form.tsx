@@ -21,7 +21,7 @@ import { useFormValueUpdater } from "@/providers/form-value-provider";
 import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiAddCircleLine } from "@remixicon/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { NumericFormat } from "react-number-format";

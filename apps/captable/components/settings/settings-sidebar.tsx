@@ -21,7 +21,7 @@ import {
   RiTerminalBoxFill,
   RiTerminalBoxLine,
 } from "@remixicon/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { usePathname } from "next/navigation";
 
 const companyNav = [

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { RiGoogleFill as GoogleIcon } from "@remixicon/react";
-import { signIn } from "next-auth/react";
+import { signIn } from "@captable/auth";
 
 async function signInWithGoogle() {
   await signIn("google", { callbackUrl: "/onboarding" });

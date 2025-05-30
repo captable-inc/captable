@@ -9,7 +9,7 @@ import { Input } from "../ui/input";
 
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import {

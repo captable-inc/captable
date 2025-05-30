@@ -32,7 +32,7 @@ import countries from "@/lib/countries";
 import { cn, isFileExists, validateFile } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";

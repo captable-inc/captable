@@ -13,7 +13,7 @@ import { uploadFile } from "@/lib/common/uploads";
 import { invariant } from "@/lib/error";
 import { TAG } from "@/lib/tags";
 import { api } from "@/trpc/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { TFormSchema as TGeneralDetailsFormSchema } from "./general-details";

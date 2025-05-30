@@ -14,7 +14,7 @@ import type { TGetCompanyList } from "@/server/company";
 import { api } from "@/trpc/react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { RiAddCircleLine } from "@remixicon/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 

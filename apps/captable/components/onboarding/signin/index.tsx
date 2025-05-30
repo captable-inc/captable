@@ -19,7 +19,7 @@ import {
   browserSupportsWebAuthn,
   startAuthentication,
 } from "@simplewebauthn/browser";
-import { signIn } from "next-auth/react";
+import { signIn } from "@captable/auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";

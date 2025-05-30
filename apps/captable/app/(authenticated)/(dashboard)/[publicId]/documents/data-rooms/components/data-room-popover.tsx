@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { api } from "@/trpc/react";
 import { RiArrowRightLine as ArrowRightIcon } from "@remixicon/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

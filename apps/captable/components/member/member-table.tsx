@@ -34,7 +34,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { getRoleId } from "@/lib/rbac/access-control-utils";
 import type { RouterOutputs } from "@/trpc/shared";
 import { RiMore2Fill } from "@remixicon/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { pushModal } from "../modals";
 import { DataTable } from "../ui/data-table/data-table";

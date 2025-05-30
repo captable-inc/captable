@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signIn } from "next-auth/react";
+import { signIn } from "@captable/auth";
 import { toast } from "sonner";
 
 export const ZSetPasswordFormSchema = z
