@@ -1,17 +1,18 @@
 "use client";
 
-import type { Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
+import type { Session } from "@captable/auth";
 import type React from "react";
 
-export type NextAuthProviderProps = {
+export type AuthProviderProps = {
   session?: Session | null;
   children: React.ReactNode;
 };
 
-export const NextAuthProvider = ({
-  session,
-  children,
-}: NextAuthProviderProps) => {
-  return <SessionProvider session={session}>{children}</SessionProvider>;
+export const AuthProvider = ({ session, children }: AuthProviderProps) => {
+  // Better Auth doesn't need a provider wrapper like NextAuth
+  // The auth client handles session management automatically
+  return <>{children}</>;
 };
+
+// Keep the old export name for backward compatibility
+export const NextAuthProvider = AuthProvider;

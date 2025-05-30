@@ -1,14 +1,16 @@
 import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export default async function OnboardedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await useServerSideSession();
+  // Create a request object from headers for Better Auth
+  const session = await useServerSideSession({ headers: await headers() });
 
-  if (!session.user.isOnboarded) {
+  if (!session?.user.isOnboarded) {
     redirect("/onboarding");
   }
 

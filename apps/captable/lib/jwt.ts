@@ -1,10 +1,13 @@
-import { JWT_SECRET } from "@/server/auth";
 import {
   type JWTPayload,
   type JWTVerifyResult,
   SignJWT,
   jwtVerify,
 } from "jose";
+
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.NEXTAUTH_SECRET ?? "secret",
+);
 
 export const encode = async (data: JWTPayload) => {
   return await new SignJWT(data)

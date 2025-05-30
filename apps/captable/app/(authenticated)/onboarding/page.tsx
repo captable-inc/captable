@@ -2,13 +2,19 @@ import { CompanyForm } from "@/components/onboarding/company-form";
 import { useServerSideSession } from "@/hooks/use-server-side-session";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Onboarding",
 };
 
 const OnboardingPage = async () => {
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
   const user = session.user;
 
   if (user.isOnboarded) {

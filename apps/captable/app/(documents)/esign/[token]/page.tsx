@@ -2,9 +2,10 @@ import EmptyState from "@/components/common/empty-state";
 import { PdfCanvas } from "@/components/template/pdf-canvas";
 import { SigningFields } from "@/components/template/signing-fields";
 import { TemplateSigningFieldProvider } from "@/providers/template-signing-field-provider";
-import { serverSideSession } from "@/server/auth";
+import { serverSideSession } from "@captable/auth";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Document signing",
@@ -30,7 +31,7 @@ export default async function SigningPage(props: SigningPageProps) {
     token,
   });
 
-  const session = await serverSideSession();
+  const session = await serverSideSession({ headers: await headers() });
   const companyPublicId = session?.user.companyPublicId;
 
   if (templateStatus === "CANCELLED") {

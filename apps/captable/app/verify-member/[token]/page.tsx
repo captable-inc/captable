@@ -1,5 +1,4 @@
 import { VerifyMemberForm } from "@/components/member/verify-member-form";
-import { authOptions } from "@/server/auth";
 import { checkVerificationToken } from "@/server/member";
 import type { Metadata } from "next";
 import { serverSideSession } from "@captable/auth";
@@ -23,7 +22,7 @@ export default async function VerifyMember({
 }) {
   const { token } = await params;
   const { passwordResetToken, email } = await searchParams;
-  const session = await serverSideSession({ request });
+  const session = await serverSideSession({ headers: request.headers });
 
   const urlParams = new URLSearchParams({
     email: email,

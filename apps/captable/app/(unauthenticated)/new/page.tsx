@@ -1,20 +1,28 @@
 import { env } from "@/env";
-import { serverSideSession } from "@/server/auth";
+import { serverSideSession } from "@captable/auth";
 import { RiCheckboxCircleFill as CheckIcon } from "@remixicon/react";
 
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
 import LoginWithGoogle from "./components/LoginWithGoogle";
+import { headers } from "next/headers";
 
 export default async function CapPage() {
-  if (env.NEXTAUTH_URL && !env.NEXTAUTH_URL.includes("captable.inc")) {
+  if (
+    process.env.NEXT_PUBLIC_BASE_URL &&
+    !process.env.NEXT_PUBLIC_BASE_URL.includes("captable.inc")
+  ) {
     return notFound();
   }
 
-  const session = await serverSideSession();
+  try {
+    const session = await serverSideSession({ headers: await headers() });
 
-  if (session?.user) {
-    return redirect("/company/new");
+    if (session?.user) {
+      return redirect("/company/new");
+    }
+  } catch (error) {
+    // No session, continue to the page
   }
 
   return (

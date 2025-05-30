@@ -98,11 +98,11 @@ export const passkeyRouter = createTRPCRouter({
     const cookies = ctx.headers.get("cookie");
     const parsedCookies = cookie.parse(cookies || "") as Record<string, string>;
     const sessionIdToken =
-      parsedCookies["__Host-next-auth.csrf-token"] ||
-      parsedCookies["next-auth.csrf-token"];
+      parsedCookies["captable-session"] ||
+      parsedCookies["captable-session.sig"];
 
     if (!sessionIdToken) {
-      throw new Error("Missing CSRF token");
+      throw new Error("Missing session token");
     }
     const [sessionId] = decodeURI(sessionIdToken).split("|");
     try {

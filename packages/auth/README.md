@@ -35,9 +35,10 @@ This package provides Better Auth configuration with extended session data inclu
 
 ```typescript
 import { serverSideSession } from "@captable/auth";
+import { headers } from "next/headers";
 
 export default async function Page() {
-  const session = await serverSideSession({ request });
+  const session = await serverSideSession({ headers: await headers() });
   
   console.log(session.user.isOnboarded);
   console.log(session.user.companyId);
@@ -55,7 +56,7 @@ import { serverSideSession } from "@captable/auth";
 
 export async function GET(request: Request) {
   try {
-    const session = await serverSideSession({ request });
+    const session = await serverSideSession({ headers: request.headers });
     
     // Access member data
     const { isOnboarded, companyId, memberId, status } = session.user;
@@ -108,7 +109,7 @@ export const config = {
 
 The key differences:
 
-1. **Server session**: Use `serverSideSession({ request })` instead of `getServerSession(authOptions)`
+1. **Server session**: Use `serverSideSession({ headers })` instead of `getServerSession(authOptions)`
 2. **Client hook**: Use `useSession()` from `@captable/auth` instead of `next-auth/react`
 3. **Sign in/out**: Use `signIn()` and `signOut()` from the package
 4. **Session data**: All the same member data is available (`isOnboarded`, `companyId`, etc.)

@@ -76,25 +76,26 @@ export function UserProfile() {
 ```typescript
 // app/dashboard/page.tsx
 import { serverSideSession } from "@captable/auth";
+import { headers } from "next/headers";
 
 export default async function DashboardPage() {
-  try {
-    const session = await serverSideSession({ request });
-    
-    const { isOnboarded, companyId, memberId, status } = session.user;
-    
-    return (
-      <div>
-        <h1>Dashboard</h1>
-        <p>Company: {companyId}</p>
-        <p>Member ID: {memberId}</p>
-        <p>Status: {status}</p>
-        <p>Onboarded: {isOnboarded ? "Yes" : "No"}</p>
-      </div>
-    );
-  } catch (error) {
+  const session = await serverSideSession({ headers: await headers() });
+  
+  if (!session) {
     return <div>Not authenticated</div>;
   }
+  
+  const { isOnboarded, companyId, memberId, status } = session.user;
+  
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>Company: {companyId}</p>
+      <p>Member ID: {memberId}</p>
+      <p>Status: {status}</p>
+      <p>Onboarded: {isOnboarded ? "Yes" : "No"}</p>
+    </div>
+  );
 }
 ```
 
@@ -102,18 +103,19 @@ export default async function DashboardPage() {
 ```typescript
 // app/api/user/route.ts
 import { serverSideSession } from "@captable/auth";
+import { headers } from "next/headers";
 
-export async function GET(request: Request) {
-  try {
-    const session = await serverSideSession({ request });
-    
-    return Response.json({
-      user: session.user,
-      companyId: session.user.companyId,
-    });
-  } catch (error) {
+export async function GET() {
+  const session = await serverSideSession({ headers: await headers() });
+  
+  if (!session) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+  
+  return Response.json({
+    user: session.user,
+    companyId: session.user.companyId,
+  });
 }
 ```
 
@@ -141,16 +143,14 @@ export function UserProfile() {
 ## Key Changes Summary
 
 1. **Import change**: `@captable/auth` instead of NextAuth imports
-2. **Server function**: `serverSideSession({ request })` instead of `getServerSession(authOptions)`
+2. **Server function**: `serverSideSession({ headers: await headers() })` instead of `getServerSession(authOptions)`
 3. **Error handling**: Better Auth throws on no session, NextAuth returns null
 4. **Client hook**: Same `useSession()` name, just change import from `next-auth/react` to `@captable/auth`
 5. **Status prop**: `isPending` instead of `status === "loading"`
 
 ## Migration Checklist
 
-- [ ] Update all `getServerSession(authOptions)` calls to `serverSideSession({ request })`
+- [ ] Update all `getServerSession(authOptions)` calls to `serverSideSession({ headers: await headers() })`
 - [ ] Add try/catch blocks around `serverSideSession` calls
 - [ ] Update `useSession()` imports from `next-auth/react` to `@captable/auth`
-- [ ] Update loading states from `status === "loading"` to `isPending`
-- [ ] Test all authentication flows
-- [ ] Verify member data is correctly populated 
+- [ ] Update loading states from `status === "loading"` to `

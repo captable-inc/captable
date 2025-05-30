@@ -2,7 +2,7 @@
 
 import EmptyState from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
-import { serverSideSession } from "@/server/auth";
+import { serverSideSession } from "@captable/auth";
 import {
   db,
   dataRooms,
@@ -11,10 +11,12 @@ import {
   desc,
   count,
 } from "@captable/db";
-import { RiAddFill, RiFolderCheckFill } from "@remixicon/react";
+import Link from "next/link";
 import { Fragment } from "react";
 import DataRoomPopover from "./components/data-room-popover";
 import Folders from "./components/dataroom-folders";
+import { headers } from "next/headers";
+import { RiAddFill, RiFolderCheckFill } from "@remixicon/react";
 
 const getDataRooms = async (companyId: string) => {
   return await db
@@ -46,7 +48,7 @@ const getDataRooms = async (companyId: string) => {
 };
 
 const DataRoomPage = async () => {
-  const session = await serverSideSession();
+  const session = await serverSideSession({ headers: await headers() });
 
   if (!session || !session.user) {
     return null;

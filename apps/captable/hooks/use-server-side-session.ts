@@ -2,14 +2,14 @@ import { serverSideSession, type Session } from "@captable/auth";
 import { redirect } from "next/navigation";
 
 export const useServerSideSession = async ({
-  request,
+  headers,
 }: {
-  request: Request;
+  headers: Headers;
 }) => {
   let session: Session | null = null;
 
   try {
-    session = await serverSideSession({ request });
+    session = await serverSideSession({ headers });
   } catch (error) {
     redirect("/auth");
     return null;

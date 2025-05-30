@@ -35,7 +35,7 @@ export function PublicAPI() {
       version: "v1",
       title: "Captable, Inc. API (v1)",
     },
-    servers: [{ url: `${env.NEXTAUTH_URL}` }],
+    servers: [{ url: `${process.env.NEXT_PUBLIC_BASE_URL}` }],
   }));
 
   api.openAPIRegistry.registerComponent(

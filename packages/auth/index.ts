@@ -66,12 +66,11 @@ export interface ExtendedSession {
 	};
 }
 
-type ServerSideSessionProps = { request: Request };
+type ServerSideSessionProps = { headers: Headers };
 
 export const serverSideSession = async ({
-	request,
+	headers,
 }: ServerSideSessionProps): Promise<ExtendedSession> => {
-	const headers = new Headers(request.headers);
 	const session = await auth.api.getSession({
 		headers,
 	});

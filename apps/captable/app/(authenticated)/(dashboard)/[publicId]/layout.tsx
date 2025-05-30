@@ -8,6 +8,7 @@ import "@/styles/hint.css";
 import { RBAC } from "@/lib/rbac";
 import { getServerPermissions } from "@/lib/rbac/access-control";
 import { RolesProvider } from "@/providers/roles-provider";
+import { headers } from "next/headers";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -16,7 +17,14 @@ type DashboardLayoutProps = {
 
 const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
   const { publicId } = await params;
-  const { user } = await useServerSideSession();
+  const headersList = await headers();
+  const session = await useServerSideSession({ headers: headersList });
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const { user } = session;
 
   if (user.companyPublicId !== publicId) {
     redirect(`/${user.companyPublicId}`);
@@ -24,7 +32,7 @@ const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
 
   const [companies, permissionsData] = await Promise.all([
     getCompanyList(user.id),
-    getServerPermissions(),
+    getServerPermissions({ headers: headersList }),
   ]);
 
   const permissions = RBAC.normalizePermissionsMap(permissionsData.permissions);

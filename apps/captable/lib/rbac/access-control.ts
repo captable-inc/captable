@@ -9,7 +9,7 @@ import type { RoleEnum } from "@captable/db";
 import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { checkMembership } from "@/server/member";
 import { db, type DBTransaction, customRoles, eq, and } from "@captable/db";
-import type { Session } from "next-auth";
+import type { Session } from "@captable/auth";
 import { cache } from "react";
 import { z } from "zod";
 import { RBAC, type addPolicyOption } from ".";
@@ -18,6 +18,7 @@ import { BaseError } from "@/lib/error/errors/base";
 import type { TActions } from "./actions";
 import { permissionSchema } from "./schema";
 import type { TSubjects } from "./subjects";
+import { TRPCError } from "@trpc/server";
 
 export interface checkMembershipOptions {
   session: Session;
@@ -166,18 +167,27 @@ export const getRoleById = async ({ id, tx }: getRoleByIdOption) => {
   return { role: "CUSTOM", customRoleId };
 };
 
-export const getServerPermissions = cache(async () => {
-  const session = await useServerSideSession();
-  const { err, val } = await getPermissions({ session, db });
-  if (err) {
-    throw err;
-  }
+export const getServerPermissions = cache(
+  async ({ headers }: { headers: Headers }) => {
+    const session = await useServerSideSession({ headers });
 
-  return val;
-});
+    if (!session) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
 
-export const serverAccessControl = async () => {
-  const { permissions } = await getServerPermissions();
+    const { err, val } = await getPermissions({ session, db });
+    if (err) {
+      throw err;
+    }
+
+    return val;
+  },
+);
+
+export const serverAccessControl = async ({
+  headers,
+}: { headers: Headers }) => {
+  const { permissions } = await getServerPermissions({ headers });
 
   const roleMap = RBAC.normalizePermissionsMap(permissions);
 

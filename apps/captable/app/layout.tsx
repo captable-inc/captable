@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { robotoMono, satoshi } from "@/styles/fonts";
-import { NextAuthProvider } from "@/providers/next-auth";
 import { ProgressBarProvider } from "@/providers/progress-bar";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TRPCProvider } from "@/providers/trpc-provider";

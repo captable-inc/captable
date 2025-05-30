@@ -18,7 +18,7 @@ import {
   checkAccessControlMembership,
   getPermissions,
 } from "@/lib/rbac/access-control";
-import { serverSideSession } from "@/server/auth";
+import { serverSideSession } from "@captable/auth";
 import { db } from "@captable/db";
 import * as Sentry from "@sentry/nextjs";
 
@@ -33,13 +33,26 @@ export interface Meta {
  *
  * These allow you to access things when processing a request, like the database, the session, etc.
  *
+ * If you want to use Sentry, you can instrument the context like this:
+ * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/integrations/prisma/
+ * @see https://github.com/prisma/prisma/issues/6564
+ */
+
+/**
  * This helper generates the "internals" for a tRPC context. The API handler and RSC clients each
  * wrap this and provides the required context.
  *
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await serverSideSession();
+  let session = null;
+
+  try {
+    session = await serverSideSession({ headers: opts.headers });
+  } catch (error) {
+    // No session available
+    session = null;
+  }
 
   return {
     db,

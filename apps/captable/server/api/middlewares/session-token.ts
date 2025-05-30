@@ -3,7 +3,8 @@ import { getPermissions } from "@/lib/rbac/access-control";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
-import type { Session } from "next-auth";
+import type { Session } from "@captable/auth";
+import { auth } from "@captable/auth";
 import { ApiError } from "../error";
 
 export const sessionCookieAuthMiddleware = () =>
@@ -14,17 +15,17 @@ export const sessionCookieAuthMiddleware = () =>
 
 export async function authenticateWithSessionCookie(c: Context) {
   try {
-    const authUrl = process.env.NEXTAUTH_URL;
-    invariant(authUrl);
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    invariant(baseUrl);
 
-    const nextAuthcookieName = determineCookieName(authUrl);
-    const nextAuthCookie = getCookie(c, nextAuthcookieName);
+    // Better Auth uses different cookie names
+    const captableSessionCookie = getCookie(c, "captable-session");
 
-    if (!nextAuthCookie) {
+    if (!captableSessionCookie) {
       throw new Error("Session cookie not found");
     }
 
-    await validateSessionCookie(authUrl, c);
+    await validateSessionCookie(baseUrl, c);
   } catch (_error) {
     throw new ApiError({
       code: "UNAUTHORIZED",
@@ -33,14 +34,14 @@ export async function authenticateWithSessionCookie(c: Context) {
   }
 }
 
-function determineCookieName(authUrl: string): string {
-  return authUrl.startsWith("https://")
-    ? "__Secure-next-auth.session-token"
-    : "next-auth.session-token";
+function determineCookieName(baseUrl: string): string {
+  return baseUrl.startsWith("https://")
+    ? "captable-session"
+    : "captable-session";
 }
 
-async function validateSessionCookie(authUrl: string, c: Context) {
-  const session = await fetchSessionFromAuthUrl(authUrl, c);
+async function validateSessionCookie(baseUrl: string, c: Context) {
+  const session = await fetchSessionFromAuthUrl(baseUrl, c);
   const companyIdParam = c.req.param("companyId");
   const { db } = c.get("services");
 
@@ -63,12 +64,14 @@ async function validateSessionCookie(authUrl: string, c: Context) {
 }
 
 async function fetchSessionFromAuthUrl(
-  authUrl: string,
+  baseUrl: string,
   c: Context,
 ): Promise<Session> {
   const rawRequest = c.req.raw;
   const clonedRequest = rawRequest.clone();
-  const newUrl = new URL("/api/auth/session", authUrl).toString();
+
+  // Better Auth session endpoint
+  const newUrl = new URL("/api/auth/session", baseUrl).toString();
 
   const response = await fetch(
     new Request(newUrl, {

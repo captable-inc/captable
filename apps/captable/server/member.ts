@@ -1,6 +1,6 @@
 import { createHash } from "@/lib/crypto";
 import { nanoid } from "nanoid";
-import type { Session } from "next-auth";
+import type { Session } from "@captable/auth";
 import {
   db,
   type DBTransaction,
