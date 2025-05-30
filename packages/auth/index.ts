@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
 import { db, schema, members, companies, eq, and, sql } from "@captable/db";
 import { createAuthClient } from "better-auth/react";
 import type { MemberStatusEnum } from "@captable/db";
@@ -37,6 +38,8 @@ export const auth = betterAuth({
 	advanced: {
 		cookiePrefix: "captable",
 	},
+
+	plugins: [nextCookies()],
 });
 
 // Extended session type
@@ -66,91 +69,7 @@ export interface ExtendedSession {
 	};
 }
 
-type ServerSideSessionProps = { headers: Headers };
-
-export const serverSideSession = async ({
-	headers,
-}: ServerSideSessionProps): Promise<ExtendedSession> => {
-	const session = await auth.api.getSession({
-		headers,
-	});
-
-	if (!session) {
-		throw new Error("Unauthorized");
-	}
-
-	try {
-		// Query for the most recently accessed active member
-		const memberRecords = await db.query.members.findMany({
-			where: and(
-				eq(members.userId, session.user.id),
-				eq(members.isOnboarded, true),
-				sql`${members.status} = 'ACTIVE'`
-			),
-			orderBy: (members, { desc }) => [desc(members.lastAccessed)],
-			limit: 1,
-			with: {
-				user: true,
-				company: true,
-			},
-		});
-
-		const member = memberRecords[0];
-
-		if (member) {
-			// Update last accessed
-			await db
-				.update(members)
-				.set({ lastAccessed: new Date() })
-				.where(eq(members.id, member.id));
-
-			// Return extended session with member data
-			return {
-				...session,
-				user: {
-					...session.user,
-					image: session.user.image ?? undefined,
-					isOnboarded: member.isOnboarded,
-					companyId: member.companyId,
-					memberId: member.id,
-					companyPublicId: member.company?.publicId ?? "",
-					status: member.status,
-				},
-			};
-		}
-
-		// No active member found
-		return {
-			...session,
-			user: {
-				...session.user,
-				image: session.user.image ?? undefined,
-				isOnboarded: false,
-				companyId: "",
-				memberId: "",
-				companyPublicId: "",
-				status: "" as const,
-			},
-		};
-	} catch (error) {
-		console.error("Error fetching member data:", error);
-		// Return session without member data if error occurs
-		return {
-			...session,
-			user: {
-				...session.user,
-				image: session.user.image ?? undefined,
-				isOnboarded: false,
-				companyId: "",
-				memberId: "",
-				companyPublicId: "",
-				status: "" as const,
-			},
-		};
-	}
-};
-
-export const { useSession: useBaseSession, signIn, signOut } = createAuthClient({
+export const { useSession: useBaseSession, signIn, signOut, signUp } = createAuthClient({
 	baseURL: process.env.NEXT_PUBLIC_BASE_URL as string,
 });
 
@@ -167,3 +86,14 @@ export const useSession = () => {
 };
 
 export type Session = ExtendedSession;
+
+// Re-export client for convenience
+export { authClient } from "./client";
+
+// Re-export server actions
+export { 
+	serverSideSession,
+	signInEmailAction,
+	signUpEmailAction,
+	signOutAction 
+} from "./server";

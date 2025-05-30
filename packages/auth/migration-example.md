@@ -103,10 +103,9 @@ export default async function DashboardPage() {
 ```typescript
 // app/api/user/route.ts
 import { serverSideSession } from "@captable/auth";
-import { headers } from "next/headers";
 
-export async function GET() {
-  const session = await serverSideSession({ headers: await headers() });
+export async function GET(request: Request) {
+  const session = await serverSideSession({ headers: request.headers });
   
   if (!session) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -143,14 +142,14 @@ export function UserProfile() {
 ## Key Changes Summary
 
 1. **Import change**: `@captable/auth` instead of NextAuth imports
-2. **Server function**: `serverSideSession({ headers: await headers() })` instead of `getServerSession(authOptions)`
+2. **Server function**: Use `serverSideSession({ headers })` for both server components and API routes
 3. **Error handling**: Better Auth throws on no session, NextAuth returns null
 4. **Client hook**: Same `useSession()` name, just change import from `next-auth/react` to `@captable/auth`
 5. **Status prop**: `isPending` instead of `status === "loading"`
 
 ## Migration Checklist
 
-- [ ] Update all `getServerSession(authOptions)` calls to `serverSideSession({ headers: await headers() })`
-- [ ] Add try/catch blocks around `serverSideSession` calls
+- [ ] Update all server-side code to use `serverSideSession({ headers: await headers() })`
+- [ ] Update API routes to use `serverSideSession({ headers: request.headers })`
 - [ ] Update `useSession()` imports from `next-auth/react` to `@captable/auth`
-- [ ] Update loading states from `status === "loading"` to `
+- [ ] Update loading states from `status === "loading"` to `isPending`
