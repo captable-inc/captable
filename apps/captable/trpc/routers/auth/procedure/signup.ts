@@ -69,7 +69,7 @@ export const signupProcedure = withoutAuth
       });
     }
 
-    const verifyLink = `${env.NEXTAUTH_URL}/verify-email/${verificationToken.token}`;
+    const verifyLink = `${env.NEXT_PUBLIC_BASE_URL}/verify-email/${verificationToken.token}`;
 
     await sendAuthVerificationEmail({
       email: verificationToken.identifier,

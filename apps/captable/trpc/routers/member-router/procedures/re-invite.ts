@@ -145,7 +145,7 @@ export const reInviteProcedure = withAuth
         };
       });
 
-    const inviteLink = `${env.NEXTAUTH_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetToken}`;
+    const inviteLink = `${env.NEXT_PUBLIC_BASE_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetToken}`;
 
     const payload = {
       invitedBy: user.name || "Someone",

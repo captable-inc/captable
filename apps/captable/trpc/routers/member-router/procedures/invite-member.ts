@@ -224,7 +224,7 @@ export const inviteMemberProcedure = withAccessControl
       return { verificationToken: createdToken.token, company };
     });
 
-    const inviteLink = `${env.NEXTAUTH_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetTokenResult.token}`;
+    const inviteLink = `${env.NEXT_PUBLIC_BASE_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetTokenResult.token}`;
 
     const payload = {
       invitedBy: user.name || "Someone",

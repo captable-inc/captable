@@ -4,9 +4,10 @@ import {
   SignJWT,
   jwtVerify,
 } from "jose";
+import { env } from "@/env";
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET ?? "secret",
+  process.env.BETTER_AUTH_SECRET ?? "secret",
 );
 
 export const encode = async (data: JWTPayload) => {

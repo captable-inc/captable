@@ -29,7 +29,7 @@ export const forgotPasswordProcedure = withoutAuth
 
     const { email, token } = passwordResetToken;
 
-    const resetLink = `${env.NEXTAUTH_URL}/reset-password?token=${token}`;
+    const resetLink = `${env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
 
     await new PasswordResetEmailJob().emit({ email, resetLink });
 

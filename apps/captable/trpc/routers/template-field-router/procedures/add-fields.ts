@@ -201,7 +201,7 @@ export const addFieldProcedure = withAuth
               templateId: template.id,
             });
 
-            const signingLink = `${env.NEXTAUTH_URL}/esign/${token}`;
+            const signingLink = `${env.NEXT_PUBLIC_BASE_URL}/esign/${token}`;
 
             mails.push({
               signingLink,

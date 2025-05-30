@@ -36,8 +36,6 @@ export const env = createEnv({
       .string()
       .default("0")
       .transform((s) => s !== "false" && s !== "0"),
-    NEXTAUTH_URL: z.string(),
-    NEXTAUTH_SECRET: z.string(),
     BETTER_AUTH_SECRET: z.string(),
     BETTER_AUTH_URL: z.string(),
     EMAIL_SERVER: z.string().optional(),
@@ -89,8 +87,6 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_BASE_URL: readRuntimePublicEnvVariable("NEXT_PUBLIC_BASE_URL"),
     DATABASE_URL: process.env.DATABASE_URL,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
     EMAIL_SERVER: process.env.EMAIL_SERVER,
