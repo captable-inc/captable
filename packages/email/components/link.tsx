@@ -10,7 +10,7 @@ export interface LinkProps {
 
 const variantClasses = {
   primary: "text-blue-600 no-underline",
-  muted: "text-sm !text-gray-400 no-underline",
+  muted: "text-sm !text-muted-foreground no-underline",
   breakable: "break-all text-blue-600 no-underline",
 };
 

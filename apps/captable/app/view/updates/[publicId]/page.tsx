@@ -114,7 +114,7 @@ const PublicUpdatePage = async ({
       <div className="h-screen w-full flex justify-center items-center">
         <div className="flex items-center space-x-5">
           <RiLock2Line className="h-10 w-10" />
-          <p className="text-lg font-semibold text-gray-600">
+          <p className="text-lg font-semibold text-muted-foreground">
             Public access denied
           </p>
         </div>

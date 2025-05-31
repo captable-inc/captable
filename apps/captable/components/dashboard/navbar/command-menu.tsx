@@ -252,7 +252,7 @@ export function CommandMenu({ companyPublicId }: CommandMenuProps) {
                 <div
                   className={cn(
                     "rounded-lg p-0.5",
-                    page.id === "ai" ? "bg-teal-100" : "bg-gray-200",
+                    page.id === "ai" ? "bg-teal-100" : "bg-muted",
                   )}
                 >
                   {page.id === "ai" ? (

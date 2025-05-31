@@ -209,7 +209,7 @@ const SignInForm = ({ isGoogleAuthEnabled }: LoginFormProps) => {
                 />
                 <Link
                   href="/forgot-password"
-                  className="text-right text-sm font-medium hover:text-gray-500"
+                  className="text-right text-sm font-medium hover:text-muted-foreground"
                 >
                   Forgot your password?
                 </Link>
@@ -224,7 +224,7 @@ const SignInForm = ({ isGoogleAuthEnabled }: LoginFormProps) => {
             </form>
           </Form>
 
-          <span className="text-center text-sm text-gray-500">
+          <span className="text-center text-sm text-muted-foreground">
             Don{`'`}t have an account?{" "}
             <Link
               href="/signup"

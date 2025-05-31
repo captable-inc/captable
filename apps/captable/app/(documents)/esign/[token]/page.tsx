@@ -46,7 +46,7 @@ export default async function SigningPage(props: SigningPageProps) {
 
   return (
     <TemplateSigningFieldProvider fields={fields}>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <div className="flex h-full flex-grow flex-col">
           <div className="mx-auto min-h-full w-full px-5 py-10 lg:px-8 2xl:max-w-screen-xl">
             <div className="grid grid-cols-12">

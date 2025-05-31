@@ -196,7 +196,7 @@ const SignUpForm = ({ isGoogleAuthEnabled }: SignUpFormProps) => {
             </form>
           </Form>
 
-          <span className="text-center text-sm text-gray-500">
+          <span className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href="/login"

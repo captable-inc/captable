@@ -62,7 +62,7 @@ export default async function TemplateDetailViewPage({
 
   return (
     <TemplateSigningFieldProvider fields={fields}>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <div className="flex h-full flex-grow flex-col">
           <div className="col-span-12 flex align-middle">
             <Badge variant={badgeVariant()} className="h-7 align-middle">

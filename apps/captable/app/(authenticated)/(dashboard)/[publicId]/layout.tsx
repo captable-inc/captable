@@ -38,7 +38,7 @@ const DashboardLayout = async ({ children, params }: DashboardLayoutProps) => {
   const permissions = RBAC.normalizePermissionsMap(permissionsData.permissions);
   return (
     <RolesProvider data={{ permissions }}>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <aside className="sticky top-0 hidden min-h-full w-64 flex-shrink-0 flex-col lg:flex lg:border-r">
           <SideBar companies={companies} publicId={publicId} />
         </aside>

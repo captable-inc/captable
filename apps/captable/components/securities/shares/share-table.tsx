@@ -76,7 +76,7 @@ const StatusColorProvider = (type: string) => {
     case "SIGNED":
       return "bg-blue-50 text-blue-600 ring-blue-600/20";
     case "PENDING":
-      return "bg-gray-50 text-gray-600 ring-gray-600/20";
+      return "bg-muted text-muted-foreground ring-border/20";
     default:
       return "";
   }

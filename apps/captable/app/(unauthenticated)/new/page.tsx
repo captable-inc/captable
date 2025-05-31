@@ -29,7 +29,7 @@ export default async function CapPage() {
     <div className="flex h-screen items-center justify-center bg-background">
       <div className="grid w-full max-w-lg grid-cols-1 gap-5 rounded-xl border bg-card/10 p-10 shadow-sm hover:shadow-md">
         <h3 className="-mt-5">
-          cap.<span className="text-2xl text-gray-600">new</span>
+          cap.<span className="text-2xl text-muted-foreground">new</span>
         </h3>
         <ul>
           <li className="mb-1">

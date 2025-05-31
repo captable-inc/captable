@@ -53,7 +53,7 @@ export const ShareDataRoomEmail = ({
       <Footer showDivider={true} />
       
       <Link href={META.url} className="text-sm no-underline">
-        <span className="text-xs !text-gray-400">Powered by</span>
+        <span className="text-xs !text-muted-foreground">Powered by</span>
         <span>{` ${META.title}`}</span>
       </Link>
     </Layout>

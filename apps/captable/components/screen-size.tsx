@@ -26,11 +26,11 @@ const ScreenSize = () => {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex items-center space-x-2 rounded-full bg-black px-2.5 py-1 font-mono text-xs font-medium text-white">
       <span>Dev</span>
-      <div className="h-4 w-px bg-gray-800" />
+      <div className="h-4 w-px bg-border" />
       <span>
         {width.toLocaleString()} x {height.toLocaleString()} px
       </span>
-      <div className="h-4 w-px bg-gray-800" />
+      <div className="h-4 w-px bg-border" />
       <span className="sm:hidden">XS</span>
       <span className="hidden sm:inline md:hidden">SM</span>
       <span className="hidden md:inline lg:hidden">MD</span>

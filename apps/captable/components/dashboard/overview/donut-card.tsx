@@ -74,7 +74,7 @@ const DonutCard = () => {
       {isClient && (
         <Card className="h-[365px]">
           <CardHeader>
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-muted-foreground">
               <div className="flex">
                 <span>Ownership by</span>
                 <DonutSelector selected={selected} onChange={setSelected} />

@@ -13,6 +13,10 @@ import { type EquityPlanMutationType } from "@/trpc/routers/equity-plan/schema";
 import { type ShareClassMutationType } from "@/trpc/routers/share-class/schema";
 import { RiEqualizer2Line } from "@remixicon/react";
 import EquityPlanModal from "./modal";
+import { cn } from "@/lib/utils";
+import { pushModal } from "@/providers/modal-provider";
+import type { RouterOutputs } from "@/trpc/shared";
+import type { ColumnDef } from "@tanstack/react-table";
 const formatter = new Intl.NumberFormat("en-US");
 
 type EquityPlanTableProps = {
@@ -90,7 +94,7 @@ const EquityPlanTable = ({
                     />
                   }
                   trigger={
-                    <RiEqualizer2Line className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
+                    <RiEqualizer2Line className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-foreground" />
                   }
                 />
               </TableCell>
