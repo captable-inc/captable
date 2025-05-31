@@ -40,7 +40,7 @@ const DocumentsPage = async () => {
       >
         {canUpload && (
           <DocumentUploadButton
-            companyPublicId={session.user.companyPublicId}
+            companyPublicId={session?.user?.companyPublicId ?? ""}
             buttonDisplayName="Upload a document"
           />
         )}
@@ -56,7 +56,7 @@ const DocumentsPage = async () => {
         action={
           canUpload ? (
             <DocumentUploadButton
-              companyPublicId={session.user.companyPublicId}
+              companyPublicId={session?.user?.companyPublicId ?? ""}
               buttonDisplayName="Document"
             />
           ) : null
@@ -65,7 +65,7 @@ const DocumentsPage = async () => {
       <Card className="mt-3">
         <div className="p-6">
           <DocumentsTable
-            companyPublicId={session.user.companyPublicId}
+            companyPublicId={session?.user?.companyPublicId ?? ""}
             documents={documents}
           />
         </div>

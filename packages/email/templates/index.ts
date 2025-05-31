@@ -16,4 +16,4 @@ export type { MagicLinkEmailProps } from "./magic-link-email";
 export type { MemberInviteEmailProps } from "./member-invite-email";
 export type { PasswordResetEmailProps } from "./password-reset-email";
 export type { ShareDataRoomEmailProps } from "./share-data-room-email";
-export type { ShareUpdateEmailProps } from "./share-update-email"; 
+export type { ShareUpdateEmailProps } from "./share-update-email";

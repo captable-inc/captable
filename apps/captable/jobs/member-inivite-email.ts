@@ -12,7 +12,8 @@ export type MemberInviteEmailPayloadType = {
 
 const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { MemberInviteEmail, render } = await import("@captable/email");
+  const { render } = await import("@captable/email");
+  const { MemberInviteEmail } = await import("@captable/email/templates");
 
   const html = await render(
     MemberInviteEmail({

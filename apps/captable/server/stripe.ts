@@ -21,7 +21,7 @@ const toDateTime = (secs: number) => {
 export const stripe = env.STRIPE_API_KEY
   ? new Stripe(env.STRIPE_API_KEY, {
       typescript: true,
-      apiVersion: "2025-04-30.basil",
+      apiVersion: "2025-05-28.basil",
     })
   : null;
 

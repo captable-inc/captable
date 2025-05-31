@@ -1,47 +1,144 @@
 {
 	"$schema": "https://turborepo.com/schema.json",
 	"envMode": "loose",
+	"globalDependencies": [".env", ".env.local", ".env.production"],
+	"globalEnv": ["NODE_ENV", "DATABASE_URL", "NEXTAUTH_SECRET"],
+	"remoteCache": {
+		"signature": true
+	},
 	// "ui": "tui",
 	"tasks": {
+		// Build tasks optimized for parallelization
 		"build": {
 			"dependsOn": ["^build"],
-			"inputs": ["$TURBO_DEFAULT$", ".env*"],
-			"outputs": [".next/**", "!.next/cache/**", "dist/**"]
+			"inputs": [
+				"$TURBO_DEFAULT$", 
+				".env*",
+				"next.config.js",
+				"tailwind.config.js",
+				"tsconfig.json"
+			],
+			"outputs": [".next/**", "!.next/cache/**", "dist/**"],
+			"env": ["NODE_ENV", "ANALYZE", "SENTRY_*"]
 		},
+		
+		// Independent linting - no need to wait for builds
 		"lint": {
-			"dependsOn": ["^lint"]
+			"inputs": [
+				"**/*.{ts,tsx,js,jsx,json}",
+				"biome.json",
+				".biomejs.json",
+				"eslint.config.js",
+				".eslintrc*"
+			],
+			"outputs": []
 		},
+		
+		// Type checking can run independently and in parallel
 		"check-types": {
-			"dependsOn": ["^check-types"]
+			"inputs": [
+				"**/*.{ts,tsx}",
+				"tsconfig.json",
+				"next-env.d.ts"
+			],
+			"outputs": []
 		},
+		
+		// Development - optimized for hot reloading
 		"dev": {
 			"cache": false,
-			"persistent": true
+			"persistent": true,
+			"dependsOn": [],
+			"inputs": []
 		},
+		
+		// Formatting is independent
 		"format": {
-			"dependsOn": ["^format"]
+			"inputs": [
+				"**/*.{ts,tsx,js,jsx,json,md}",
+				"biome.json",
+				".biomejs.json"
+			],
+			"outputs": []
 		},
-		"db:seed": {
-			"dependsOn": ["^db:seed"]
-		},
+		
+		// Database tasks with proper dependencies
 		"db:generate": {
-			"dependsOn": ["^db:generate"],
-			"cache": false
+			"dependsOn": [],
+			"cache": false,
+			"inputs": [
+				"drizzle.config.ts",
+				"src/db/schema/**/*.ts",
+				"packages/db/src/**/*.ts"
+			],
+			"outputs": ["drizzle/**", "src/db/migrations/**"]
 		},
+		
 		"db:migrate": {
-			"dependsOn": ["^db:migrate"]
+			"dependsOn": ["db:generate"],
+			"cache": false,
+			"inputs": [
+				"drizzle/**/*.sql",
+				"src/db/migrations/**/*.sql"
+			]
 		},
+		
+		"db:seed": {
+			"dependsOn": ["db:migrate"],
+			"cache": false,
+			"inputs": [
+				"src/db/seed/**/*.ts",
+				"packages/db/src/seed/**/*.ts"
+			]
+		},
+		
 		"db:studio": {
-			"dependsOn": ["^db:studio"]
+			"cache": false,
+			"persistent": true,
+			"dependsOn": []
 		},
+		
+		// Email development tasks
 		"email:dev": {
-			"dependsOn": ["^email:dev"]
+			"cache": false,
+			"persistent": true,
+			"dependsOn": []
 		},
+		
 		"email:build": {
-			"dependsOn": ["^email:build"]
+			"dependsOn": [],
+			"inputs": [
+				"emails/**/*.{ts,tsx}",
+				"packages/email/**/*.{ts,tsx}",
+				"tailwind.config.js"
+			],
+			"outputs": ["out/**", "dist/**"]
 		},
+		
 		"email:export": {
-			"dependsOn": ["^email:export"]
+			"dependsOn": ["email:build"],
+			"inputs": [
+				"emails/**/*.{ts,tsx}",
+				"packages/email/**/*.{ts,tsx}"
+			],
+			"outputs": ["out/**"]
+		},
+		
+		// Additional optimization tasks
+		"test": {
+			"dependsOn": [],
+			"inputs": [
+				"**/*.{ts,tsx,js,jsx}",
+				"**/*.test.{ts,tsx,js,jsx}",
+				"vitest.config.ts",
+				"jest.config.js"
+			],
+			"outputs": ["coverage/**"]
+		},
+		
+		"clean": {
+			"cache": false,
+			"dependsOn": []
 		}
 	}
 }

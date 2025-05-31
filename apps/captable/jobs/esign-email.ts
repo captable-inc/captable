@@ -25,7 +25,8 @@ export type EsignEmailPayloadType = {
 
 const sendEsignEmail = async (payload: EsignEmailPayloadType) => {
   // Dynamic import to avoid build-time processing
-  const { EsignEmail, render } = await import("@captable/email");
+  const { render } = await import("@captable/email");
+  const { EsignEmail } = await import("@captable/email/templates");
 
   const html = await render(
     EsignEmail({

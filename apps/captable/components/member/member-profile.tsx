@@ -34,7 +34,7 @@ type ProfileType = {
 
 export const ProfileSettings = ({ memberProfile }: ProfileType) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { data: session, update } = clientSideSession();
+  const { data: session, refetch } = clientSideSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,7 +74,7 @@ export const ProfileSettings = ({ memberProfile }: ProfileType) => {
                 email: updatedProfilePayload.loginEmail,
               },
             };
-            await update(updateUser);
+            await refetch();
           }
 
           form.reset(updatedProfilePayload);
@@ -95,7 +95,7 @@ export const ProfileSettings = ({ memberProfile }: ProfileType) => {
             },
           };
 
-          await update(updateUser);
+          await refetch();
 
           break;
         }

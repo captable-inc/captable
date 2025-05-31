@@ -18,7 +18,8 @@ const sendEsignConfirmationEmail = async (
   payload: EsignConfirmationEmailPayloadType,
 ) => {
   // Dynamic import to avoid build-time processing
-  const { EsignConfirmationEmail, render } = await import("@captable/email");
+  const { render } = await import("@captable/email");
+  const { EsignConfirmationEmail } = await import("@captable/email/templates");
 
   const html = await render(
     EsignConfirmationEmail({

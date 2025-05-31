@@ -47,7 +47,10 @@ const DocumentPreview = async ({
     .from(documents)
     .innerJoin(buckets, eq(documents.bucketId, buckets.id))
     .where(
-      and(eq(documents.bucketId, bucketId), eq(documents.companyId, companyId)),
+      and(
+        eq(documents.bucketId, bucketId),
+        eq(documents.companyId, companyId as string),
+      ),
     )
     .limit(1)
     .then((results) => results[0] || null);

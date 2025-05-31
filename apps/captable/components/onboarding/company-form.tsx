@@ -57,7 +57,7 @@ type CompanyFormProps =
 
 export const CompanyForm = ({ type, data }: CompanyFormProps) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { update, data: user } = clientSideSession();
+  const { refetch, data: user } = clientSideSession();
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string>(data?.company.logo ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,7 +93,7 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
 
   const onBoardingMutation = api.onboarding.onboard.useMutation({
     onSuccess: async ({ publicId }) => {
-      await update();
+      await refetch();
 
       router.push(`/${publicId}`);
     },
@@ -101,7 +101,7 @@ export const CompanyForm = ({ type, data }: CompanyFormProps) => {
 
   const companySettingMutation = api.company.updateCompany.useMutation({
     onSuccess: async ({ success }) => {
-      await update();
+      await refetch();
 
       if (success) {
         toast.success("🎉 Successfully updated");

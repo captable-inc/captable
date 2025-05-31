@@ -27,11 +27,11 @@ interface VerifyMemberFormProps {
 }
 
 export function VerifyMemberForm({ memberId, token }: VerifyMemberFormProps) {
-  const { update } = clientSideSession();
+  const { refetch } = clientSideSession();
   const router = useRouter();
   const acceptMember = api.member.acceptMember.useMutation({
     onSuccess: async ({ publicId }) => {
-      await update();
+      await refetch();
       router.push(`/${publicId}`);
     },
   });

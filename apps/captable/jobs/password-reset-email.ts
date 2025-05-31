@@ -12,7 +12,8 @@ const sendPasswordResetEmail = async (
   payload: PasswordResetEmailPayloadType,
 ) => {
   // Dynamic import to avoid build-time processing
-  const { PasswordResetEmail, render } = await import("@captable/email");
+  const { render } = await import("@captable/email");
+  const { PasswordResetEmail } = await import("@captable/email/templates");
 
   const html = await render(
     PasswordResetEmail({

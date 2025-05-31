@@ -12,7 +12,10 @@ const sendAuthVerificationEmail = async (
   payload: AuthVerificationEmailPayloadType,
 ) => {
   // Dynamic import to avoid build-time processing
-  const { AccountVerificationEmail, render } = await import("@captable/email");
+  const { render } = await import("@captable/email");
+  const { AccountVerificationEmail } = await import(
+    "@captable/email/templates"
+  );
 
   const html = await render(
     AccountVerificationEmail({

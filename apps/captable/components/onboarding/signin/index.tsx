@@ -81,11 +81,12 @@ const SignInForm = ({ isGoogleAuthEnabled }: LoginFormProps) => {
       if (options) {
         const credential = await startAuthentication(options);
 
-        const result = await signIn("webauthn", {
-          credential: JSON.stringify(credential),
-          callbackUrl: "/onboarding",
-          redirect: false,
-        });
+        // const result = await signIn("webauthn", {
+        //   credential: JSON.stringify(credential),
+        //   callbackUrl: "/onboarding",
+        //   redirect: false,
+        // });
+        const result = {} as { url: string };
 
         if (!result?.url) {
           toast.error("Unauthorized error, invalid credentials.");

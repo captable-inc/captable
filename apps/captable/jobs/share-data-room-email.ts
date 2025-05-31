@@ -1,7 +1,8 @@
 import { env } from "@/env";
 import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import { render, ShareDataRoomEmail } from "@captable/email";
+import { render } from "@captable/email";
+import { ShareDataRoomEmail } from "@captable/email/templates";
 import type { Job } from "pg-boss";
 
 export type ShareDataRoomEmailPayloadType = {
