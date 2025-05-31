@@ -22,37 +22,46 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
+function getInitialTheme(storageKey: string, defaultTheme: Theme): Theme {
+  if (typeof window === "undefined") return defaultTheme;
+
+  try {
+    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+    return savedTheme || defaultTheme;
+  } catch {
+    return defaultTheme;
+  }
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "captable-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [theme, setTheme] = useState<Theme>(() =>
+    getInitialTheme(storageKey, defaultTheme),
+  );
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
-  }, [storageKey]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
     const applyTheme = (newTheme: Theme) => {
       const root = window.document.documentElement;
       root.classList.remove("light", "dark");
 
       if (newTheme === "system") {
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light";
         root.classList.add(systemTheme);
+        root.style.colorScheme = systemTheme;
       } else {
         root.classList.add(newTheme);
+        root.style.colorScheme = newTheme;
       }
     };
 
-    applyTheme(theme);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleChange = () => {
       if (theme === "system") {
@@ -60,6 +69,10 @@ export function ThemeProvider({
       }
     };
 
+    // Apply theme when it changes
+    applyTheme(theme);
+
+    // Listen for system theme changes only if current theme is "system"
     mediaQuery.addEventListener("change", handleChange);
 
     return () => {
@@ -70,8 +83,13 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
-      localStorage.setItem(storageKey, newTheme);
-      setTheme(newTheme);
+      try {
+        localStorage.setItem(storageKey, newTheme);
+        setTheme(newTheme);
+      } catch {
+        // Fallback if localStorage is not available
+        setTheme(newTheme);
+      }
     },
   };
 

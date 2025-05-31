@@ -3,10 +3,9 @@ import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { robotoMono, satoshi } from "@/styles/fonts";
 import { ProgressBarProvider } from "@/providers/progress-bar";
-import { ThemeProvider } from "@/providers/theme-provider";
+import { ThemeProvider, ThemeToggle } from "@/components/theme";
 import { TRPCProvider } from "@/providers/trpc-provider";
 import { PublicEnvScript } from "@/components/public-env-script";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "sonner";
 import logo from "@/assets/logo.svg";
 import { META } from "@captable/utils/constants";
@@ -56,6 +55,35 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: Required for theme application before render
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var storageKey = 'captable-theme';
+                  var theme = localStorage.getItem(storageKey) || 'system';
+                  var root = document.documentElement;
+                  
+                  root.classList.remove('light', 'dark');
+                  
+                  if (theme === 'system') {
+                    var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    root.classList.add(systemTheme);
+                    root.style.colorScheme = systemTheme;
+                  } else {
+                    root.classList.add(theme);
+                    root.style.colorScheme = theme;
+                  }
+                } catch (e) {
+                  // Fallback to light theme if anything fails
+                  document.documentElement.classList.add('light');
+                  document.documentElement.style.colorScheme = 'light';
+                }
+              })();
+            `,
+          }}
+        />
         <PublicEnvScript />
       </head>
       <body className="min-h-screen bg-background text-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/providers/theme-provider";
+import { useTheme } from "./provider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
