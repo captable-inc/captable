@@ -52,7 +52,7 @@ export async function GET() {
 ### Client Component
 ```typescript
 // components/UserProfile.tsx
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 
 export function UserProfile() {
   const { data: session, isPending } = clientSideSession();
@@ -75,7 +75,7 @@ export function UserProfile() {
 ### Server-side Page  
 ```typescript
 // app/dashboard/page.tsx
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { headers } from "next/headers";
 
 export default async function DashboardPage() {
@@ -102,7 +102,7 @@ export default async function DashboardPage() {
 ### API Route
 ```typescript
 // app/api/user/route.ts
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 
 export async function GET(request: Request) {
   const session = await serverSideSession({ headers: request.headers });
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
 ### Client Component
 ```typescript
 // components/UserProfile.tsx
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 
 export function UserProfile() {
   const { data: session, isPending } = clientSideSession();

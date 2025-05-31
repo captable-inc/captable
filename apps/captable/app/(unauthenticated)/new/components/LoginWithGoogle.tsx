@@ -2,10 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { RiGoogleFill as GoogleIcon } from "@remixicon/react";
-import { signIn } from "@captable/auth";
+import { signIn } from "@captable/auth/client";
 
 async function signInWithGoogle() {
-  await signIn("google", { callbackUrl: "/onboarding" });
+  await signIn.social({
+    provider: "google",
+    callbackURL: "/onboarding",
+  });
 }
 
 const LoginWithGoogle = () => {

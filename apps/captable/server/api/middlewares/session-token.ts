@@ -3,8 +3,7 @@ import { getPermissions } from "@/lib/rbac/access-control";
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
-import type { Session } from "@captable/auth";
-import { auth } from "@captable/auth";
+import type { Session } from "@captable/auth/types";
 import { ApiError } from "../error";
 
 export const sessionCookieAuthMiddleware = () =>

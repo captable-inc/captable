@@ -21,7 +21,7 @@ import {
   RiTerminalBoxFill,
   RiTerminalBoxLine,
 } from "@remixicon/react";
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 import { usePathname } from "next/navigation";
 
 const companyNav = [

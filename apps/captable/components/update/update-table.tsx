@@ -30,7 +30,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 import Link from "next/link";
 import React, { useState } from "react";
 import { pushModal } from "../modals";

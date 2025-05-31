@@ -2,7 +2,7 @@ import EmptyState from "@/components/common/empty-state";
 import { PdfCanvas } from "@/components/template/pdf-canvas";
 import { SigningFields } from "@/components/template/signing-fields";
 import { TemplateSigningFieldProvider } from "@/providers/template-signing-field-provider";
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { headers } from "next/headers";

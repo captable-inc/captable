@@ -1,4 +1,5 @@
-import { serverSideSession, type Session } from "@captable/auth";
+import type { Session } from "@captable/auth/types";
+import { serverSideSession } from "@captable/auth/server";
 import { redirect } from "next/navigation";
 
 export const useServerSideSession = async ({

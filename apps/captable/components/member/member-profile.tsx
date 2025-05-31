@@ -18,7 +18,7 @@ import { profileSettingsSchema } from "@/lib/zodSchemas";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useRef, useState } from "react";

@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signIn } from "@captable/auth";
+import { signIn } from "@captable/auth/client";
 import { toast } from "sonner";
 
 export const ZSetPasswordFormSchema = z
@@ -57,10 +57,10 @@ export const SetPasswordForm = ({
   const { mutateAsync } = api.auth.newPassword.useMutation({
     onSuccess: async () => {
       toast.success("🎉 Password updated successfully.");
-      await signIn("credentials", {
-        password: form.getValues("password"),
+      await signIn.email({
         email: email,
-        callbackUrl: `/verify-member/${verificationToken}?email=${email}`,
+        password: form.getValues("password"),
+        callbackURL: `/verify-member/${verificationToken}?email=${email}`,
       });
     },
     onError: ({ message }) => {

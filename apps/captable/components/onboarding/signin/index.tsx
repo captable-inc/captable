@@ -19,7 +19,7 @@ import {
   browserSupportsWebAuthn,
   startAuthentication,
 } from "@simplewebauthn/browser";
-import { signIn } from "@captable/auth";
+import { signIn } from "@captable/auth/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -56,10 +56,10 @@ const SignInForm = ({ isGoogleAuthEnabled }: LoginFormProps) => {
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     const email = values.email;
     const password = values.password;
-    const result = await signIn("credentials", {
+    const result = await signIn.email({
       email,
       password,
-      callbackUrl: "/onboarding",
+      callbackURL: "/onboarding",
     });
 
     if (result?.error) {
@@ -105,7 +105,10 @@ const SignInForm = ({ isGoogleAuthEnabled }: LoginFormProps) => {
   };
 
   async function signInWithGoogle() {
-    await signIn("google", { callbackUrl: "/onboarding" });
+    await signIn.social({
+      provider: "google",
+      callbackURL: "/onboarding",
+    });
   }
 
   return (

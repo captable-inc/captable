@@ -18,7 +18,7 @@ import {
   checkAccessControlMembership,
   getPermissions,
 } from "@/lib/rbac/access-control";
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { db } from "@captable/db";
 import * as Sentry from "@sentry/nextjs";
 

@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { RiCheckboxCircleFill as CheckIcon } from "@remixicon/react";
 
 import { redirect } from "next/navigation";

@@ -15,7 +15,7 @@ import { api } from "@/trpc/react";
 import { ZPasswordSchema } from "@/trpc/routers/auth/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiGoogleFill } from "@remixicon/react";
-import { signIn } from "@captable/auth";
+import { signIn } from "@captable/auth/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -63,7 +63,10 @@ const SignUpForm = ({ isGoogleAuthEnabled }: SignUpFormProps) => {
   }
 
   async function signInWithGoogle() {
-    await signIn("google", { callbackUrl: "/onboarding" });
+    await signIn.social({
+      provider: "google",
+      callbackURL: "/onboarding",
+    });
   }
   const isSubmitting = form.formState.isSubmitting;
 

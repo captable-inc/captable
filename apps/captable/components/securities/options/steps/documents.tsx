@@ -14,7 +14,7 @@ import { invariant } from "@/lib/error";
 import { TAG } from "@/lib/tags";
 import { useStockOptionFormValues } from "@/providers/stock-option-form-provider";
 import { api } from "@/trpc/react";
-import { clientSideSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FileWithPath } from "react-dropzone";

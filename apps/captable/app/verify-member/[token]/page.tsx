@@ -1,7 +1,7 @@
 import { VerifyMemberForm } from "@/components/member/verify-member-form";
 import { checkVerificationToken } from "@/server/member";
 import type { Metadata } from "next";
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {

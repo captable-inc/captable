@@ -43,7 +43,7 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 ### Server-side (RSC & Server Actions)
 
 ```typescript
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { headers } from "next/headers";
 
 export default async function Page() {
@@ -86,7 +86,7 @@ async function handleSignIn(formData: FormData) {
 ### API Routes
 
 ```typescript
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 
 export async function GET(request: Request) {
   try {
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
 
 **Server Components & Server Actions:**
 ```typescript
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { headers } from "next/headers";
 
 const session = await serverSideSession({ headers: await headers() });
@@ -114,7 +114,7 @@ const session = await serverSideSession({ headers: await headers() });
 
 **API Routes:**
 ```typescript
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 
 export async function GET(request: Request) {
   const session = await serverSideSession({ headers: request.headers });

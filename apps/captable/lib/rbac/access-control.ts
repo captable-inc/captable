@@ -9,7 +9,7 @@ import type { RoleEnum } from "@captable/db";
 import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { checkMembership } from "@/server/member";
 import { db, type DBTransaction, customRoles, eq, and } from "@captable/db";
-import type { Session } from "@captable/auth";
+import type { Session } from "@captable/auth/types";
 import { cache } from "react";
 import { z } from "zod";
 import { RBAC, type addPolicyOption } from ".";
