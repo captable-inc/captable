@@ -9,6 +9,7 @@ import { RiPieChart2Line } from "@remixicon/react";
 import type { Metadata } from "next";
 import { CreateEquityPlanButton } from "./create-equity-plan-button";
 import EquityPlanTable from "./table";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Equity plans",
@@ -29,7 +30,7 @@ const getShareClasses = async (companyId: string) => {
 };
 
 const EquityPlanPage = async () => {
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
   const companyId = session?.user?.companyId;
   let equityPlans: EquityPlanMutationType[] = [];
 
@@ -40,7 +41,7 @@ const EquityPlanPage = async () => {
   }
 
   const shareClasses: ShareClassMutationType[] = (await getShareClasses(
-    companyId,
+    companyId as string,
   )) as unknown as ShareClassMutationType[];
 
   if (equityPlans.length === 0) {

@@ -7,6 +7,7 @@ import { RiPieChart2Line } from "@remixicon/react";
 import type { Metadata } from "next";
 import { CreateShareButton } from "./create-share-class-button";
 import ShareClassTable from "./table";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Share classes",
@@ -20,7 +21,7 @@ const getShareClasses = async (companyId: string) => {
 };
 
 const SharesPage = async () => {
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
   const companyId = session?.user?.companyId;
   let shareClasses: ShareClassMutationType[] = [];
 

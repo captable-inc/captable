@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { TemplateFieldProvider } from "@/providers/template-field-provider";
 import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { api } from "@/trpc/server";
+import { headers } from "next/headers";
 
 const EsignTemplateDetailPage = async ({
   params,
@@ -12,7 +13,7 @@ const EsignTemplateDetailPage = async ({
   params: Promise<{ templatePublicId: string }>;
 }) => {
   const { templatePublicId } = await params;
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
 
   const { name, status, url, fields, recipients } =
     await api.template.get.query({
@@ -23,7 +24,7 @@ const EsignTemplateDetailPage = async ({
   return (
     <TemplateFieldProvider recipients={recipients} fields={fields}>
       <TemplateFieldForm
-        companyPublicId={session.user.companyPublicId}
+        companyPublicId={session?.user?.companyPublicId ?? ""}
         templatePublicId={templatePublicId}
       >
         <div className="grid grid-cols-12">

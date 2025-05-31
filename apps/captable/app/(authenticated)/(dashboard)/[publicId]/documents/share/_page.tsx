@@ -8,6 +8,7 @@ import { RiAddFill, RiUploadCloudLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import DocumentUploadModal from "../components/modal";
 import DocumentsTable from "../components/table";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Documents",
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 
 const DocumentsPage = async () => {
   const documents = await api.document.getAll.query();
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
 
   if (documents.length === 0) {
     return (
@@ -25,7 +26,7 @@ const DocumentsPage = async () => {
         subtitle="Please click the button below to upload a new document."
       >
         <DocumentUploadModal
-          companyPublicId={session.user.companyPublicId}
+          companyPublicId={session?.user?.companyPublicId ?? ""}
           trigger={
             <Button>
               <RiAddFill className="mr-2 h-5 w-5" />
@@ -44,7 +45,7 @@ const DocumentsPage = async () => {
         description="Share pitch decks, financials, and any other important documents."
         action={
           <DocumentUploadModal
-            companyPublicId={session.user.companyPublicId}
+            companyPublicId={session?.user?.companyPublicId ?? ""}
             trigger={
               <Button>
                 <RiAddFill className="mr-2 h-5 w-5" />
@@ -58,7 +59,7 @@ const DocumentsPage = async () => {
       <Card className="mt-3">
         <div className="p-6">
           <DocumentsTable
-            companyPublicId={session.user.companyPublicId}
+            companyPublicId={session?.user?.companyPublicId ?? ""}
             documents={documents}
           />
         </div>

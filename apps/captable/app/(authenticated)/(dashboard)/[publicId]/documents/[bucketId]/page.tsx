@@ -9,6 +9,7 @@ import { RiArrowLeftSLine } from "@remixicon/react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
+import { headers } from "next/headers";
 
 const DocumentPreview = async ({
   params,
@@ -16,7 +17,7 @@ const DocumentPreview = async ({
   params: Promise<{ publicId: string; bucketId: string }>;
 }) => {
   const { publicId, bucketId } = await params;
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
   const companyId = session?.user?.companyId;
   const document = await db
     .select({

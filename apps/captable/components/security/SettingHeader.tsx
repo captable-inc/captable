@@ -3,6 +3,7 @@ import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { RiArrowLeftLine } from "@remixicon/react";
 import Link from "next/link";
 import type React from "react";
+import { headers } from "next/headers";
 
 type SettingsHeaderProps = {
   title: string;
@@ -19,7 +20,7 @@ export const SettingsHeader = async ({
   showBackArrow = true,
   className,
 }: SettingsHeaderProps) => {
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
 
   const href = `/${session?.user.companyPublicId}/settings/security`;
   return (

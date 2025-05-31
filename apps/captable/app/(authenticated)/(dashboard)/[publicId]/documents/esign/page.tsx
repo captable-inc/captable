@@ -7,13 +7,14 @@ import { RiUploadCloudLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import { AddEsignDocumentButton } from "./components/add-esign-doc-button";
 import { ESignTable } from "./components/table";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Documents",
 };
 
 const EsignDocumentPage = async () => {
-  const session = await useServerSideSession();
+  const session = await useServerSideSession({ headers: await headers() });
   const { documents } = await api.template.all.query();
 
   if (documents.length === 0) {
@@ -26,7 +27,7 @@ const EsignDocumentPage = async () => {
         <AddEsignDocumentButton
           title="esign a Document"
           subtitle=""
-          companyPublicId={session.user.companyPublicId}
+          companyPublicId={session?.user?.companyPublicId ?? ""}
         />
       </EmptyState>
     );
@@ -40,14 +41,14 @@ const EsignDocumentPage = async () => {
         <AddEsignDocumentButton
           title="esign a Document"
           subtitle=""
-          companyPublicId={session.user.companyPublicId}
+          companyPublicId={session?.user?.companyPublicId ?? ""}
         />
       }
     >
       <Card className="mt-3">
         <div className="p-6">
           <ESignTable
-            companyPublicId={session.user.companyPublicId}
+            companyPublicId={session?.user?.companyPublicId ?? ""}
             documents={documents}
           />
         </div>
