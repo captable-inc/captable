@@ -61,13 +61,14 @@ function ClientComponent() {
 "use server";
 
 import { serverAccessControl } from "@/lib/rbac/access-control";
+import { headers } from "next/headers";
 
 const fetchDataFromServer = async () => {
   return { data: [] };
 };
 
 async function ServerComponent() {
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
 
   const canRead = !!allow(true, ["billing", "read"]);
   const data = await allow(fetchDataFromServer(), ["billing", "read"]);

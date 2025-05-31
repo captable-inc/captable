@@ -9,14 +9,16 @@ import { RiUploadCloudLine } from "@remixicon/react";
 import type { Metadata } from "next";
 import DocumentsTable from "./components/table";
 import { DocumentUploadButton } from "./document-upload-button";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Documents",
 };
 
 const DocumentsPage = async () => {
-  const { allow } = await serverAccessControl();
-  const session = await useServerSideSession();
+  const headersList = await headers();
+  const { allow } = await serverAccessControl({ headers: headersList });
+  const session = await useServerSideSession({ headers: headersList });
 
   const documents = await allow(api.document.getAll.query(), [
     "documents",

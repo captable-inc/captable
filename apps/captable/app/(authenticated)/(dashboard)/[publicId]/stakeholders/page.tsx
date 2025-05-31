@@ -7,13 +7,14 @@ import { serverAccessControl } from "@/lib/rbac/access-control";
 import { api } from "@/trpc/server";
 import { RiGroup2Fill } from "@remixicon/react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Stakeholders",
 };
 
 const StakeholdersPage = async () => {
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
   const stakeholders = await allow(api.stakeholder.getStakeholders.query(), [
     "stakeholder",
     "read",

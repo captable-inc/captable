@@ -3,6 +3,7 @@ import { checkVerificationToken } from "@/server/member";
 import type { Metadata } from "next";
 import { serverSideSession } from "@captable/auth/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Verify member",
@@ -11,18 +12,16 @@ export const metadata: Metadata = {
 export default async function VerifyMember({
   params,
   searchParams,
-  request,
 }: {
   params: Promise<{ token: string }>;
   searchParams: Promise<{
     passwordResetToken: string;
     email: string;
   }>;
-  request: Request;
 }) {
   const { token } = await params;
   const { passwordResetToken, email } = await searchParams;
-  const session = await serverSideSession({ headers: request.headers });
+  const session = await serverSideSession({ headers: await headers() });
 
   const urlParams = new URLSearchParams({
     email: email,

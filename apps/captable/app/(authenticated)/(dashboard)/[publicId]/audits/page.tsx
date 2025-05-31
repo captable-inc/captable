@@ -4,13 +4,14 @@ import { UnAuthorizedState } from "@/components/ui/un-authorized-state";
 import { serverAccessControl } from "@/lib/rbac/access-control";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Audits",
 };
 
 const AuditsPage = async () => {
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
 
   const canView = allow(true, ["audits", "read"]);
 

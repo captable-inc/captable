@@ -7,6 +7,7 @@ import { TemplateSigningFieldProvider } from "@/providers/template-signing-field
 import { api } from "@/trpc/server";
 import type { RouterOutputs } from "@/trpc/shared";
 import { RiCheckFill } from "@remixicon/react";
+import { headers } from "next/headers";
 
 type BadgeVariant =
   | "warning"
@@ -25,7 +26,7 @@ export default async function TemplateDetailViewPage({
   params: Promise<{ templatePublicId: string }>;
 }) {
   const { templatePublicId } = await params;
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
 
   const [{ name, status, url, fields }, auditsData] = await Promise.all([
     api.template.get.query({

@@ -4,9 +4,10 @@ import { RoleTable } from "@/components/rbac/role-table";
 import { Card } from "@/components/ui/card";
 import { serverAccessControl } from "@/lib/rbac/access-control";
 import { api } from "@/trpc/server";
+import { headers } from "next/headers";
 
 export default async function RolesPage() {
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
 
   const data = await allow(api.rbac.listRoles.query(), ["roles", "read"]);
 

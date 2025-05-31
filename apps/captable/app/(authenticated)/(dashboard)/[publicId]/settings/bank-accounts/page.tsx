@@ -7,12 +7,13 @@ import type { Metadata } from "next";
 import { Fragment } from "react";
 import CtaButton from "./components/cta-button";
 import BankAccountsTable from "./components/table";
+import { headers } from "next/headers";
 
 export const metadata: Metadata = {
   title: "Bank accounts",
 };
 const ApiSettingsPage = async () => {
-  const { allow } = await serverAccessControl();
+  const { allow } = await serverAccessControl({ headers: await headers() });
 
   const data = await allow(api.bankAccounts.getAll.query(), [
     "bank-accounts",
