@@ -2,8 +2,9 @@ import {
   Layout,
   Heading,
   Text,
+  Button,
   Footer,
-} from "@/components";
+} from "../components";
 
 export type EsignConfirmationEmailPayloadType = {
   fileUrl: string;

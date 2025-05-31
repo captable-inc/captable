@@ -6,7 +6,7 @@ import {
   Button,
   Link,
   Footer,
-} from "@/components";
+} from "../components";
 
 export interface AccountVerificationEmailProps {
   verifyLink: string;
