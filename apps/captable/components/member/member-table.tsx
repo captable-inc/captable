@@ -34,7 +34,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { getRoleId } from "@/lib/rbac/access-control-utils";
 import type { RouterOutputs } from "@/trpc/shared";
 import { RiMore2Fill } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { pushModal } from "../modals";
 import { DataTable } from "../ui/data-table/data-table";
@@ -162,7 +162,7 @@ export const columns: ColumnDef<Member[number]>[] = [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       const router = useRouter();
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const { data } = useSession();
+      const { data } = clientSideSession();
       const member = row.original;
       const removeMember = api.member.removeMember.useMutation();
       const revokeInvite = api.member.revokeInvite.useMutation();

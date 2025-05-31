@@ -52,10 +52,10 @@ export async function GET() {
 ### Client Component
 ```typescript
 // components/UserProfile.tsx
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 
 export function UserProfile() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = clientSideSession();
   
   if (isPending) return <div>Loading...</div>;
   if (!session) return <div>Not signed in</div>;
@@ -121,10 +121,10 @@ export async function GET(request: Request) {
 ### Client Component
 ```typescript
 // components/UserProfile.tsx
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 
 export function UserProfile() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = clientSideSession();
   
   if (isPending) return <div>Loading...</div>;
   if (!session) return <div>Not signed in</div>;
@@ -144,12 +144,12 @@ export function UserProfile() {
 1. **Import change**: `@captable/auth` instead of NextAuth imports
 2. **Server function**: Use `serverSideSession({ headers })` for both server components and API routes
 3. **Error handling**: Better Auth throws on no session, NextAuth returns null
-4. **Client hook**: Same `useSession()` name, just change import from `next-auth/react` to `@captable/auth`
+4. **Client hook**: Same `clientSideSession()` name, just change import from `next-auth/react` to `@captable/auth`
 5. **Status prop**: `isPending` instead of `status === "loading"`
 
 ## Migration Checklist
 
 - [ ] Update all server-side code to use `serverSideSession({ headers: await headers() })`
 - [ ] Update API routes to use `serverSideSession({ headers: request.headers })`
-- [ ] Update `useSession()` imports from `next-auth/react` to `@captable/auth`
+- [ ] Update `clientSideSession()` imports from `next-auth/react` to `@captable/auth`
 - [ ] Update loading states from `status === "loading"` to `isPending`

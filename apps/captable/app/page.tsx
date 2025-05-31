@@ -1,4 +1,4 @@
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 

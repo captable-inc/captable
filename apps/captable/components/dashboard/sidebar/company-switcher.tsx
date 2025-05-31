@@ -14,7 +14,7 @@ import type { TGetCompanyList } from "@/server/company";
 import { api } from "@/trpc/react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { RiAddCircleLine } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -27,7 +27,7 @@ const createCompanyValue = "cap-co-create-company";
 
 export function CompanySwitcher({ companies, publicId }: CompanySwitcherProps) {
   const value = useState(() => publicId)[0];
-  const { update } = useSession();
+  const { update } = clientSideSession();
   const router = useRouter();
 
   const pathname = usePathname();

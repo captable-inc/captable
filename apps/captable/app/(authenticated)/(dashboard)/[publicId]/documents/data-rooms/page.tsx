@@ -2,7 +2,7 @@
 
 import EmptyState from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import {
   db,
   dataRooms,
@@ -11,7 +11,6 @@ import {
   desc,
   count,
 } from "@captable/db";
-import Link from "next/link";
 import { Fragment } from "react";
 import DataRoomPopover from "./components/data-room-popover";
 import Folders from "./components/dataroom-folders";

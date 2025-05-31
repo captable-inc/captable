@@ -21,7 +21,7 @@ import {
   RiTerminalBoxFill,
   RiTerminalBoxLine,
 } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { usePathname } from "next/navigation";
 
 const companyNav = [
@@ -94,7 +94,7 @@ interface SettingsSidebarProps {
 
 export function SettingsSidebar({ isBillingEnabled }: SettingsSidebarProps) {
   const currentPath = usePathname();
-  const { data } = useSession();
+  const { data } = clientSideSession();
   const companyPublicId = data?.user.companyPublicId;
 
   return (

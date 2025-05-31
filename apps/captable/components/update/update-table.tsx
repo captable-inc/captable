@@ -30,7 +30,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import Link from "next/link";
 import React, { useState } from "react";
 import { pushModal } from "../modals";
@@ -63,7 +63,7 @@ const UpdateActions = (row: { original: Update[number] }) => {
     public: isPublic,
   } = row.original;
 
-  const { data } = useSession();
+  const { data } = clientSideSession();
   const companyPublicId = data?.user.companyPublicId;
 
   return (

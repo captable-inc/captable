@@ -1,4 +1,4 @@
-import { serverSideSession } from "@captable/auth";
+import { serverSideSession } from "@captable/auth/server";
 import { redirect } from "next/navigation";
 
 export default async function AuthenticatedLayout({

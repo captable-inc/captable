@@ -9,7 +9,7 @@ import { Input } from "../ui/input";
 
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import {
@@ -27,7 +27,7 @@ interface VerifyMemberFormProps {
 }
 
 export function VerifyMemberForm({ memberId, token }: VerifyMemberFormProps) {
-  const { update } = useSession();
+  const { update } = clientSideSession();
   const router = useRouter();
   const acceptMember = api.member.acceptMember.useMutation({
     onSuccess: async ({ publicId }) => {

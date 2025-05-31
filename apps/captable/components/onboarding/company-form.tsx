@@ -32,7 +32,7 @@ import countries from "@/lib/countries";
 import { cn, isFileExists, validateFile } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -57,7 +57,7 @@ type CompanyFormProps =
 
 export const CompanyForm = ({ type, data }: CompanyFormProps) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { update, data: user } = useSession();
+  const { update, data: user } = clientSideSession();
   const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string>(data?.company.logo ?? "");
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -12,7 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut, useSession } from "@captable/auth";
+import { signOut, clientSideSession } from "@captable/auth";
 import Link from "next/link";
 
 type UserDropdownProps = {
@@ -20,7 +20,7 @@ type UserDropdownProps = {
 };
 
 export function UserDropdown({ companyPublicId }: UserDropdownProps) {
-  const { data } = useSession();
+  const { data } = clientSideSession();
   const name = data?.user.name;
   const email = data?.user.email;
   const image = data?.user.image;

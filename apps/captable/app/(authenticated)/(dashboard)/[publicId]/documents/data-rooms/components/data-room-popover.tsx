@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { api } from "@/trpc/react";
 import { RiArrowRightLine as ArrowRightIcon } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ type DataRoomPopoverType = {
 
 const DataRoomPopover = ({ trigger }: DataRoomPopoverType) => {
   const router = useRouter();
-  const { data } = useSession();
+  const { data } = clientSideSession();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const companyPublicId = data?.user.companyPublicId;

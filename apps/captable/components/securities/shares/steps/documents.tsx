@@ -14,7 +14,7 @@ import { invariant } from "@/lib/error";
 import { TAG } from "@/lib/tags";
 import { useAddShareFormValues } from "@/providers/add-share-form-provider";
 import { api } from "@/trpc/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FileWithPath } from "react-dropzone";
@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 export const Documents = () => {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = clientSideSession();
   const { value } = useAddShareFormValues();
   const { reset } = useStepper();
   const [documentsList, setDocumentsList] = useState<FileWithPath[] | []>([]);

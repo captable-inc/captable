@@ -13,7 +13,7 @@ import { uploadFile } from "@/lib/common/uploads";
 import { invariant } from "@/lib/error";
 import { TAG } from "@/lib/tags";
 import { api } from "@/trpc/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { TFormSchema as TGeneralDetailsFormSchema } from "./general-details";
@@ -23,7 +23,7 @@ type TFormValueState = TGeneralDetailsFormSchema & TInvestorDetailsFormSchema;
 
 export function SafeDocuments() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session } = clientSideSession();
   const values = useFormValueState<TFormValueState>();
   const [documentsList, setDocumentsList] = useState<FileWithPath[]>([]);
   const { mutateAsync: handleBucketUpload } = api.bucket.create.useMutation();

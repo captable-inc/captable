@@ -36,7 +36,7 @@ import { TAG } from "@/lib/tags";
 import { api } from "@/trpc/react";
 import { ZodTemplateFieldRecipientSchema } from "@/trpc/routers/template-router/schema";
 import { RiDeleteBinLine } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { TFormSchema as TGeneralDetailsFormSchema } from "./general-details";
@@ -73,7 +73,7 @@ type TFormSchema = z.infer<typeof formSchema>;
 export function SafeTemplate() {
   const router = useRouter();
   const formValues = useFormValueState<TFormValueState>();
-  const { data: session } = useSession();
+  const { data: session } = clientSideSession();
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {

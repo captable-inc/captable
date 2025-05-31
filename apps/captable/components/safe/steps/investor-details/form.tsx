@@ -21,7 +21,7 @@ import { useFormValueUpdater } from "@/providers/form-value-provider";
 import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiAddCircleLine } from "@remixicon/react";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import { useForm, useFormContext, useWatch } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
@@ -45,7 +45,7 @@ interface InvestorsDetailsProps {
 
 export function InvestorDetailsForm({ stakeholders }: InvestorsDetailsProps) {
   const { next } = useStepper();
-  const { data: session } = useSession();
+  const { data: session } = clientSideSession();
   const router = useRouter();
   const setValue = useFormValueUpdater<TFormSchema>();
   const form = useForm<TFormSchema>({

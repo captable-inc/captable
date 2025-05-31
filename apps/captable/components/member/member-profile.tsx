@@ -18,7 +18,7 @@ import { profileSettingsSchema } from "@/lib/zodSchemas";
 import { api } from "@/trpc/react";
 import type { RouterOutputs } from "@/trpc/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "@captable/auth";
+import { clientSideSession } from "@captable/auth";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { useRef, useState } from "react";
@@ -34,7 +34,7 @@ type ProfileType = {
 
 export const ProfileSettings = ({ memberProfile }: ProfileType) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const { data: session, update } = useSession();
+  const { data: session, update } = clientSideSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

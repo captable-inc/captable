@@ -4,7 +4,7 @@ import { auth } from "./index";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db, members, eq, and, sql } from "@captable/db";
-import type { ExtendedSession } from "./index";
+import type { Session } from "./types";
 
 type ServerSideSessionProps = { headers: Headers };
 
@@ -14,7 +14,7 @@ type ServerSideSessionProps = { headers: Headers };
  */
 export const serverSideSession = async ({
 	headers,
-}: ServerSideSessionProps): Promise<ExtendedSession> => {
+}: ServerSideSessionProps): Promise<Session> => {
 	const session = await auth.api.getSession({
 		headers,
 	});
@@ -132,4 +132,4 @@ export const signOutAction = async () => {
 		headers: headersList
 	});
 	redirect("/login");
-}; 
+};

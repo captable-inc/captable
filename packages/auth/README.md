@@ -132,10 +132,10 @@ const sessionCookie = getSessionCookie(request);
 ### Client-side (React Components)
 
 ```typescript
-import { useSession, signIn, signOut } from "@captable/auth";
+import { clientSideSession, signIn, signOut } from "@captable/auth";
 
 export function MyComponent() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = clientSideSession();
   
   if (isPending) return <div>Loading...</div>;
   
