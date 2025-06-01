@@ -1,7 +1,7 @@
-import { DEFAULT_ADMIN_ROLE, type RoleList } from "@/lib/rbac/constants";
-import { permissionSchema } from "@/lib/rbac/schema";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { db, customRoles, eq } from "@captable/db";
+import { customRoles, db, eq } from "@captable/db";
+import { DEFAULT_ADMIN_ROLE, type RoleList } from "@captable/rbac";
+import { permissionSchema } from "@captable/rbac/types";
 import { z } from "zod";
 
 export const listRolesProcedure = withAccessControl

@@ -1,8 +1,11 @@
 import { PageLayout } from "@/components/dashboard/page-layout";
-import { RoleCreateUpdateModalAction } from "@/components/modals/role-create-update-modal";
-import { RoleTable } from "@/components/rbac/role-table";
+import { pushModal } from "@/components/modals";
+import RoleCreateUpdateModal from "@/components/modals/role-create-update-modal";
+import RoleTable from "@/components/rbac/role-table";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { serverAccessControl } from "@/lib/rbac/access-control";
+import { UnAuthorizedState } from "@/components/ui/un-authorized-state";
+import { serverAccessControl } from "@/server/member";
 import { api } from "@/trpc/server";
 import { headers } from "next/headers";
 
@@ -18,7 +21,7 @@ export default async function RolesPage() {
       <PageLayout
         title="Roles"
         description="Create and manage roles for your company."
-        action={<RoleCreateUpdateModalAction disabled={!canCreate} />}
+        action={<RoleCreateUpdateModal disabled={!canCreate} />}
       />
 
       {data ? <RoleTable roles={data.rolesList} /> : null}

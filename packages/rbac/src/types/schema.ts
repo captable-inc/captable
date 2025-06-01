@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ACTIONS } from "./actions";
-import { SUBJECTS } from "./subjects";
+import { ACTIONS } from "./actions.js";
+import { SUBJECTS } from "./subjects.js";
 
 export const permissionSchema = z.object({
   actions: z.array(z.enum(ACTIONS)),

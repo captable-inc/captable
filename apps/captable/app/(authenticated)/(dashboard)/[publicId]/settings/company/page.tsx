@@ -1,6 +1,7 @@
+import { PageLayout } from "@/components/dashboard/page-layout";
 import { CompanyForm } from "@/components/onboarding/company-form";
 import { UnAuthorizedState } from "@/components/ui/un-authorized-state";
-import { serverAccessControl } from "@/lib/rbac/access-control";
+import { serverAccessControl } from "@/server/member";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { headers } from "next/headers";

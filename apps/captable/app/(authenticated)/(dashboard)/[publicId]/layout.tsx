@@ -5,9 +5,11 @@ import { useServerSideSession } from "@/hooks/use-server-side-session";
 import { getCompanyList } from "@/server/company";
 import { redirect } from "next/navigation";
 import "@/styles/hint.css";
-import { RBAC } from "@/lib/rbac";
-import { getServerPermissions } from "@/lib/rbac/access-control";
 import { RolesProvider } from "@/providers/roles-provider";
+import { getServerPermissions } from "@/server/member";
+import { checkMembership } from "@/server/member";
+import { db } from "@captable/db";
+import { RBAC } from "@captable/rbac";
 import { headers } from "next/headers";
 
 type DashboardLayoutProps = {

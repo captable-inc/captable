@@ -1,10 +1,12 @@
-import type { TActions } from "@/lib/rbac/actions";
-import type { TPermission } from "@/lib/rbac/schema";
-import type { TSubjects } from "@/lib/rbac/subjects";
 import { Audit } from "@/server/audit";
 import { withAccessControl } from "@/trpc/api/trpc";
-import { db, customRoles } from "@captable/db";
+import { withAuth } from "@/trpc/api/trpc";
+import { customRoles, db } from "@captable/db";
+import type { TActions } from "@captable/rbac/types";
+import type { TPermission } from "@captable/rbac/types";
+import type { TSubjects } from "@captable/rbac/types";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import {
   type TypeZodCreateRoleMutationSchema,
   ZodCreateRoleMutationSchema,
