@@ -1,20 +1,28 @@
 import { db } from "@captable/db";
 import { jobQueue } from "@captable/db/schema";
-import { and, eq, lte, lt, desc, asc, sql } from "drizzle-orm";
-import { logger } from "@captable/logger";
-import type { JobOptions, JobProcessor, JobStats, BulkJobInput } from "./types";
 import type { JobQueue } from "@captable/db/schema";
+import { logger } from "@captable/logger";
+import { and, asc, desc, eq, lt, lte, sql } from "drizzle-orm";
+import type { BulkJobInput, JobOptions, JobProcessor, JobStats } from "./types";
 
 const log = logger.child({ module: "serverless-queue" });
 
 export class ServerlessQueue {
-  private static processors = new Map<string, JobProcessor<Record<string, unknown>>>();
+  private static processors = new Map<
+    string,
+    JobProcessor<Record<string, unknown>>
+  >();
 
   /**
    * Register a job processor
    */
-  static register<T extends Record<string, unknown>>(processor: JobProcessor<T>) {
-    ServerlessQueue.processors.set(processor.type, processor as JobProcessor<Record<string, unknown>>);
+  static register<T extends Record<string, unknown>>(
+    processor: JobProcessor<T>,
+  ) {
+    ServerlessQueue.processors.set(
+      processor.type,
+      processor as JobProcessor<Record<string, unknown>>,
+    );
     log.info(`Registered job processor: ${processor.type}`);
   }
 
@@ -199,10 +207,11 @@ export class ServerlessQueue {
     } catch (error) {
       const newAttempts = job.attempts + 1;
       const isLastAttempt = newAttempts >= job.maxAttempts;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       // Calculate next retry time with exponential backoff
-      const nextRetryDelay = job.retryDelay * (2 ** job.attempts);
+      const nextRetryDelay = job.retryDelay * 2 ** job.attempts;
       const nextScheduledFor = new Date(Date.now() + nextRetryDelay);
 
       await db
@@ -305,4 +314,4 @@ export class ServerlessQueue {
   static clearProcessors(): void {
     ServerlessQueue.processors.clear();
   }
-} 
+}

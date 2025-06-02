@@ -21,4 +21,4 @@ export interface BulkJobInput<T = Record<string, unknown>> {
   type: string;
   payload: T;
   options?: JobOptions;
-} 
+}

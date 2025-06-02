@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "member-invite-email-job" });
 
@@ -12,11 +12,14 @@ export type MemberInviteEmailPayloadType = {
 };
 
 const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
-  log.info({ 
-    email: payload.email,
-    company: payload.companyName 
-  }, "Sending member invite email");
-  
+  log.info(
+    {
+      email: payload.email,
+      company: payload.companyName,
+    },
+    "Sending member invite email",
+  );
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { MemberInviteEmail } = await import("@captable/email/templates");
@@ -35,10 +38,13 @@ const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
     html,
   });
 
-  log.info({ 
-    email: payload.email,
-    company: payload.companyName 
-  }, "Member invite email sent successfully");
+  log.info(
+    {
+      email: payload.email,
+      company: payload.companyName,
+    },
+    "Member invite email sent successfully",
+  );
 };
 
 export { sendMemberInviteEmail };

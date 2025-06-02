@@ -8,4 +8,4 @@ export type {
 } from "./types";
 
 // Re-export database types for convenience
-export type { JobQueue, NewJobQueue } from "@captable/db/schema"; 
+export type { JobQueue, NewJobQueue } from "@captable/db/schema";

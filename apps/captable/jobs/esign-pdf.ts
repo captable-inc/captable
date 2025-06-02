@@ -1,4 +1,3 @@
-import { BaseJob } from "@captable/queue";
 import {
   type EsignGetTemplateType,
   completeEsignDocuments,
@@ -8,6 +7,7 @@ import {
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { db } from "@captable/db";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 import { esignConfirmationEmailJob } from "./esign-confirmation-email";
 
 const log = logger.child({ module: "esign-pdf-job" });
@@ -59,12 +59,15 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
       company,
     } = payload;
 
-    log.info({
-      templateId,
-      templateName,
-      companyId,
-      recipientCount: recipients.length,
-    }, "Starting esign PDF generation");
+    log.info(
+      {
+        templateId,
+        templateName,
+        companyId,
+        recipientCount: recipients.length,
+      },
+      "Starting esign PDF generation",
+    );
 
     try {
       const modifiedPdfBytes = await generateEsignPdf({
@@ -75,11 +78,14 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
         templateName,
       });
 
-      log.info({
-        templateId,
-        templateName,
-        pdfSize: modifiedPdfBytes.length,
-      }, "PDF generated successfully");
+      log.info(
+        {
+          templateId,
+          templateName,
+          pdfSize: modifiedPdfBytes.length,
+        },
+        "PDF generated successfully",
+      );
 
       const { fileUrl: _fileUrl, ...bucketData } = await uploadEsignDocuments({
         buffer: Buffer.from(modifiedPdfBytes),
@@ -87,10 +93,13 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
         templateName,
       });
 
-      log.info({
-        templateId,
-        bucketKey: bucketData.key,
-      }, "PDF uploaded to storage");
+      log.info(
+        {
+          templateId,
+          bucketKey: bucketData.key,
+        },
+        "PDF uploaded to storage",
+      );
 
       await db.transaction(async (tx) => {
         await completeEsignDocuments({
@@ -105,10 +114,13 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
         });
       });
 
-      log.info({
-        templateId,
-        templateName,
-      }, "Esign documents completed in database");
+      log.info(
+        {
+          templateId,
+          templateName,
+        },
+        "Esign documents completed in database",
+      );
 
       const file = await getPresignedGetUrl(bucketData.key);
 
@@ -120,23 +132,28 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
           company,
           senderName: sender.name || "Captable",
           senderEmail: sender.email as string,
-        })
+        }),
       );
 
       await Promise.all(emailPromises);
 
-      log.info({
-        templateId,
-        templateName,
-        recipientCount: recipients.length,
-      }, "Esign PDF job completed successfully");
-
+      log.info(
+        {
+          templateId,
+          templateName,
+          recipientCount: recipients.length,
+        },
+        "Esign PDF job completed successfully",
+      );
     } catch (error) {
-      log.error({
-        templateId,
-        templateName,
-        error: error instanceof Error ? error.message : String(error),
-      }, "Esign PDF job failed");
+      log.error(
+        {
+          templateId,
+          templateName,
+          error: error instanceof Error ? error.message : String(error),
+        },
+        "Esign PDF job failed",
+      );
       throw error;
     }
   }

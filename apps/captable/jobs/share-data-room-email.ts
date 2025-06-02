@@ -1,7 +1,7 @@
 import { env } from "@/env";
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "share-data-room-email-job" });
 
@@ -18,11 +18,14 @@ export type ShareDataRoomEmailPayloadType = {
 const sendShareDataRoomEmail = async (
   payload: ShareDataRoomEmailPayloadType,
 ) => {
-  log.info({ 
-    email: payload.email,
-    dataRoomId: payload.dataRoomId,
-    company: payload.companyName 
-  }, "Sending share data room email");
+  log.info(
+    {
+      email: payload.email,
+      dataRoomId: payload.dataRoomId,
+      company: payload.companyName,
+    },
+    "Sending share data room email",
+  );
 
   const { render } = await import("@captable/email");
   const { ShareDataRoomEmail } = await import("@captable/email/templates");
@@ -43,11 +46,14 @@ const sendShareDataRoomEmail = async (
     html,
   });
 
-  log.info({ 
-    email: payload.email,
-    dataRoomId: payload.dataRoomId,
-    company: payload.companyName 
-  }, "Share data room email sent successfully");
+  log.info(
+    {
+      email: payload.email,
+      dataRoomId: payload.dataRoomId,
+      company: payload.companyName,
+    },
+    "Share data room email sent successfully",
+  );
 };
 
 export { sendShareDataRoomEmail };

@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "share-update-email-job" });
 
@@ -14,12 +14,15 @@ export type ShareUpdateEmailPayloadType = {
 };
 
 const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
-  log.info({ 
-    to: payload.to,
-    company: payload.companyName,
-    update: payload.updateTitle 
-  }, "Sending share update email");
-  
+  log.info(
+    {
+      to: payload.to,
+      company: payload.companyName,
+      update: payload.updateTitle,
+    },
+    "Sending share update email",
+  );
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { ShareUpdateEmail } = await import("@captable/email/templates");
@@ -40,11 +43,14 @@ const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
     html,
   });
 
-  log.info({ 
-    to: payload.to,
-    company: payload.companyName,
-    update: payload.updateTitle 
-  }, "Share update email sent successfully");
+  log.info(
+    {
+      to: payload.to,
+      company: payload.companyName,
+      update: payload.updateTitle,
+    },
+    "Share update email sent successfully",
+  );
 };
 
 export { sendShareUpdateEmail };

@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "esign-confirmation-email-job" });
 
@@ -12,8 +12,8 @@ export type EsignConfirmationEmailPayloadType = {
     name: string;
     logo?: string | null;
   };
-  recipient: { 
-    name?: string | null; 
+  recipient: {
+    name?: string | null;
     email: string;
   };
 };
@@ -21,11 +21,14 @@ export type EsignConfirmationEmailPayloadType = {
 const sendEsignConfirmationEmail = async (
   payload: EsignConfirmationEmailPayloadType,
 ) => {
-  log.info({ 
-    email: payload.recipient.email,
-    document: payload.documentName,
-    company: payload.company.name 
-  }, "Sending esign confirmation email");
+  log.info(
+    {
+      email: payload.recipient.email,
+      document: payload.documentName,
+      company: payload.company.name,
+    },
+    "Sending esign confirmation email",
+  );
 
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
@@ -47,11 +50,14 @@ const sendEsignConfirmationEmail = async (
     html,
   });
 
-  log.info({ 
-    email: payload.recipient.email,
-    document: payload.documentName,
-    company: payload.company.name 
-  }, "Esign confirmation email sent successfully");
+  log.info(
+    {
+      email: payload.recipient.email,
+      document: payload.documentName,
+      company: payload.company.name,
+    },
+    "Esign confirmation email sent successfully",
+  );
 };
 
 export { sendEsignConfirmationEmail };

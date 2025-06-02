@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ServerlessQueue } from "@captable/queue";
 import { logger } from "@captable/logger";
+import { ServerlessQueue } from "@captable/queue";
+import { type NextRequest, NextResponse } from "next/server";
 
 const log = logger.child({ module: "cron-cleanup" });
 
@@ -27,4 +27,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-} 
+}

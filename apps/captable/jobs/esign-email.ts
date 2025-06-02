@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "esign-email-job" });
 
@@ -24,12 +24,15 @@ export type EsignEmailPayloadType = {
 };
 
 const sendEsignEmail = async (payload: EsignEmailPayloadType) => {
-  log.info({ 
-    recipientEmail: payload.recipient.email,
-    documentName: payload.documentName,
-    company: payload.company?.name 
-  }, "Sending esign email");
-  
+  log.info(
+    {
+      recipientEmail: payload.recipient.email,
+      documentName: payload.documentName,
+      company: payload.company?.name,
+    },
+    "Sending esign email",
+  );
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { EsignEmail } = await import("@captable/email/templates");
@@ -51,11 +54,14 @@ const sendEsignEmail = async (payload: EsignEmailPayloadType) => {
     html,
   });
 
-  log.info({ 
-    recipientEmail: payload.recipient.email,
-    documentName: payload.documentName,
-    company: payload.company?.name 
-  }, "Esign email sent successfully");
+  log.info(
+    {
+      recipientEmail: payload.recipient.email,
+      documentName: payload.documentName,
+      company: payload.company?.name,
+    },
+    "Esign email sent successfully",
+  );
 };
 
 export { sendEsignEmail };

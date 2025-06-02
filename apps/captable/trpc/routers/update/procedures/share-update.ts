@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { shareUpdateEmailJob } from "@/jobs";
 import {
   ShareUpdateEmailJob,
   type ShareUpdateEmailPayloadType,
@@ -19,7 +20,6 @@ import {
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { shareUpdateEmailJob } from "@/jobs";
 
 export const shareUpdateProcedure = withAuth
   .input(

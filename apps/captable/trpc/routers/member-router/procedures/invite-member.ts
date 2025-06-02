@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { memberInviteEmailJob } from "@/jobs";
 import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
 import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
@@ -16,7 +17,6 @@ import {
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodInviteMemberMutationSchema } from "../schema";
-import { memberInviteEmailJob } from "@/jobs";
 
 export const inviteMemberProcedure = withAccessControl
   .input(ZodInviteMemberMutationSchema)

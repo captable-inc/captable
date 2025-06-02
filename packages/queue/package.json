@@ -35,4 +35,4 @@
     "@captable/logger": "workspace:*",
     "drizzle-orm": "^0.43.1"
   }
-} 
+}

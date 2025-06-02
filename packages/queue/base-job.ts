@@ -1,6 +1,6 @@
+import { logger } from "@captable/logger";
 import { ServerlessQueue } from "./queue";
 import type { JobOptions } from "./types";
-import { logger } from "@captable/logger";
 
 const log = logger.child({ module: "base-job" });
 
@@ -56,7 +56,11 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
   /**
    * Emit a job with delay
    */
-  emitDelayed(payload: T, delayInSeconds: number, options?: JobOptions): Promise<string> {
+  emitDelayed(
+    payload: T,
+    delayInSeconds: number,
+    options?: JobOptions,
+  ): Promise<string> {
     return this.emit(payload, {
       ...options,
       delay: delayInSeconds,
@@ -66,10 +70,14 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
   /**
    * Emit a high priority job
    */
-  emitPriority(payload: T, priority: number, options?: JobOptions): Promise<string> {
+  emitPriority(
+    payload: T,
+    priority: number,
+    options?: JobOptions,
+  ): Promise<string> {
     return this.emit(payload, {
       ...options,
       priority,
     });
   }
-} 
+}

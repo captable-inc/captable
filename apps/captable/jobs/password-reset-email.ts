@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "password-reset-email-job" });
 
@@ -13,7 +13,7 @@ const sendPasswordResetEmail = async (
   payload: PasswordResetEmailPayloadType,
 ) => {
   log.info({ email: payload.email }, "Sending password reset email");
-  
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { PasswordResetEmail } = await import("@captable/email/templates");

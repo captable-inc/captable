@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ServerlessQueue } from "@captable/queue";
 import { logger } from "@captable/logger";
+import { ServerlessQueue } from "@captable/queue";
+import { type NextRequest, NextResponse } from "next/server";
 import "@/jobs"; // Import to register all jobs
 
 const log = logger.child({ module: "cron-jobs" });
@@ -60,4 +60,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-} 
+}

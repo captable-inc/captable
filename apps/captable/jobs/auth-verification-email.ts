@@ -1,6 +1,6 @@
-import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
 import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
 
 const log = logger.child({ module: "auth-verification-email-job" });
 
@@ -13,7 +13,7 @@ const sendAuthVerificationEmail = async (
   payload: AuthVerificationEmailPayloadType,
 ) => {
   log.info({ email: payload.email }, "Sending auth verification email");
-  
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { AccountVerificationEmail } = await import(
@@ -32,7 +32,10 @@ const sendAuthVerificationEmail = async (
     html,
   });
 
-  log.info({ email: payload.email }, "Auth verification email sent successfully");
+  log.info(
+    { email: payload.email },
+    "Auth verification email sent successfully",
+  );
 };
 
 export { sendAuthVerificationEmail };

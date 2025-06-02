@@ -1,5 +1,11 @@
-import { pgTable, varchar, json, integer, timestamp } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
+import {
+  integer,
+  json,
+  pgTable,
+  timestamp,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { createTable } from "./table";
 
 export const jobQueue = createTable("job_queue", {
@@ -22,4 +28,4 @@ export const jobQueue = createTable("job_queue", {
 });
 
 export type JobQueue = typeof jobQueue.$inferSelect;
-export type NewJobQueue = typeof jobQueue.$inferInsert; 
+export type NewJobQueue = typeof jobQueue.$inferInsert;

@@ -1,9 +1,9 @@
 import { env } from "@/env";
 import { passwordResetEmailJob } from "@/jobs";
+import { withoutAuth } from "@/trpc/api/trpc";
 import { db, eq, users } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { withoutAuth } from "@/trpc/api/trpc";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email(),
