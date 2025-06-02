@@ -55,7 +55,7 @@ To run jobs automatically alongside your development server:
 
 ```bash
 # Run everything including job processing
-bun run dev:full
+bun dx
 ```
 
 This will start:

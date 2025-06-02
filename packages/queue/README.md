@@ -93,7 +93,7 @@ await welcomeEmailJob.bulkEmit([
 
 ### 3. Process Jobs (Cron)
 
-Jobs are automatically processed via Vercel Cron:
+Jobs are automatically processed via Cron:
 
 ```typescript
 // app/api/cron/process-jobs/route.ts
@@ -177,7 +177,7 @@ interface JobStats {
 
 ## Configuration
 
-### Vercel Cron
+### Cron
 
 ```json
 // vercel.json
@@ -379,3 +379,116 @@ await emailJob.emit({ to: "user@example.com" });
 ## License
 
 MIT 
+
+## Development
+
+### Quick Development Setup
+
+
+Start everything including job processing:
+
+```bash
+# From monorepo root
+bun run dx
+```
+
+This starts:
+- Next.js development server (port 3000)
+- Database studio
+- Email development server (port 3001)
+- **Job processor in watch mode** (with quiet logging)
+
+### Manual Job Management
+
+From the `apps/captable` directory:
+
+```bash
+# Process all pending jobs once
+bun run jobs
+
+# Process jobs continuously (watch mode)
+bun run jobs:dev
+
+# Queue sample jobs for testing
+bun run test-jobs
+
+# Show queue statistics
+bun run jobs stats
+
+# Clean up old completed jobs
+bun run jobs cleanup
+```
+
+### Development Scripts
+
+Job management scripts are located in `apps/captable/scripts/dev/`:
+
+- **`jobs.ts`** - Main job processor with watch mode
+- **`test-jobs.ts`** - Queue sample jobs for testing
+- **`README.md`** - Detailed documentation
+
+### Watch Mode Features
+
+The watch mode (`bun run jobs:dev`) includes:
+
+- 🔇 **Quiet operation** - Only logs when jobs are found
+- 💓 **Heartbeat logging** - Status every 60 seconds when idle
+- 🛑 **Graceful shutdown** - Ctrl+C stops cleanly
+- ⚡ **Fast processing** - 1s intervals when jobs found, 5s when idle
+
+### Development Workflow
+
+1. **Start full development environment:**
+   ```bash
+   bun run dx
+   ```
+
+2. **Queue test jobs (in another terminal):**
+   ```bash
+   cd apps/captable
+   bun run test-jobs
+   ```
+
+3. **Monitor queue status:**
+   ```bash
+   bun run jobs stats
+   ```
+
+4. **Manual processing (if needed):**
+   ```bash
+   bun run jobs
+   ```
+
+### Testing Individual Job Types
+
+```bash
+# Test specific email jobs
+bun run test-jobs password-reset
+bun run test-jobs member-invite  
+bun run test-jobs auth-verification
+
+# Test all jobs at once
+bun run test-jobs all
+```
+
+### Production vs Development
+
+| Environment | Trigger | Frequency | Logging |
+|-------------|---------|-----------|----------|
+| **Development** | Watch mode | Every 5s | Quiet + heartbeat |
+| **Production** |Cron | Every minute | Event-driven |
+
+### Available Job Types
+
+Current job implementations:
+
+- `email.password-reset` - Password reset emails
+- `email.member-invite` - Member invitation emails  
+- `email.auth-verify` - Account verification emails
+- `email.share-update` - Share update notifications
+- `email.share-data-room` - Data room sharing emails
+- `email.esign` - E-signature request emails
+- `email.esign-confirmation` - E-signature confirmation emails
+- `generate.esign-pdf` - PDF generation for e-signatures
+
+See `apps/captable/jobs/` for complete implementations.
