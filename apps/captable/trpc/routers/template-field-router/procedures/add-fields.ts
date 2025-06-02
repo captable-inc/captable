@@ -82,7 +82,7 @@ export const addFieldProcedure = withAuth
         };
       }
 
-      const template = await db.transaction(async (tx) => {
+      const _template = await db.transaction(async (tx) => {
         const { companyId } = await checkMembership({
           tx,
           session: ctx.session,

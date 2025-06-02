@@ -122,7 +122,7 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
         "Esign documents completed in database",
       );
 
-      const file = await getPresignedGetUrl(bucketData.key);
+      const _file = await getPresignedGetUrl(bucketData.key);
 
       // Send confirmation emails to all recipients
       const emailPromises = recipients.map((recipient) =>
