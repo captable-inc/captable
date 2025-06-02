@@ -1,4 +1,4 @@
-export { ServerlessQueue } from "./queue";
+export { Queue } from "./queue";
 export { BaseJob } from "./base-job";
 export type {
   JobOptions,

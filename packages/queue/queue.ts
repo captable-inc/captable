@@ -5,9 +5,9 @@ import { logger } from "@captable/logger";
 import { and, asc, desc, eq, lt, lte, sql } from "drizzle-orm";
 import type { BulkJobInput, JobOptions, JobProcessor, JobStats } from "./types";
 
-const log = logger.child({ module: "serverless-queue" });
+const log = logger.child({ module: "queue" });
 
-export class ServerlessQueue {
+export class Queue {
   private static processors = new Map<
     string,
     JobProcessor<Record<string, unknown>>
@@ -19,7 +19,7 @@ export class ServerlessQueue {
   static register<T extends Record<string, unknown>>(
     processor: JobProcessor<T>,
   ) {
-    ServerlessQueue.processors.set(
+    Queue.processors.set(
       processor.type,
       processor as JobProcessor<Record<string, unknown>>,
     );
@@ -135,7 +135,7 @@ export class ServerlessQueue {
 
     for (const job of jobs) {
       try {
-        await ServerlessQueue.executeJob(job);
+        await Queue.executeJob(job);
         processedCount++;
       } catch (error) {
         log.error(
@@ -177,7 +177,7 @@ export class ServerlessQueue {
       })
       .where(eq(jobQueue.id, job.id));
 
-    const processor = ServerlessQueue.processors.get(job.type);
+    const processor = Queue.processors.get(job.type);
     if (!processor) {
       throw new Error(`No processor registered for job type: ${job.type}`);
     }
@@ -305,13 +305,13 @@ export class ServerlessQueue {
    * Get all processors types
    */
   static getRegisteredProcessors(): string[] {
-    return Array.from(ServerlessQueue.processors.keys());
+    return Array.from(Queue.processors.keys());
   }
 
   /**
    * Clear all processors (useful for testing)
    */
   static clearProcessors(): void {
-    ServerlessQueue.processors.clear();
+    Queue.processors.clear();
   }
 }

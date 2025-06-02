@@ -97,11 +97,11 @@ Jobs are automatically processed via Vercel Cron:
 
 ```typescript
 // app/api/cron/process-jobs/route.ts
-import { ServerlessQueue } from "@captable/queue";
+import { Queue } from "@captable/queue";
 import "@/jobs"; // Import to register all jobs
 
 export async function GET() {
-  const processed = await ServerlessQueue.process(20);
+  const processed = await Queue.process(20);
   return Response.json({ processed });
 }
 ```
@@ -127,12 +127,12 @@ abstract class BaseJob<T extends Record<string, unknown>> {
 }
 ```
 
-### ServerlessQueue
+### Queue
 
 Static utility class for queue management.
 
 ```typescript
-class ServerlessQueue {
+class Queue {
   static register<T>(processor: JobProcessor<T>): void;
   static add<T>(type: string, payload: T, options?: JobOptions): Promise<string>;
   static addBulk<T>(jobs: Array<BulkJobInput<T>>): Promise<string[]>;
@@ -234,7 +234,7 @@ import "./notifications";
 
 export { welcomeEmailJob } from "./welcome-email";
 export { passwordResetJob } from "./password-reset";
-export { ServerlessQueue } from "@captable/queue";
+export { Queue } from "@captable/queue";
 ```
 
 ### Job Types
@@ -298,11 +298,11 @@ async work(payload: EmailPayload): Promise<void> {
 
 ```typescript
 // Get queue statistics
-const stats = await ServerlessQueue.getStats();
+const stats = await Queue.getStats();
 console.log(`Pending: ${stats.pending}, Failed: ${stats.failed}`);
 
 // List registered processors
-const processors = ServerlessQueue.getRegisteredProcessors();
+const processors = Queue.getRegisteredProcessors();
 console.log(`Registered jobs: ${processors.join(", ")}`);
 ```
 

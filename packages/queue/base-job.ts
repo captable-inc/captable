@@ -1,5 +1,5 @@
 import { logger } from "@captable/logger";
-import { ServerlessQueue } from "./queue";
+import { Queue } from "./queue";
 import type { JobOptions } from "./types";
 
 const log = logger.child({ module: "base-job" });
@@ -17,7 +17,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
    * Call this method after instantiating the job
    */
   register(): void {
-    ServerlessQueue.register({
+    Queue.register({
       type: this.type,
       process: this.work.bind(this),
     });
@@ -34,7 +34,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
    * Emit a single job
    */
   emit(payload: T, options?: JobOptions): Promise<string> {
-    return ServerlessQueue.add(this.type, payload, {
+    return Queue.add(this.type, payload, {
       ...this.options,
       ...options,
     });
@@ -50,7 +50,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
       options: { ...this.options, ...options },
     }));
 
-    return ServerlessQueue.addBulk(jobs);
+    return Queue.addBulk(jobs);
   }
 
   /**

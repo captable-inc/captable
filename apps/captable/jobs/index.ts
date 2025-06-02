@@ -18,5 +18,5 @@ export { esignEmailJob } from "./esign-email";
 export { esignConfirmationEmailJob } from "./esign-confirmation-email";
 export { esignPdfJob } from "./esign-pdf";
 
-// Re-export the ServerlessQueue for direct usage
-export { ServerlessQueue } from "@captable/queue";
+// Re-export the Queue for direct usage
+export { Queue } from "@captable/queue";
