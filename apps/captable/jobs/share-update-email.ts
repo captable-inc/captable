@@ -1,7 +1,8 @@
-import { env } from "@/env";
-import { BaseJob } from "@/jobs/base";
+import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
-import type { Job } from "pg-boss";
+import { logger } from "@captable/logger";
+
+const log = logger.child({ module: "share-update-email-job" });
 
 export type ShareUpdateEmailPayloadType = {
   to: string;
@@ -13,6 +14,12 @@ export type ShareUpdateEmailPayloadType = {
 };
 
 const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
+  log.info({ 
+    to: payload.to,
+    company: payload.companyName,
+    update: payload.updateTitle 
+  }, "Sending share update email");
+  
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { ShareUpdateEmail } = await import("@captable/email/templates");
@@ -32,12 +39,31 @@ const sendShareUpdateEmail = async (payload: ShareUpdateEmailPayloadType) => {
     subject: `${payload.senderName} shared an update with you`,
     html,
   });
+
+  log.info({ 
+    to: payload.to,
+    company: payload.companyName,
+    update: payload.updateTitle 
+  }, "Share update email sent successfully");
 };
+
+export { sendShareUpdateEmail };
 
 export class ShareUpdateEmailJob extends BaseJob<ShareUpdateEmailPayloadType> {
   readonly type = "email.share-update";
+  protected readonly options = {
+    maxAttempts: 3,
+    retryDelay: 1000,
+    priority: 1,
+  };
 
-  async work(job: Job<ShareUpdateEmailPayloadType>): Promise<void> {
-    await sendShareUpdateEmail(job.data);
+  async work(payload: ShareUpdateEmailPayloadType): Promise<void> {
+    await sendShareUpdateEmail(payload);
   }
 }
+
+// Create and register the job instance
+const shareUpdateEmailJob = new ShareUpdateEmailJob();
+shareUpdateEmailJob.register();
+
+export { shareUpdateEmailJob };

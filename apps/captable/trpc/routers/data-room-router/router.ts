@@ -1,8 +1,5 @@
 import { env } from "@/env";
-import {
-  ShareDataRoomEmailJob,
-  type ShareDataRoomEmailPayloadType,
-} from "@/jobs/share-data-room-email";
+import { shareDataRoomEmailJob } from "@/jobs";
 import { generatePublicId } from "@/lib/common/id";
 import { encode } from "@/lib/jwt";
 import { ShareRecipientSchema } from "@/schema/contacts";
@@ -390,16 +387,17 @@ export const dataRoomRouter = createTRPCRouter({
 
           const link = `${baseUrl}/data-rooms/${dataRoom.publicId}?token=${token}`;
 
-          const payload: ShareDataRoomEmailPayloadType = {
-            to: email,
-            senderName: `${senderName}`,
-            recipientName: recipient.name,
-            companyName: company.name,
-            dataRoom: dataRoom.name,
+          const payload = {
+            dataRoomId: dataRoomId,
+            dataRoomName: dataRoom.name,
+            recipientName: recipient.name || null,
             link,
+            email,
+            companyName: company.name,
+            senderName: senderName || "Team",
           };
 
-          await new ShareDataRoomEmailJob().emit(payload);
+          await shareDataRoomEmailJob.emit(payload);
 
           await db.transaction(async (tx) => {
             await Audit.create(

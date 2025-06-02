@@ -1,7 +1,8 @@
-import { env } from "@/env";
-import { BaseJob } from "@/jobs/base";
+import { BaseJob } from "@captable/queue";
 import { sendMail } from "@/server/mailer";
-import type { Job } from "pg-boss";
+import { logger } from "@captable/logger";
+
+const log = logger.child({ module: "esign-confirmation-email-job" });
 
 export type EsignConfirmationEmailPayloadType = {
   documentName: string;
@@ -11,12 +12,21 @@ export type EsignConfirmationEmailPayloadType = {
     name: string;
     logo?: string | null;
   };
-  recipient: { name?: string | null; email: string };
+  recipient: { 
+    name?: string | null; 
+    email: string;
+  };
 };
 
 const sendEsignConfirmationEmail = async (
   payload: EsignConfirmationEmailPayloadType,
 ) => {
+  log.info({ 
+    email: payload.recipient.email,
+    document: payload.documentName,
+    company: payload.company.name 
+  }, "Sending esign confirmation email");
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { EsignConfirmationEmail } = await import("@captable/email/templates");
@@ -33,15 +43,34 @@ const sendEsignConfirmationEmail = async (
 
   await sendMail({
     to: [payload.recipient.email],
-    subject: `Document signed: ${payload.documentName}`,
+    subject: `Document signed confirmation - ${payload.documentName}`,
     html,
   });
+
+  log.info({ 
+    email: payload.recipient.email,
+    document: payload.documentName,
+    company: payload.company.name 
+  }, "Esign confirmation email sent successfully");
 };
+
+export { sendEsignConfirmationEmail };
 
 export class EsignConfirmationEmailJob extends BaseJob<EsignConfirmationEmailPayloadType> {
   readonly type = "email.esign-confirmation";
+  protected readonly options = {
+    maxAttempts: 3,
+    retryDelay: 1000,
+    priority: 1, // Normal priority for confirmations
+  };
 
-  async work(job: Job<EsignConfirmationEmailPayloadType>): Promise<void> {
-    await sendEsignConfirmationEmail(job.data);
+  async work(payload: EsignConfirmationEmailPayloadType): Promise<void> {
+    await sendEsignConfirmationEmail(payload);
   }
 }
+
+// Create and register the job instance
+const esignConfirmationEmailJob = new EsignConfirmationEmailJob();
+esignConfirmationEmailJob.register();
+
+export { esignConfirmationEmailJob };

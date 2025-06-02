@@ -16,6 +16,7 @@ import {
 } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { ZodInviteMemberMutationSchema } from "../schema";
+import { memberInviteEmailJob } from "@/jobs";
 
 export const inviteMemberProcedure = withAccessControl
   .input(ZodInviteMemberMutationSchema)
@@ -227,13 +228,13 @@ export const inviteMemberProcedure = withAccessControl
     const inviteLink = `${env.NEXT_PUBLIC_BASE_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetTokenResult.token}`;
 
     const payload = {
-      invitedBy: user.name || "Someone",
-      companyName: company.name,
-      inviteLink,
       email,
+      inviteLink,
+      companyName: company.name,
+      invitedBy: user.name || "Unknown",
     };
 
-    await new MemberInviteEmailJob().emit(payload);
+    await memberInviteEmailJob.emit(payload);
 
     return { success: true };
   });

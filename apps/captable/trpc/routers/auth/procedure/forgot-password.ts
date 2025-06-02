@@ -1,41 +1,35 @@
 import { env } from "@/env";
-import { PasswordResetEmailJob } from "@/jobs/password-reset-email";
-import { generatePasswordResetToken } from "@/lib/token";
-import { getUserByEmail } from "@/server/user";
-import { withoutAuth } from "@/trpc/api/trpc";
+import { passwordResetEmailJob } from "@/jobs";
+import { db, eq, users } from "@captable/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { withoutAuth } from "@/trpc/api/trpc";
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
 
 export const forgotPasswordProcedure = withoutAuth
-  .input(z.string().email())
+  .input(forgotPasswordSchema)
   .mutation(async ({ input }) => {
-    const existingUser = await getUserByEmail(input);
+    const { email } = input;
+
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
 
     if (!existingUser) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Email not found!",
+        code: "NOT_FOUND",
+        message: "User not found. Please check your email and try again.",
       });
     }
 
-    const passwordResetToken = await generatePasswordResetToken(input);
+    const resetToken = crypto.randomUUID();
+    const resetLink = `${env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    if (!passwordResetToken) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to generate password reset token",
-      });
-    }
+    // Emit password reset email job
+    await passwordResetEmailJob.emit({ email, resetLink });
 
-    const { email, token } = passwordResetToken;
-
-    const resetLink = `${env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`;
-
-    await new PasswordResetEmailJob().emit({ email, resetLink });
-
-    return {
-      success: true,
-      message:
-        "To reset your password, please click the link sent to your email.",
-    };
+    return { success: true };
   });

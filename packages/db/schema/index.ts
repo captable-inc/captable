@@ -26,4 +26,5 @@ export * from "./convertible-notes";
 export * from "./updates";
 export * from "./billing";
 export * from "./access-tokens";
+export * from "./job-queue";
 export * from "./relations";

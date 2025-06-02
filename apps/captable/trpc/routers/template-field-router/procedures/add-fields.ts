@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 import { env } from "@/env";
-import { EsignEmailJob, type EsignEmailPayloadType } from "@/jobs/esign-email";
+import { esignEmailJob } from "@/jobs";
 import { decode, encode } from "@/lib/jwt";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/member";
@@ -55,7 +55,24 @@ export const addFieldProcedure = withAuth
     try {
       const user = ctx.session.user;
       const { userAgent, requestIp } = ctx;
-      const mails: EsignEmailPayloadType[] = [];
+      const mails: Array<{
+        signingLink: string;
+        recipient: {
+          id: string;
+          name: string | null | undefined;
+          email: string;
+        };
+        sender?: {
+          name: string | null | undefined;
+          email: string | null | undefined;
+        };
+        message?: string | null;
+        documentName?: string;
+        company?: {
+          name: string;
+          logo: string | null | undefined;
+        };
+      }> = [];
 
       if (input.status === "COMPLETE" && (!user.email || !user.name)) {
         return {
@@ -232,12 +249,7 @@ export const addFieldProcedure = withAuth
       });
 
       if (mails.length) {
-        new EsignEmailJob().bulkEmit(
-          mails.map((data) => ({
-            data,
-            singletonKey: `esign-notify-${template.id}-${data.recipient.id}`,
-          })),
-        );
+        await esignEmailJob.bulkEmit(mails);
       }
 
       return {

@@ -1,4 +1,4 @@
-import { BaseJob } from "@/jobs/base";
+import { BaseJob } from "@captable/queue";
 import {
   type EsignGetTemplateType,
   completeEsignDocuments,
@@ -7,11 +7,10 @@ import {
 } from "@/server/esign";
 import { getPresignedGetUrl } from "@/server/file-uploads";
 import { db } from "@captable/db";
-import type { Job } from "pg-boss";
-import {
-  EsignConfirmationEmailJob,
-  type EsignConfirmationEmailPayloadType,
-} from "./esign-confirmation-email";
+import { logger } from "@captable/logger";
+import { esignConfirmationEmailJob } from "./esign-confirmation-email";
+
+const log = logger.child({ module: "esign-pdf-job" });
 
 export type EsignPdfPayloadType = {
   fields: EsignGetTemplateType["fields"];
@@ -38,8 +37,13 @@ export type EsignPdfPayloadType = {
 
 export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
   readonly type = "generate.esign-pdf";
+  protected readonly options = {
+    maxAttempts: 2, // PDF generation is heavy, limit retries
+    retryDelay: 5000, // Longer delay for PDF processing
+    priority: 3, // High priority for document processing
+  };
 
-  async work(job: Job<EsignPdfPayloadType>): Promise<void> {
+  async work(payload: EsignPdfPayloadType): Promise<void> {
     const {
       bucketKey,
       data,
@@ -53,48 +57,93 @@ export class EsignPdfJob extends BaseJob<EsignPdfPayloadType> {
       templateId,
       recipients,
       company,
-    } = job.data;
+    } = payload;
 
-    const modifiedPdfBytes = await generateEsignPdf({
-      bucketKey,
-      data,
-      fields,
-      audits,
+    log.info({
+      templateId,
       templateName,
-    });
-    const { fileUrl: _fileUrl, ...bucketData } = await uploadEsignDocuments({
-      buffer: Buffer.from(modifiedPdfBytes),
       companyId,
-      templateName,
-    });
+      recipientCount: recipients.length,
+    }, "Starting esign PDF generation");
 
-    await db.transaction(async (tx) => {
-      await completeEsignDocuments({
-        bucketData: bucketData,
-        companyId,
-        db: tx,
-        requestIp,
+    try {
+      const modifiedPdfBytes = await generateEsignPdf({
+        bucketKey,
+        data,
+        fields,
+        audits,
+        templateName,
+      });
+
+      log.info({
         templateId,
         templateName,
-        uploaderName: sender.name || "Captable",
-        userAgent,
+        pdfSize: modifiedPdfBytes.length,
+      }, "PDF generated successfully");
+
+      const { fileUrl: _fileUrl, ...bucketData } = await uploadEsignDocuments({
+        buffer: Buffer.from(modifiedPdfBytes),
+        companyId,
+        templateName,
       });
-    });
 
-    const file = await getPresignedGetUrl(bucketData.key);
+      log.info({
+        templateId,
+        bucketKey: bucketData.key,
+      }, "PDF uploaded to storage");
 
-    const recipientData: { data: EsignConfirmationEmailPayloadType }[] =
-      recipients.map((recipient) => ({
-        data: {
-          fileUrl: file.url,
+      await db.transaction(async (tx) => {
+        await completeEsignDocuments({
+          bucketData: bucketData,
+          companyId,
+          db: tx,
+          requestIp,
+          templateId,
+          templateName,
+          uploaderName: sender.name || "Captable",
+          userAgent,
+        });
+      });
+
+      log.info({
+        templateId,
+        templateName,
+      }, "Esign documents completed in database");
+
+      const file = await getPresignedGetUrl(bucketData.key);
+
+      // Send confirmation emails to all recipients
+      const emailPromises = recipients.map((recipient) =>
+        esignConfirmationEmailJob.emit({
           documentName: templateName,
           recipient,
           company,
           senderName: sender.name || "Captable",
           senderEmail: sender.email as string,
-        },
-      }));
+        })
+      );
 
-    await new EsignConfirmationEmailJob().bulkEmit(recipientData);
+      await Promise.all(emailPromises);
+
+      log.info({
+        templateId,
+        templateName,
+        recipientCount: recipients.length,
+      }, "Esign PDF job completed successfully");
+
+    } catch (error) {
+      log.error({
+        templateId,
+        templateName,
+        error: error instanceof Error ? error.message : String(error),
+      }, "Esign PDF job failed");
+      throw error;
+    }
   }
 }
+
+// Create and register the job instance
+const esignPdfJob = new EsignPdfJob();
+esignPdfJob.register();
+
+export { esignPdfJob };
