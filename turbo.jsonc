@@ -61,6 +61,14 @@
       "inputs": []
     },
 
+    // Jobs development - continuous job processing
+    "jobs:dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": [],
+      "inputs": []
+    },
+
     // Formatting is independent
     "format": {
       "inputs": ["**/*.{ts,tsx,js,jsx,json,md}", "biome.json", ".biomejs.json"],

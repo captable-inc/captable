@@ -9,7 +9,10 @@
     "start": "next start",
     "check-types": "tsc --noEmit",
     "format": "biome format --write",
-    "lint": "biome check"
+    "lint": "biome check",
+    "jobs": "bun run scripts/dev/jobs.ts",
+    "jobs:dev": "bun run scripts/dev/jobs.ts process --watch",
+    "test-jobs": "bun run scripts/dev/test-jobs.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.812.0",
