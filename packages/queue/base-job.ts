@@ -1,5 +1,5 @@
 import { logger } from "@captable/logger";
-import { Queue } from "./queue";
+import { addJob, addJobs, register } from "./queue";
 import type { JobOptions } from "./types";
 
 const log = logger.child({ module: "base-job" });
@@ -17,7 +17,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
    * Call this method after instantiating the job
    */
   register(): void {
-    Queue.register({
+    register({
       type: this.type,
       process: this.work.bind(this),
     });
@@ -34,7 +34,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
    * Emit a single job
    */
   emit(payload: T, options?: JobOptions): Promise<string> {
-    return Queue.add(this.type, payload, {
+    return addJob(this.type, payload, {
       ...this.options,
       ...options,
     });
@@ -50,7 +50,7 @@ export abstract class BaseJob<T extends Record<string, unknown>> {
       options: { ...this.options, ...options },
     }));
 
-    return Queue.addBulk(jobs);
+    return addJobs(jobs);
   }
 
   /**

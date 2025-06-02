@@ -1,5 +1,5 @@
 import { logger } from "@captable/logger";
-import { Queue } from "@captable/queue";
+import { cleanupJobs } from "@captable/queue";
 import { type NextRequest, NextResponse } from "next/server";
 
 const log = logger.child({ module: "cron-cleanup" });
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const cleaned = await Queue.cleanup(7); // Clean jobs older than 7 days
+    const cleaned = await cleanupJobs(7); // Clean jobs older than 7 days
 
     log.info({ cleaned }, "Job cleanup completed");
 

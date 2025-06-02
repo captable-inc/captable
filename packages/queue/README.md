@@ -97,11 +97,11 @@ Jobs are automatically processed via Vercel Cron:
 
 ```typescript
 // app/api/cron/process-jobs/route.ts
-import { Queue } from "@captable/queue";
+import { processJobs } from "@captable/queue";
 import "@/jobs"; // Import to register all jobs
 
 export async function GET() {
-  const processed = await Queue.process(20);
+  const processed = await processJobs(20);
   return Response.json({ processed });
 }
 ```
@@ -127,21 +127,26 @@ abstract class BaseJob<T extends Record<string, unknown>> {
 }
 ```
 
-### Queue
+### Queue Functions
 
-Static utility class for queue management.
+Utility functions for queue management.
 
 ```typescript
-class Queue {
-  static register<T>(processor: JobProcessor<T>): void;
-  static add<T>(type: string, payload: T, options?: JobOptions): Promise<string>;
-  static addBulk<T>(jobs: Array<BulkJobInput<T>>): Promise<string[]>;
-  static process(limit?: number): Promise<number>;
-  static getStats(): Promise<JobStats>;
-  static cleanup(olderThanDays?: number): Promise<number>;
-  static getRegisteredProcessors(): string[];
-  static clearProcessors(): void;
-}
+// Register a job processor
+function register<T>(processor: JobProcessor<T>): void;
+
+// Add jobs to queue
+function addJob<T>(type: string, payload: T, options?: JobOptions): Promise<string>;
+function addJobs<T>(jobs: Array<BulkJobInput<T>>): Promise<string[]>;
+
+// Process and manage jobs
+function processJobs(limit?: number): Promise<number>;
+function getStats(): Promise<JobStats>;
+function cleanupJobs(olderThanDays?: number): Promise<number>;
+
+// Utility functions
+function getRegisteredProcessors(): string[];
+function clearProcessors(): void;
 ```
 
 ### JobOptions
@@ -234,7 +239,7 @@ import "./notifications";
 
 export { welcomeEmailJob } from "./welcome-email";
 export { passwordResetJob } from "./password-reset";
-export { Queue } from "@captable/queue";
+export * from "@captable/queue";
 ```
 
 ### Job Types
@@ -297,12 +302,14 @@ async work(payload: EmailPayload): Promise<void> {
 ### 4. Monitoring
 
 ```typescript
+import { getStats, getRegisteredProcessors } from "@captable/queue";
+
 // Get queue statistics
-const stats = await Queue.getStats();
+const stats = await getStats();
 console.log(`Pending: ${stats.pending}, Failed: ${stats.failed}`);
 
 // List registered processors
-const processors = Queue.getRegisteredProcessors();
+const processors = getRegisteredProcessors();
 console.log(`Registered jobs: ${processors.join(", ")}`);
 ```
 

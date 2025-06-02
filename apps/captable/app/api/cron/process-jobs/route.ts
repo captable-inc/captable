@@ -1,5 +1,5 @@
 import { logger } from "@captable/logger";
-import { Queue } from "@captable/queue";
+import { processJobs } from "@captable/queue";
 import { type NextRequest, NextResponse } from "next/server";
 import "@/jobs"; // Import to register all jobs
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const maxBatches = 10; // Prevent infinite loops
 
     while (batchCount < maxBatches) {
-      const processed = await Queue.process(20); // Process 20 jobs per batch
+      const processed = await processJobs(20); // Process 20 jobs per batch
       totalProcessed += processed;
       batchCount++;
 

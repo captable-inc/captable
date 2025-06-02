@@ -18,5 +18,14 @@ export { esignEmailJob } from "./esign-email";
 export { esignConfirmationEmailJob } from "./esign-confirmation-email";
 export { esignPdfJob } from "./esign-pdf";
 
-// Re-export the Queue for direct usage
-export { Queue } from "@captable/queue";
+// Re-export queue functions for direct usage
+export {
+  addJob,
+  addJobs,
+  processJobs,
+  cleanupJobs,
+  getStats,
+  getRegisteredProcessors,
+  clearProcessors,
+  register,
+} from "@captable/queue";
