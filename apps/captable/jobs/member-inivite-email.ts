@@ -1,7 +1,8 @@
-import { env } from "@/env";
-import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import type { Job } from "pg-boss";
+import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
+
+const log = logger.child({ module: "member-invite-email-job" });
 
 export type MemberInviteEmailPayloadType = {
   email: string;
@@ -11,6 +12,14 @@ export type MemberInviteEmailPayloadType = {
 };
 
 const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
+  log.info(
+    {
+      email: payload.email,
+      company: payload.companyName,
+    },
+    "Sending member invite email",
+  );
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { MemberInviteEmail } = await import("@captable/email/templates");
@@ -28,14 +37,33 @@ const sendMemberInviteEmail = async (payload: MemberInviteEmailPayloadType) => {
     subject: `You're invited to join ${payload.companyName}`,
     html,
   });
+
+  log.info(
+    {
+      email: payload.email,
+      company: payload.companyName,
+    },
+    "Member invite email sent successfully",
+  );
 };
 
 export { sendMemberInviteEmail };
 
 export class MemberInviteEmailJob extends BaseJob<MemberInviteEmailPayloadType> {
   readonly type = "email.member-invite";
+  protected readonly options = {
+    maxAttempts: 3,
+    retryDelay: 1500,
+    priority: 2, // Higher priority for invites
+  };
 
-  async work(job: Job<MemberInviteEmailPayloadType>): Promise<void> {
-    await sendMemberInviteEmail(job.data);
+  async work(payload: MemberInviteEmailPayloadType): Promise<void> {
+    await sendMemberInviteEmail(payload);
   }
 }
+
+// Create and register the job instance
+const memberInviteEmailJob = new MemberInviteEmailJob();
+memberInviteEmailJob.register();
+
+export { memberInviteEmailJob };

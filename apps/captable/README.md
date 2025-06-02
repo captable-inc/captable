@@ -78,9 +78,34 @@ We have a community of developers, designers, and entrepreneurs who are passiona
 
 - [Next.js](https://nextjs.org)
 - [Tailwind](https://tailwindcss.com)
-- [Prisma ORM](https://prisma.io)
+- [Drizzle ORM](https://orm.drizzle.team)
 
 ---
+<h3 id="background-jobs">Background Jobs</h3>
+
+Captable uses a custom job queue system for handling background tasks like:
+- 📧 Email notifications (welcome, password reset, invites)
+- 📄 PDF generation (e-signatures, documents)
+- 🔄 Data processing and synchronization
+
+**Development Setup:**
+```bash
+# Start with job processing (recommended)
+bun dx
+
+# Or start jobs separately
+bun run jobs:dev
+```
+
+**Job Management:**
+```bash
+bun run jobs          # Process pending jobs
+bun run test-jobs     # Queue sample test jobs  
+bun run jobs stats    # View queue statistics
+```
+
+Jobs are automatically processed in production via Cron jobs.
+
 
 <h3 id="start">Getting started</h3>
 When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in other community spaces:
@@ -106,7 +131,7 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
 
 - <a href="https://docs.docker.com/get-docker/" target="_blank">Install Docker</a> & <a href="https://docs.docker.com/compose/install/" target="_blank">Docker Compose</a>
 - <a href="https://github.com/captableinc/captable/fork" target="_blank">Fork</a> & clone the forked repository
-- <a href="https://pnpm.io/installation" target="_blank">Install node and pnpm</a>. (optional)
+- <a href="https://bun.sh/docs/installation" target="_blank">Install node and bun</a>. (optional)
 - Copy `.env.example` to `.env`
 
   ```bash
@@ -117,10 +142,10 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
 
   ```bash
 
-  # With pnpm installed
-  pnpm dx
+  # With bun installed
+  bun dx
 
-  # Without pnpm installed
+  # Without bun installed
   docker compose up
 
   ```
@@ -129,8 +154,8 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
 
   ```bash
 
-  docker compose exec app pnpm db:migrate
-  docker compose exec app pnpm db:seed
+  docker compose exec app bun db:migrate
+  docker compose exec app bun db:seed
 
   ```
 
@@ -143,15 +168,15 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
   - Emails will be intercepted: [http://localhost:8025](http://localhost:8025)
   - SMTP will be on PORT `http://localhost:1025`
   - Postgres will be on PORT `http://localhost:5432`
-  - Prisma studio will be on PORT `http://localhost:5555`
+  - Database studio will be on PORT `http://localhost:5555`
 
 - Frequently used commands
   - `docker compose up` - Start the development environment
   - `docker compose down` - Stop the development environment
   - `docker compose logs -f` - View logs of the running services
   - `docker compose up --build` - Rebuild the docker image
-  - `docker compose run app pnpm db:migrate` - Run database migrations
-  - `docker compose run app pnpm db:seed` - Seed the database
+  - `docker compose run app bun db:migrate` - Run database migrations
+  - `docker compose run app bun db:seed` - Seed the database
 
 ---
 
@@ -218,23 +243,23 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
 - Run the following command to install dependencies
 
   ```bash
-  pnpm install
+  bun install
   ```
 
 - Run the following command to migrate and seed the database
 
   ```bash
-  pnpm db:migrate
-  pnpm db:seed
+  bun db:migrate
+  bun db:seed
   ```
 
 - Run the following command to start the development server
 
   ```bash
-  pnpm dev
+  bun dev
 
   # On a different terminal, run the following command to start the mail server
-  pnpm email:dev
+  bun email:dev
   ```
 
   - App will be running on [http://localhost:3000](http://localhost:3000)
@@ -243,10 +268,10 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
   - Postgres will be on PORT `http://localhost:5432`
 
 - Frequently used commands
-  - `pnpm dev` - Start the development server
-  - `pnpm email:dev` - Start the mail server
-  - `pnpm db:migrate` - Run database migrations
-  - `pnpm db:seed` - Seed the database
+  - `bun dev` - Start the development server
+  - `bun email:dev` - Start the mail server
+  - `bun db:migrate` - Run database migrations
+  - `bun db:seed` - Seed the database
 
 <h4 id="changes">Implement your changes</h4>
 

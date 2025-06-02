@@ -9,7 +9,10 @@
     "start": "next start",
     "check-types": "tsc --noEmit",
     "format": "biome format --write",
-    "lint": "biome check"
+    "lint": "biome check",
+    "jobs": "bun run scripts/dev/jobs.ts",
+    "jobs:dev": "bun run scripts/dev/jobs.ts process --watch",
+    "test-jobs": "bun run scripts/dev/test-jobs.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.812.0",
@@ -19,6 +22,7 @@
     "@captable/auth": "*",
     "@captable/db": "*",
     "@captable/email": "*",
+    "@captable/queue": "*",
     "@captable/rbac": "*",
     "@captable/utils": "*",
     "@hono/zod-openapi": "^0.19.6",
@@ -73,7 +77,6 @@
     "nodemailer": "^7.0.3",
     "papaparse": "^5.5.3",
     "pdf-lib": "^1.17.1",
-    "pg-boss": "^10.2.0",
     "pushmodal": "^1.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

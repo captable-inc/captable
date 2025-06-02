@@ -189,7 +189,7 @@ await sendEmail({
   template: <WelcomeEmail 
     userName="John Doe"
     companyName="Acme Corp"
-    loginUrl="https://app.captable.com/login"
+    loginUrl="https://cloud.captable.inc/login"
   />
 })
 ```

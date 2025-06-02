@@ -1,4 +1,5 @@
 import { env } from "@/env";
+import { shareUpdateEmailJob } from "@/jobs";
 import {
   ShareUpdateEmailJob,
   type ShareUpdateEmailPayloadType,
@@ -135,16 +136,16 @@ export const shareUpdateProcedure = withAuth
 
         const link = `${baseUrl}/updates/${update.publicId}?token=${token}`;
 
-        const payload: ShareUpdateEmailPayloadType = {
-          to: email,
-          senderName: `${senderName}`,
-          recipientName: recipient.name ?? null,
+        const payload = {
+          to: recipient.email || recipient.value,
+          senderName: senderName || "Team",
+          recipientName: recipient.name || null,
           companyName: update.companyName || "",
           updateTitle: update.title,
-          link,
+          link: link,
         };
 
-        await new ShareUpdateEmailJob().emit(payload);
+        await shareUpdateEmailJob.emit(payload);
       }
     };
 

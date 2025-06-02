@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
+import { memberInviteEmailJob } from "@/jobs";
 import { generatePasswordResetToken } from "@/lib/token";
 import { Audit } from "@/server/audit";
 import { checkMembership } from "@/server/member";
@@ -148,13 +148,13 @@ export const reInviteProcedure = withAuth
     const inviteLink = `${env.NEXT_PUBLIC_BASE_URL}/verify-member?token=${verificationToken}&passwordResetToken=${passwordResetToken}`;
 
     const payload = {
-      invitedBy: user.name || "Someone",
-      companyName: company.name,
+      email,
       inviteLink,
-      email: email,
+      companyName: company.name,
+      invitedBy: user.name || "Unknown",
     };
 
-    await new MemberInviteEmailJob().emit(payload);
+    await memberInviteEmailJob.emit(payload);
 
     return { success: true };
   });

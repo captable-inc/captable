@@ -1,7 +1,8 @@
-import { env } from "@/env";
-import { BaseJob } from "@/jobs/base";
 import { sendMail } from "@/server/mailer";
-import type { Job } from "pg-boss";
+import { logger } from "@captable/logger";
+import { BaseJob } from "@captable/queue";
+
+const log = logger.child({ module: "password-reset-email-job" });
 
 export type PasswordResetEmailPayloadType = {
   email: string;
@@ -11,6 +12,8 @@ export type PasswordResetEmailPayloadType = {
 const sendPasswordResetEmail = async (
   payload: PasswordResetEmailPayloadType,
 ) => {
+  log.info({ email: payload.email }, "Sending password reset email");
+
   // Dynamic import to avoid build-time processing
   const { render } = await import("@captable/email");
   const { PasswordResetEmail } = await import("@captable/email/templates");
@@ -26,14 +29,27 @@ const sendPasswordResetEmail = async (
     subject: "Reset your password",
     html,
   });
+
+  log.info({ email: payload.email }, "Password reset email sent successfully");
 };
 
 export { sendPasswordResetEmail };
 
 export class PasswordResetEmailJob extends BaseJob<PasswordResetEmailPayloadType> {
   readonly type = "email.password-reset";
+  protected readonly options = {
+    maxAttempts: 5, // Email is critical
+    retryDelay: 2000,
+    priority: 1, // High priority
+  };
 
-  async work(job: Job<PasswordResetEmailPayloadType>): Promise<void> {
-    await sendPasswordResetEmail(job.data);
+  async work(payload: PasswordResetEmailPayloadType): Promise<void> {
+    await sendPasswordResetEmail(payload);
   }
 }
+
+// Create and register the job instance
+const passwordResetEmailJob = new PasswordResetEmailJob();
+passwordResetEmailJob.register();
+
+export { passwordResetEmailJob };

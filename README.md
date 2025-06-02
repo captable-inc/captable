@@ -50,11 +50,11 @@
 
 👷 **Incorporation** (wip) - Captable, Inc. helps you incorporate your company in minutes, with all the necessary legal documents and filings taken care of.
 
-👷 **Cap table management** (wip) - Captable, Inc. helps you keep track of your company’s ownership structure, including who owns what percentage of the company, how much stock/options has been issued, and more.
+👷 **Cap table management** (wip) - Captable, Inc. helps you keep track of your company's ownership structure, including who owns what percentage of the company, how much stock/options has been issued, and more.
 
 ✅ **Fundraise** - Captable, Inc. can help you raise capital, whether its signing standard or custom SAFE or creating and managing fundraising rounds, tracking investor commitments, and more.
 
-✅ **Investor updates** - Delight your investors and team members by sending them regular updates on your company’s progress.
+✅ **Investor updates** - Delight your investors and team members by sending them regular updates on your company's progress.
 
 ✅ **eSign Documents** - Sign SAFE, NDA, contracts, offere letters or any type of documents with Captable Sign.
 
@@ -78,7 +78,9 @@ We have a community of developers, designers, and entrepreneurs who are passiona
 
 - [Next.js](https://nextjs.org)
 - [Tailwind](https://tailwindcss.com)
-- [Prisma ORM](https://prisma.io)
+- [Drizzle ORM](https://orm.drizzle.team)
+- [tRPC](https://trpc.io)
+- [NextAuth.js](https://next-auth.js.org)
 
 ---
 
@@ -106,7 +108,7 @@ When contributing to <strong>Captable, Inc.</strong>, whether on GitHub or in ot
 
 - <a href="https://docs.docker.com/get-docker/" target="_blank">Install Docker</a> & <a href="https://docs.docker.com/compose/install/" target="_blank">Docker Compose</a>
 - <a href="https://github.com/captableinc/captable/fork" target="_blank">Fork</a> & clone the forked repository
-- <a href="https://pnpm.io/installation" target="_blank">Install node and pnpm</a>. (optional)
+- <a href="https://bun.sh/docs/installation" target="_blank">Install node and bun</a>. (optional)
 - Copy `.env.example` to `.env`
 
   ```bash

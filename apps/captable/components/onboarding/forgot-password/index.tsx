@@ -40,7 +40,7 @@ const ForgotPassword = () => {
     },
   });
   const onSubmit = async (values: z.infer<typeof inputSchema>) => {
-    await mutateAsync(values.email);
+    await mutateAsync(values);
   };
 
   return (

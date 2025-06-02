@@ -1,23 +1,10 @@
-import { AuthVerificationEmailJob } from "@/jobs/auth-verification-email";
-import { JobManager, boss } from "@/jobs/base";
-import { EsignConfirmationEmailJob } from "@/jobs/esign-confirmation-email";
-import { EsignEmailJob } from "@/jobs/esign-email";
-import { EsignPdfJob } from "@/jobs/esign-pdf";
-import { MemberInviteEmailJob } from "@/jobs/member-inivite-email";
-import { PasswordResetEmailJob } from "@/jobs/password-reset-email";
-import { ShareDataRoomEmailJob } from "@/jobs/share-data-room-email";
-import { ShareUpdateEmailJob } from "@/jobs/share-update-email";
+// Import all jobs to register them with the new queue system
+import "@/jobs";
 
-export async function startJobs() {
-  const jobs = new JobManager(boss)
-    .register(AuthVerificationEmailJob)
-    .register(ShareUpdateEmailJob)
-    .register(ShareDataRoomEmailJob)
-    .register(MemberInviteEmailJob)
-    .register(PasswordResetEmailJob)
-    .register(EsignEmailJob)
-    .register(EsignConfirmationEmailJob)
-    .register(EsignPdfJob);
-
-  await jobs.start();
+// Jobs are now auto-registered when imported
+// No need for manual job manager startup
+export function startJobs() {
+  // All jobs are automatically registered when the module is imported
+  // The Queue will process them via cron jobs
+  console.log("Jobs are auto-registered and ready for processing");
 }

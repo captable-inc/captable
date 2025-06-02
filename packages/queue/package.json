@@ -1,0 +1,38 @@
+{
+  "name": "@captable/queue",
+  "module": "index.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "require": "./index.ts",
+      "types": "./index.ts"
+    },
+    "./base-job": {
+      "import": "./base-job.ts",
+      "types": "./base-job.ts"
+    },
+    "./types": {
+      "import": "./types.ts",
+      "types": "./types.ts"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "biome check",
+    "format": "biome format --write",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@captable/db": "workspace:*",
+    "@captable/logger": "workspace:*",
+    "drizzle-orm": "^0.43.1"
+  }
+}
