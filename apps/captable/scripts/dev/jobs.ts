@@ -8,18 +8,18 @@ import "@/jobs";
 
 const log = logger.child({ module: "dev-job-runner" });
 
-async function runJobs() {
+async function runJobs(_silent = false) {
   try {
-    log.info("Starting job processing...");
-
-    // Get current stats
+    // Get current stats first
     const initialStats = await getStats();
-    log.info(initialStats, "Initial queue stats");
 
     if (initialStats.pending === 0) {
-      log.info("No pending jobs to process");
+      // Only log occasionally when idle, not every time
       return 0;
     }
+
+    // Only log when we actually have jobs to process
+    log.info(initialStats, "Found jobs to process");
 
     // Process jobs in batches
     let totalProcessed = 0;
@@ -60,11 +60,17 @@ async function runJobs() {
 
 async function runJobsInWatchMode() {
   log.info("🔄 Starting job processor in watch mode...");
+  log.info("💤 Monitoring queue (quiet mode - only logs when jobs found)");
   log.info("Press Ctrl+C to stop");
 
   const POLL_INTERVAL = 5000; // Check every 5 seconds
+  const HEARTBEAT_INTERVAL = 60000; // Show heartbeat every minute
 
   let isShuttingDown = false;
+  let lastHeartbeat = Date.now();
+  let totalChecks = 0;
+  let totalJobsProcessed = 0;
+  const startTime = Date.now();
 
   // Handle graceful shutdown
   process.on("SIGINT", () => {
@@ -79,7 +85,24 @@ async function runJobsInWatchMode() {
 
   while (!isShuttingDown) {
     try {
-      const processed = await runJobs();
+      totalChecks++;
+      const processed = await runJobs(true); // Silent mode for routine checks
+      totalJobsProcessed += processed;
+
+      // Show heartbeat periodically when idle
+      const now = Date.now();
+      if (now - lastHeartbeat >= HEARTBEAT_INTERVAL) {
+        const uptime = Math.round((now - startTime) / 1000 / 60);
+        log.info(
+          {
+            checks: totalChecks,
+            jobsProcessed: totalJobsProcessed,
+            uptime: `${uptime}m`,
+          },
+          "💓 Job processor active",
+        );
+        lastHeartbeat = now;
+      }
 
       if (processed === 0) {
         // No jobs processed, wait before checking again
@@ -94,7 +117,15 @@ async function runJobsInWatchMode() {
     }
   }
 
-  log.info("Job processor stopped");
+  const finalUptime = Math.round((Date.now() - startTime) / 1000 / 60);
+  log.info(
+    {
+      totalChecks,
+      jobsProcessed: totalJobsProcessed,
+      uptime: `${finalUptime}m`,
+    },
+    "✅ Job processor stopped",
+  );
 }
 
 async function cleanupOldJobs() {
