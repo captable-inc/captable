@@ -9,12 +9,16 @@
       "types": "./index.ts"
     },
     "./base-job": {
-      "import": "./base-job.ts",
-      "types": "./base-job.ts"
+      "import": "./src/jobs/base-job.ts",
+      "types": "./src/jobs/base-job.ts"
     },
     "./types": {
-      "import": "./types.ts",
-      "types": "./types.ts"
+      "import": "./src/types/index.ts",
+      "types": "./src/types/index.ts"
+    },
+    "./core": {
+      "import": "./src/core/queue.ts",
+      "types": "./src/core/queue.ts"
     }
   },
   "sideEffects": false,
@@ -32,7 +36,6 @@
   },
   "dependencies": {
     "@captable/db": "workspace:*",
-    "@captable/logger": "workspace:*",
-    "drizzle-orm": "^0.43.1"
+    "@captable/logger": "workspace:*"
   }
 }

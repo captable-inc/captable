@@ -1,9 +1,14 @@
 import { db } from "@captable/db";
 import { jobQueue } from "@captable/db/schema";
 import type { JobQueue } from "@captable/db/schema";
+import { and, asc, desc, eq, lt, lte, sql } from "@captable/db/utils";
 import { logger } from "@captable/logger";
-import { and, asc, desc, eq, lt, lte, sql } from "drizzle-orm";
-import type { BulkJobInput, JobOptions, JobProcessor, JobStats } from "./types";
+import type {
+  BulkJobInput,
+  JobOptions,
+  JobProcessor,
+  JobStats,
+} from "../types";
 
 const log = logger.child({ module: "queue" });
 

@@ -1,6 +1,6 @@
 import { logger } from "@captable/logger";
-import { addJob, addJobs, register } from "./queue";
-import type { JobOptions } from "./types";
+import { addJob, addJobs, register } from "../core/queue";
+import type { JobOptions } from "../types";
 
 const log = logger.child({ module: "base-job" });
 

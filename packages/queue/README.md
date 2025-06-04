@@ -1,380 +1,322 @@
 # @captable/queue
 
-A serverless-friendly job queue implementation for the Captable monorepo, designed to replace pg-boss and work seamlessly with Vercel, Netlify, and other serverless platforms.
+A robust, database-backed job queue system built with Drizzle ORM and PostgreSQL.
 
 ## Features
 
-- 🚀 **Serverless-native** - No persistent connections required
-- ⚡ **High performance** - Uses database-backed queue with efficient queries
-- 🔄 **Automatic retries** - Exponential backoff with configurable limits
-- 📊 **Priority queues** - Process high-priority jobs first
-- 🧹 **Auto cleanup** - Automatic removal of old completed jobs
-- 📈 **Job statistics** - Monitor queue health and performance
-- 🔐 **Type-safe** - Full TypeScript support with proper typing
-- 🪵 **Comprehensive logging** - Structured logging with @captable/logger
+- 🚀 **High Performance** - Built with Drizzle ORM for optimal database performance
+- 🔄 **Retry Logic** - Exponential backoff with configurable max attempts
+- 📊 **Priority Queues** - Process high-priority jobs first
+- ⏰ **Delayed Jobs** - Schedule jobs for future execution
+- 🔍 **Job Statistics** - Monitor queue health and performance
+- 🧹 **Cleanup** - Automatic cleanup of old completed jobs
+- 📝 **Structured Logging** - Comprehensive logging with Pino
+- 🛡️ **Type Safety** - Full TypeScript support with proper typing
 
 ## Installation
 
 ```bash
-# The package is already installed as part of the monorepo
+npm install @captable/queue
+```
+
+## Package Structure
+
+```
+src/
+├── core/
+│   └── queue.ts         # Main queue implementation
+├── jobs/
+│   └── base-job.ts      # Abstract base job class
+├── types/
+│   └── index.ts         # Type definitions
+└── index.ts             # Main exports
 ```
 
 ## Quick Start
 
-### 1. Create a Job
+### 1. Register Job Processors
 
 ```typescript
-import { BaseJob } from "@captable/queue";
-import { sendMail } from "@/server/mailer";
+import { register } from "@captable/queue"
 
-export type WelcomeEmailPayload = {
-  email: string;
-  name: string;
-  companyName: string;
-};
-
-export class WelcomeEmailJob extends BaseJob<WelcomeEmailPayload> {
-  readonly type = "email.welcome";
-  protected readonly options = {
-    maxAttempts: 3,
-    retryDelay: 1000,
-    priority: 1,
-  };
-
-  async work(payload: WelcomeEmailPayload): Promise<void> {
-    // Your job logic here
-    await sendMail({
-      to: [payload.email],
-      subject: `Welcome to ${payload.companyName}!`,
-      html: `<h1>Welcome ${payload.name}!</h1>`,
-    });
+// Register a simple job processor
+register({
+  type: "send-email",
+  process: async (payload: { to: string; subject: string; body: string }) => {
+    // Send email logic here
+    console.log(`Sending email to ${payload.to}`)
   }
-}
-
-// Create and register the job
-const welcomeEmailJob = new WelcomeEmailJob();
-welcomeEmailJob.register();
-
-export { welcomeEmailJob };
+})
 ```
 
 ### 2. Queue Jobs
 
 ```typescript
-import { welcomeEmailJob } from "@/jobs/welcome-email";
+import { addJob } from "@captable/queue"
 
-// Emit a single job
-await welcomeEmailJob.emit({
-  email: "user@example.com",
-  name: "John Doe",
-  companyName: "Acme Corp",
-});
+// Add a job to the queue
+const jobId = await addJob("send-email", {
+  to: "user@example.com",
+  subject: "Welcome!",
+  body: "Welcome to our platform!"
+})
 
-// Emit with custom options
-await welcomeEmailJob.emit(
-  {
-    email: "user@example.com",
-    name: "John Doe", 
-    companyName: "Acme Corp",
-  },
-  {
-    delay: 60, // Wait 60 seconds before processing
-    priority: 5, // High priority
+// Add a delayed job (execute in 1 hour)
+await addJob("send-reminder", payload, {
+  delay: 3600 // seconds
+})
+
+// Add a high-priority job
+await addJob("urgent-notification", payload, {
+  priority: 10
+})
+```
+
+### 3. Process Jobs
+
+```typescript
+import { processJobs } from "@captable/queue"
+
+// Process up to 10 jobs
+const processedCount = await processJobs(10)
+
+// Set up continuous processing
+setInterval(async () => {
+  await processJobs(5)
+}, 1000)
+```
+
+## Using BaseJob Class
+
+For more complex jobs, extend the `BaseJob` class:
+
+```typescript
+import { BaseJob } from "@captable/queue"
+
+interface WelcomeEmailPayload {
+  userId: string
+  email: string
+  name: string
+}
+
+class WelcomeEmailJob extends BaseJob<WelcomeEmailPayload> {
+  readonly type = "welcome-email"
+  
+  protected readonly options = {
     maxAttempts: 5,
+    retryDelay: 2000,
+    priority: 5
   }
-);
+
+  async work(payload: WelcomeEmailPayload): Promise<void> {
+    // Send welcome email
+    await this.sendWelcomeEmail(payload)
+  }
+
+  private async sendWelcomeEmail(payload: WelcomeEmailPayload) {
+    // Email sending logic
+    console.log(`Sending welcome email to ${payload.email}`)
+  }
+}
+
+// Register and use the job
+const welcomeJob = new WelcomeEmailJob()
+welcomeJob.register()
+
+// Emit jobs
+await welcomeJob.emit({
+  userId: "user-123",
+  email: "user@example.com", 
+  name: "John Doe"
+})
+
+// Emit delayed job
+await welcomeJob.emitDelayed(payload, 300) // 5 minutes delay
 
 // Bulk emit
-await welcomeEmailJob.bulkEmit([
-  { email: "user1@example.com", name: "User 1", companyName: "Acme" },
-  { email: "user2@example.com", name: "User 2", companyName: "Acme" },
-]);
+await welcomeJob.bulkEmit([payload1, payload2, payload3])
 ```
 
-### 3. Process Jobs (Cron)
+## Advanced Usage
 
-Jobs are automatically processed via Cron:
-
-```typescript
-// app/api/cron/process-jobs/route.ts
-import { processJobs } from "@captable/queue";
-import "@/jobs"; // Import to register all jobs
-
-export async function GET() {
-  const processed = await processJobs(20);
-  return Response.json({ processed });
-}
-```
-
-## API Reference
-
-### BaseJob
-
-Abstract base class for creating jobs.
-
-```typescript
-abstract class BaseJob<T extends Record<string, unknown>> {
-  abstract readonly type: string;
-  protected readonly options: JobOptions;
-  
-  abstract work(payload: T): Promise<void>;
-  
-  emit(payload: T, options?: JobOptions): Promise<string>;
-  bulkEmit(payloads: T[], options?: JobOptions): Promise<string[]>;
-  emitDelayed(payload: T, delayInSeconds: number, options?: JobOptions): Promise<string>;
-  emitPriority(payload: T, priority: number, options?: JobOptions): Promise<string>;
-  register(): void;
-}
-```
-
-### Queue Functions
-
-Utility functions for queue management.
-
-```typescript
-// Register a job processor
-function register<T>(processor: JobProcessor<T>): void;
-
-// Add jobs to queue
-function addJob<T>(type: string, payload: T, options?: JobOptions): Promise<string>;
-function addJobs<T>(jobs: Array<BulkJobInput<T>>): Promise<string[]>;
-
-// Process and manage jobs
-function processJobs(limit?: number): Promise<number>;
-function getStats(): Promise<JobStats>;
-function cleanupJobs(olderThanDays?: number): Promise<number>;
-
-// Utility functions
-function getRegisteredProcessors(): string[];
-function clearProcessors(): void;
-```
-
-### JobOptions
-
-Configuration options for jobs.
+### Job Options
 
 ```typescript
 interface JobOptions {
-  delay?: number; // seconds to delay execution
-  maxAttempts?: number; // maximum retry attempts
-  priority?: number; // higher = more priority
-  retryDelay?: number; // milliseconds between retries
+  delay?: number        // Delay in seconds before execution
+  maxAttempts?: number  // Maximum retry attempts (default: 3)
+  priority?: number     // Job priority (higher = processed first)
+  retryDelay?: number   // Base retry delay in milliseconds
 }
 ```
 
-### JobStats
-
-Queue statistics.
+### Bulk Operations
 
 ```typescript
-interface JobStats {
-  pending: number;
-  processing: number;
-  completed: number;
-  failed: number;
-}
+import { addJobs } from "@captable/queue"
+
+const jobs = [
+  { type: "send-email", payload: { to: "user1@example.com" } },
+  { type: "send-email", payload: { to: "user2@example.com" } },
+  { type: "process-data", payload: { dataId: "data-123" } }
+]
+
+const jobIds = await addJobs(jobs)
 ```
 
-## Configuration
+### Monitoring
 
-### Cron
+```typescript
+import { getStats, cleanupJobs } from "@captable/queue"
 
-```json
-// vercel.json
-{
-  "crons": [
-    {
-      "path": "/api/cron/process-jobs",
-      "schedule": "* * * * *" // Every minute
-    },
-    {
-      "path": "/api/cron/cleanup-jobs",
-      "schedule": "0 2 * * *" // Daily at 2 AM
-    }
-  ]
-}
+// Get queue statistics
+const stats = await getStats()
+console.log(stats)
+// Output: { pending: 5, processing: 2, completed: 100, failed: 3 }
+
+// Clean up old completed jobs (older than 7 days)
+const cleanedCount = await cleanupJobs(7)
 ```
 
-### Environment Variables
+## Error Handling
 
-```bash
-CRON_SECRET=your-super-secret-cron-key
-DATABASE_URL=your-database-url
+The queue automatically handles retries with exponential backoff:
+
+```typescript
+// Job fails -> retry with 1x base delay
+// Job fails again -> retry with 2x base delay  
+// Job fails again -> retry with 4x base delay
+// Max attempts reached -> job marked as failed
 ```
 
 ## Database Schema
 
-The queue uses a single table `cap_job_queue`:
+The queue uses a `job_queue` table with the following structure:
 
 ```sql
-CREATE TABLE cap_job_queue (
-  id VARCHAR(128) PRIMARY KEY,
-  type VARCHAR(100) NOT NULL,
-  payload JSON NOT NULL,
-  status VARCHAR(20) DEFAULT 'pending',
+CREATE TABLE job_queue (
+  id TEXT PRIMARY KEY,
+  type TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  status TEXT DEFAULT 'pending',
+  priority INTEGER DEFAULT 0,
   attempts INTEGER DEFAULT 0,
   max_attempts INTEGER DEFAULT 3,
-  priority INTEGER DEFAULT 0,
+  retry_delay INTEGER DEFAULT 1000,
   scheduled_for TIMESTAMP DEFAULT NOW(),
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
   processed_at TIMESTAMP,
   failed_at TIMESTAMP,
-  error VARCHAR(1000),
-  retry_delay INTEGER DEFAULT 1000
+  error TEXT
 );
 ```
 
-## Job Organization
+## Production Considerations
 
-### Job Registry
-
-Create a central registry to import all jobs:
+### Worker Setup
 
 ```typescript
-// jobs/index.ts
-import "./welcome-email";
-import "./password-reset";
-import "./notifications";
+// worker.ts
+import { processJobs, getStats } from "@captable/queue"
+import { logger } from "@captable/logger"
 
-export { welcomeEmailJob } from "./welcome-email";
-export { passwordResetJob } from "./password-reset";
-export * from "@captable/queue";
-```
-
-### Job Types
-
-Follow consistent naming conventions:
-
-- Email jobs: `email.welcome`, `email.password-reset`
-- PDF generation: `generate.invoice`, `generate.report`
-- Data processing: `process.analytics`, `process.cleanup`
-
-## Best Practices
-
-### 1. Job Design
-
-- Keep jobs idempotent
-- Handle errors gracefully
-- Use appropriate retry limits
-- Set meaningful priorities
-
-### 2. Payload Design
-
-```typescript
-// ✅ Good: Specific, typed payload
-type EmailPayload = {
-  to: string;
-  template: string;
-  data: Record<string, unknown>;
-};
-
-// ❌ Bad: Generic, untyped payload
-type GenericPayload = {
-  action: string;
-  params: any;
-};
-```
-
-### 3. Error Handling
-
-```typescript
-async work(payload: EmailPayload): Promise<void> {
-  try {
-    await sendEmail(payload);
-  } catch (error) {
-    if (error instanceof RateLimitError) {
-      // Will retry with exponential backoff
-      throw error;
+async function worker() {
+  const log = logger.child({ service: "queue-worker" })
+  
+  while (true) {
+    try {
+      const processed = await processJobs(10)
+      
+      if (processed === 0) {
+        // No jobs processed, wait before next poll
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+      
+      // Log stats periodically
+      if (Math.random() < 0.1) { // 10% chance
+        const stats = await getStats()
+        log.info({ stats }, "Queue statistics")
+      }
+    } catch (error) {
+      log.error({ error }, "Worker error")
+      await new Promise(resolve => setTimeout(resolve, 5000))
     }
-    
-    if (error instanceof PermanentError) {
-      // Log and don't retry
-      log.error({ error, payload }, "Permanent error");
-      return; // Don't throw to avoid retries
-    }
-    
-    throw error; // Retry for unknown errors
-  }
-}
-```
-
-### 4. Monitoring
-
-```typescript
-import { getStats, getRegisteredProcessors } from "@captable/queue";
-
-// Get queue statistics
-const stats = await getStats();
-console.log(`Pending: ${stats.pending}, Failed: ${stats.failed}`);
-
-// List registered processors
-const processors = getRegisteredProcessors();
-console.log(`Registered jobs: ${processors.join(", ")}`);
-```
-
-## Migration from pg-boss
-
-### Before (pg-boss)
-
-```typescript
-import { BaseJob } from "@/jobs/base";
-import type { Job } from "pg-boss";
-
-export class EmailJob extends BaseJob<EmailPayload> {
-  readonly type = "email.send";
-
-  async work(job: Job<EmailPayload>): Promise<void> {
-    await sendEmail(job.data);
   }
 }
 
-// Usage
-await boss.send("email.send", { to: "user@example.com" });
+worker().catch(console.error)
 ```
 
-### After (@captable/queue)
+### Graceful Shutdown
 
 ```typescript
-import { BaseJob } from "@captable/queue";
-
-export class EmailJob extends BaseJob<EmailPayload> {
-  readonly type = "email.send";
-
-  async work(payload: EmailPayload): Promise<void> {
-    await sendEmail(payload);
-  }
-}
-
-const emailJob = new EmailJob();
-emailJob.register();
-
-// Usage
-await emailJob.emit({ to: "user@example.com" });
+process.on('SIGTERM', async () => {
+  console.log('Graceful shutdown initiated...')
+  // Stop accepting new jobs
+  // Wait for current jobs to complete
+  process.exit(0)
+})
 ```
 
-## Troubleshooting
+## API Reference
 
-### Jobs Not Processing
+### Core Functions
 
-1. Check cron routes are deployed
-2. Verify `CRON_SECRET` is set
-3. Ensure jobs are imported in registry
-4. Check database connectivity
+- `register<T>(processor: JobProcessor<T>)` - Register a job processor
+- `addJob<T>(type: string, payload: T, options?: JobOptions)` - Add single job
+- `addJobs<T>(jobs: BulkJobInput<T>[])` - Add multiple jobs
+- `processJobs(limit?: number)` - Process pending jobs
+- `getStats()` - Get queue statistics
+- `cleanupJobs(olderThanDays?: number)` - Clean up old jobs
+- `getRegisteredProcessors()` - Get registered processor types
+- `clearProcessors()` - Clear all processors (testing)
 
-### High Failure Rate
+### BaseJob Methods
 
-1. Review error logs
-2. Adjust retry limits
-3. Check external service availability
-4. Validate job payloads
+- `register()` - Register the job processor
+- `work(payload: T)` - Abstract method to implement job logic
+- `emit(payload: T, options?: JobOptions)` - Emit single job
+- `bulkEmit(payloads: T[], options?: JobOptions)` - Emit multiple jobs
+- `emitDelayed(payload: T, delayInSeconds: number, options?: JobOptions)` - Emit delayed job
+- `emitPriority(payload: T, priority: number, options?: JobOptions)` - Emit priority job
 
-### Performance Issues
+## TypeScript Support
 
-1. Monitor queue depth
-2. Adjust processing batch size
-3. Consider job priorities
-4. Review database indexes
+Full TypeScript support with proper generic typing:
+
+```typescript
+interface MyJobPayload {
+  userId: string
+  action: string
+}
+
+// Type-safe job registration
+register<MyJobPayload>({
+  type: "my-job",
+  process: async (payload) => {
+    // payload is properly typed as MyJobPayload
+    console.log(payload.userId, payload.action)
+  }
+})
+
+// Type-safe job emission
+await addJob<MyJobPayload>("my-job", {
+  userId: "123",
+  action: "update"
+})
+```
+
+## Contributing
+
+This package follows the Captable monorepo patterns:
+
+- Use TypeScript with strict typing
+- Follow the established file organization
+- Use Drizzle ORM for database operations
+- Use Pino for structured logging
+- Write comprehensive tests
+- Update documentation
 
 ## License
 
