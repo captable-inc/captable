@@ -61,11 +61,11 @@ await worker.start();
 await worker.stop(30000); // Graceful shutdown
 ```
 
-**Best for:** Dedicated servers, Docker containers, high-throughput scenarios
+**Best for:** Dedicated servers, Docker containers, Fly.io workers, high-throughput scenarios
 
 ### Serverless Processing (Cron/Event-Driven)
 
-Perfect for Vercel, Netlify, Cloudflare Workers, and cron jobs:
+Perfect for Vercel, Netlify, Cloudflare Workers, Fly.io HTTP handlers, and cron jobs:
 
 ```typescript
 import { processJobsServerless } from "@captable/queue";
@@ -75,13 +75,84 @@ const result = await processJobsServerless({
   maxJobs: 200,
   maxBatches: 10,
   batchSize: 20,
-  timeout: 25000, // 25s for Vercel limits
+  timeout: 25000, // See provider-specific limits below
 });
 
 console.log(`Processed ${result.processed} jobs in ${result.duration}ms`);
 ```
 
 **Best for:** Vercel/Netlify deployments, cost optimization, cron-triggered processing
+
+### Serverless Provider Configurations
+
+Different serverless providers have varying timeout limits. Configure accordingly:
+
+#### Vercel
+```typescript
+const result = await processJobsServerless({
+  timeout: 25000,    // 25s max for cron jobs (15s for Hobby, 5min for Pro+ API routes)
+  maxBatches: 10,
+  batchSize: 20,
+});
+```
+
+#### Cloudflare Workers
+```typescript
+const result = await processJobsServerless({
+  timeout: 30000,    // 30s max CPU time for Workers
+  maxBatches: 15,
+  batchSize: 25,
+});
+```
+
+#### Netlify Functions
+```typescript
+const result = await processJobsServerless({
+  timeout: 10000,    // 10s max for Functions, 15min for Background Functions
+  maxBatches: 5,
+  batchSize: 15,
+});
+```
+
+#### AWS Lambda (via SST/Serverless)
+```typescript
+const result = await processJobsServerless({
+  timeout: 900000,   // 15min max (varies by tier)
+  maxBatches: 50,
+  batchSize: 50,
+});
+```
+
+#### Fly.io
+```typescript
+// For HTTP request handlers (cron jobs, API routes)
+const result = await processJobsServerless({
+  timeout: 300000,   // 5min max for HTTP requests
+  maxBatches: 25,
+  batchSize: 30,
+});
+
+// For long-running worker processes (recommended)
+const worker = await createWorker(config, {
+  autoStart: true,
+  instanceId: "fly-worker-1"
+});
+// No timeout limits - can process jobs continuously
+```
+
+#### Quick Reference Table
+
+| Provider | Max Timeout | Recommended Timeout | Recommended Batch Size | Notes |
+|----------|-------------|---------------------|------------------------|-------|
+| **Vercel** | 300s (Pro+) | 25s | 20 | 15s for Hobby, 25s for cron |
+| **Cloudflare Workers** | 30s (CPU time) | 30s | 25 | Standard Workers limit |
+| **Netlify Functions** | 10s | 10s | 15 | 15min for Background Functions |
+| **AWS Lambda** | 900s | 300s | 50 | Varies by configuration |
+| **Fly.io** | 300s (HTTP) / ∞ (Workers) | 300s / ∞ | 30 | HTTP requests + long-running workers |
+| **Railway** | 300s | 120s | 30 | Platform-dependent |
+| **Render** | 600s | 300s | 40 | Based on service tier |
+
+> **💡 Tip:** Always set your timeout 2-3 seconds lower than the provider's limit to account for cold starts and network overhead. Note that Fly.io supports both serverless HTTP handlers (with timeouts) and long-running worker processes (without timeouts) - choose based on your workload.
 
 ### Cron Route Example
 
@@ -95,15 +166,34 @@ export async function GET(request: NextRequest) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const result = await processJobsServerless({
-    timeout: 25000, // Vercel timeout limit
-    batchSize: 20,
-  });
+  // Auto-detect provider and set appropriate timeout
+  const getProviderConfig = () => {
+    if (process.env.VERCEL) {
+      return { timeout: 25000, batchSize: 20 }; // Vercel
+    }
+    if (process.env.CF_PAGES) {
+      return { timeout: 30000, batchSize: 25 }; // Cloudflare
+    }
+    if (process.env.NETLIFY) {
+      return { timeout: 10000, batchSize: 15 }; // Netlify
+    }
+    if (process.env.FLY_APP_NAME) {
+      return { timeout: 300000, batchSize: 30 }; // Fly.io
+    }
+    return { timeout: 25000, batchSize: 20 }; // Default
+  };
+
+  const config = getProviderConfig();
+  const result = await processJobsServerless(config);
 
   return NextResponse.json({
     success: true,
     processed: result.processed,
     duration: result.duration,
+    provider: process.env.VERCEL ? "vercel" : 
+              process.env.CF_PAGES ? "cloudflare" : 
+              process.env.NETLIFY ? "netlify" : 
+              process.env.FLY_APP_NAME ? "fly.io" : "unknown",
   });
 }
 ```
