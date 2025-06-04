@@ -139,6 +139,16 @@
       ],
       "outputs": ["coverage/**"]
     },
+    "test:run": {
+      "dependsOn": [],
+      "inputs": [
+        "**/*.{ts,tsx,js,jsx}",
+        "**/*.test.{ts,tsx,js,jsx}",
+        "vitest.config.ts",
+        "jest.config.js"
+      ],
+      "outputs": ["coverage/**"]
+    },
 
     "clean": {
       "cache": false,
