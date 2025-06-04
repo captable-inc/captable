@@ -1,5 +1,5 @@
 import { logger } from "@captable/logger";
-import { processJobs } from "@captable/queue";
+import { processJobsServerless } from "@captable/queue";
 import { type NextRequest, NextResponse } from "next/server";
 import "@/jobs"; // Import to register all jobs
 
@@ -16,45 +16,27 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const startTime = Date.now();
+    // Use serverless-optimized processing with built-in timeouts and batch management
+    const result = await processJobsServerless({
+      maxJobs: 200, // Maximum jobs to process in this run
+      maxBatches: 10, // Maximum batches to prevent infinite loops
+      batchSize: 20, // Jobs per batch
+      timeout: 25000, // 25 second timeout (safe for Vercel)
+      batchDelay: 100, // 100ms delay between batches
+    });
 
-    // Process jobs in batches
-    let totalProcessed = 0;
-    let batchCount = 0;
-    const maxBatches = 10; // Prevent infinite loops
-
-    while (batchCount < maxBatches) {
-      const processed = await processJobs(20); // Process 20 jobs per batch
-      totalProcessed += processed;
-      batchCount++;
-
-      if (processed === 0) {
-        break; // No more jobs to process
-      }
-
-      // Small delay between batches
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-
-    const duration = Date.now() - startTime;
-
-    log.info(
-      {
-        totalProcessed,
-        batches: batchCount,
-        duration,
-      },
-      "Cron job processing completed",
-    );
+    log.info(result, "Serverless cron job processing completed");
 
     return NextResponse.json({
       success: true,
-      processed: totalProcessed,
-      batches: batchCount,
-      duration,
+      processed: result.processed,
+      batches: result.batches,
+      duration: result.duration,
+      timeoutReached: result.timeoutReached,
+      errors: result.errors,
     });
   } catch (error) {
-    log.error({ error }, "Cron job processing failed");
+    log.error({ error }, "Serverless cron job processing failed");
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

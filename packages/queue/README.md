@@ -1,436 +1,551 @@
 # @captable/queue
 
-A robust, database-backed job queue system built with Drizzle ORM and PostgreSQL.
+A robust, production-ready job queue system built with TypeScript, featuring advanced error handling, metrics collection, worker management, and comprehensive testing utilities.
 
-## Features
+## 🚀 Features
 
-- 🚀 **High Performance** - Built with Drizzle ORM for optimal database performance
-- 🔄 **Retry Logic** - Exponential backoff with configurable max attempts
-- 📊 **Priority Queues** - Process high-priority jobs first
-- ⏰ **Delayed Jobs** - Schedule jobs for future execution
-- 🔍 **Job Statistics** - Monitor queue health and performance
-- 🧹 **Cleanup** - Automatic cleanup of old completed jobs
-- 📝 **Structured Logging** - Comprehensive logging with Pino
-- 🛡️ **Type Safety** - Full TypeScript support with proper typing
+### Core Functionality
+- **Type-safe job processing** with TypeScript support
+- **Bulk job operations** for efficient batch processing
+- **Priority-based job scheduling** with configurable delays
+- **Automatic retry logic** with exponential, linear, or fixed backoff strategies
+- **Job cleanup** for maintaining database hygiene
 
-## Installation
+### Advanced Error Handling
+- **Custom error types** for different failure scenarios
+- **Intelligent error classification** with automatic retry decisions
+- **Timeout handling** with configurable limits
+- **Rate limiting** support with automatic backoff
+- **Validation error** handling for malformed payloads
+
+### Monitoring & Metrics
+- **Real-time metrics collection** for job processing statistics
+- **Performance tracking** with processing time analytics
+- **Error rate monitoring** with categorized error types
+- **Queue depth monitoring** for capacity planning
+- **Health checks** for worker status monitoring
+
+### Worker Management
+- **Concurrent job processing** with configurable worker pools
+- **Graceful shutdown** with job completion waiting
+- **Health monitoring** with automatic recovery
+- **Resource usage tracking** for performance optimization
+- **Signal handling** for clean process termination
+
+### Testing Utilities
+- **Mock processors** for unit testing
+- **Job tracking** for test assertions
+- **Queue state management** for test isolation
+- **Async job waiting** utilities for integration tests
+- **Test data generation** for load testing
+
+## 🚀 Deployment Patterns
+
+The queue system supports both **long-running processes** and **serverless** deployments:
+
+### Long-Running Workers (Traditional)
+
+Perfect for dedicated servers, containers, and traditional hosting:
+
+```typescript
+import { createWorker } from "@captable/queue";
+
+// Continuous worker with persistent polling
+const worker = await createWorker(config, {
+  autoStart: true,
+  instanceId: "worker-1"
+});
+
+// Full lifecycle management
+await worker.start();
+await worker.stop(30000); // Graceful shutdown
+```
+
+**Best for:** Dedicated servers, Docker containers, high-throughput scenarios
+
+### Serverless Processing (Cron/Event-Driven)
+
+Perfect for Vercel, Netlify, Cloudflare Workers, and cron jobs:
+
+```typescript
+import { processJobsServerless } from "@captable/queue";
+
+// Single execution with timeout protection
+const result = await processJobsServerless({
+  maxJobs: 200,
+  maxBatches: 10,
+  batchSize: 20,
+  timeout: 25000, // 25s for Vercel limits
+});
+
+console.log(`Processed ${result.processed} jobs in ${result.duration}ms`);
+```
+
+**Best for:** Vercel/Netlify deployments, cost optimization, cron-triggered processing
+
+### Cron Route Example
+
+```typescript
+// app/api/cron/process-jobs/route.ts
+import { processJobsServerless } from "@captable/queue";
+
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  const result = await processJobsServerless({
+    timeout: 25000, // Vercel timeout limit
+    batchSize: 20,
+  });
+
+  return NextResponse.json({
+    success: true,
+    processed: result.processed,
+    duration: result.duration,
+  });
+}
+```
+
+### Serverless Health Monitoring
+
+```typescript
+import { healthCheck, getQueueStatus } from "@captable/queue";
+
+// Health check endpoint
+export async function GET() {
+  const health = await healthCheck();
+  return Response.json(health, { 
+    status: health.healthy ? 200 : 503 
+  });
+}
+
+// Queue status endpoint
+export async function GET() {
+  const status = await getQueueStatus();
+  return Response.json(status);
+}
+```
+
+## 📦 Installation
 
 ```bash
 npm install @captable/queue
 ```
 
-## Package Structure
+## 🔧 Basic Usage
 
-```
-src/
-├── core/
-│   └── queue.ts         # Main queue implementation
-├── jobs/
-│   └── base-job.ts      # Abstract base job class
-├── types/
-│   └── index.ts         # Type definitions
-└── index.ts             # Main exports
-```
-
-## Quick Start
-
-### 1. Register Job Processors
+### Setting up a Job Processor
 
 ```typescript
-import { register } from "@captable/queue"
+import { register, addJob } from "@captable/queue";
 
-// Register a simple job processor
+// Define your job processor
 register({
   type: "send-email",
   process: async (payload: { to: string; subject: string; body: string }) => {
-    // Send email logic here
-    console.log(`Sending email to ${payload.to}`)
-  }
-})
-```
-
-### 2. Queue Jobs
-
-```typescript
-import { addJob } from "@captable/queue"
+    // Your email sending logic here
+    await sendEmail(payload.to, payload.subject, payload.body);
+  },
+  timeout: 30000, // 30 seconds
+  maxAttempts: 3,
+  retryDelay: 5000, // 5 seconds
+});
 
 // Add a job to the queue
 const jobId = await addJob("send-email", {
   to: "user@example.com",
   subject: "Welcome!",
-  body: "Welcome to our platform!"
-})
-
-// Add a delayed job (execute in 1 hour)
-await addJob("send-reminder", payload, {
-  delay: 3600 // seconds
-})
-
-// Add a high-priority job
-await addJob("urgent-notification", payload, {
-  priority: 10
-})
+  body: "Welcome to our platform!",
+});
 ```
 
-### 3. Process Jobs
+### Bulk Job Processing
 
 ```typescript
-import { processJobs } from "@captable/queue"
-
-// Process up to 10 jobs
-const processedCount = await processJobs(10)
-
-// Set up continuous processing
-setInterval(async () => {
-  await processJobs(5)
-}, 1000)
-```
-
-## Using BaseJob Class
-
-For more complex jobs, extend the `BaseJob` class:
-
-```typescript
-import { BaseJob } from "@captable/queue"
-
-interface WelcomeEmailPayload {
-  userId: string
-  email: string
-  name: string
-}
-
-class WelcomeEmailJob extends BaseJob<WelcomeEmailPayload> {
-  readonly type = "welcome-email"
-  
-  protected readonly options = {
-    maxAttempts: 5,
-    retryDelay: 2000,
-    priority: 5
-  }
-
-  async work(payload: WelcomeEmailPayload): Promise<void> {
-    // Send welcome email
-    await this.sendWelcomeEmail(payload)
-  }
-
-  private async sendWelcomeEmail(payload: WelcomeEmailPayload) {
-    // Email sending logic
-    console.log(`Sending welcome email to ${payload.email}`)
-  }
-}
-
-// Register and use the job
-const welcomeJob = new WelcomeEmailJob()
-welcomeJob.register()
-
-// Emit jobs
-await welcomeJob.emit({
-  userId: "user-123",
-  email: "user@example.com", 
-  name: "John Doe"
-})
-
-// Emit delayed job
-await welcomeJob.emitDelayed(payload, 300) // 5 minutes delay
-
-// Bulk emit
-await welcomeJob.bulkEmit([payload1, payload2, payload3])
-```
-
-## Advanced Usage
-
-### Job Options
-
-```typescript
-interface JobOptions {
-  delay?: number        // Delay in seconds before execution
-  maxAttempts?: number  // Maximum retry attempts (default: 3)
-  priority?: number     // Job priority (higher = processed first)
-  retryDelay?: number   // Base retry delay in milliseconds
-}
-```
-
-### Bulk Operations
-
-```typescript
-import { addJobs } from "@captable/queue"
+import { addJobs } from "@captable/queue";
 
 const jobs = [
-  { type: "send-email", payload: { to: "user1@example.com" } },
-  { type: "send-email", payload: { to: "user2@example.com" } },
-  { type: "process-data", payload: { dataId: "data-123" } }
-]
+  { type: "send-email", payload: { to: "user1@example.com", subject: "Hello", body: "..." } },
+  { type: "send-email", payload: { to: "user2@example.com", subject: "Hello", body: "..." } },
+  { type: "process-data", payload: { dataId: "data-123" } },
+];
 
-const jobIds = await addJobs(jobs)
+const jobIds = await addJobs(jobs);
+console.log(`Created ${jobIds.length} jobs`);
 ```
 
-### Monitoring
+### Advanced Job Options
 
 ```typescript
-import { getStats, cleanupJobs } from "@captable/queue"
-
-// Get queue statistics
-const stats = await getStats()
-console.log(stats)
-// Output: { pending: 5, processing: 2, completed: 100, failed: 3 }
-
-// Clean up old completed jobs (older than 7 days)
-const cleanedCount = await cleanupJobs(7)
+await addJob("important-task", payload, {
+  priority: 10,        // Higher priority jobs are processed first
+  delay: 3600,         // Delay execution by 1 hour (in seconds)
+  maxAttempts: 5,      // Override default retry attempts
+  retryDelay: 10000,   // Custom retry delay in milliseconds
+  timeout: 60000,      // Job timeout in milliseconds
+});
 ```
 
-## Error Handling
+## ⚙️ Configuration
 
-The queue automatically handles retries with exponential backoff:
+### Creating Custom Configuration
 
 ```typescript
-// Job fails -> retry with 1x base delay
-// Job fails again -> retry with 2x base delay  
-// Job fails again -> retry with 4x base delay
-// Max attempts reached -> job marked as failed
+import { createConfig, validateConfig } from "@captable/queue";
+
+const config = createConfig({
+  concurrency: 5,
+  pollInterval: 2000,
+  maxRetries: 5,
+  retryBackoff: {
+    type: "exponential",
+    base: 2000,
+    max: 60000,
+    multiplier: 2,
+  },
+  monitoring: {
+    enabled: true,
+    metricsInterval: 30000,
+    logLevel: "info",
+  },
+  worker: {
+    gracefulShutdownTimeout: 30000,
+    heartbeatInterval: 60000,
+    maxJobExecutionTime: 300000,
+  },
+});
+
+// Validate configuration
+validateConfig(config);
 ```
 
-## Database Schema
+### Environment Variables
 
-The queue uses a `job_queue` table with the following structure:
+The queue system supports configuration via environment variables:
 
-```sql
-CREATE TABLE job_queue (
-  id TEXT PRIMARY KEY,
-  type TEXT NOT NULL,
-  payload JSONB NOT NULL,
-  status TEXT DEFAULT 'pending',
-  priority INTEGER DEFAULT 0,
-  attempts INTEGER DEFAULT 0,
-  max_attempts INTEGER DEFAULT 3,
-  retry_delay INTEGER DEFAULT 1000,
-  scheduled_for TIMESTAMP DEFAULT NOW(),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  processed_at TIMESTAMP,
-  failed_at TIMESTAMP,
-  error TEXT
-);
+```bash
+QUEUE_CONCURRENCY=3
+QUEUE_POLL_INTERVAL=1000
+QUEUE_MAX_RETRIES=3
+QUEUE_CLEANUP_INTERVAL=3600000
+QUEUE_LOG_LEVEL=info
 ```
 
-## Production Considerations
+## 👷 Worker Management
 
-### Worker Setup
+### Creating and Managing Workers
 
 ```typescript
-// worker.ts
-import { processJobs, getStats } from "@captable/queue"
-import { logger } from "@captable/logger"
+import { createWorker, QueueWorker } from "@captable/queue";
 
-async function worker() {
-  const log = logger.child({ service: "queue-worker" })
-  
-  while (true) {
-    try {
-      const processed = await processJobs(10)
-      
-      if (processed === 0) {
-        // No jobs processed, wait before next poll
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      }
-      
-      // Log stats periodically
-      if (Math.random() < 0.1) { // 10% chance
-        const stats = await getStats()
-        log.info({ stats }, "Queue statistics")
-      }
-    } catch (error) {
-      log.error({ error }, "Worker error")
-      await new Promise(resolve => setTimeout(resolve, 5000))
-    }
-  }
+// Create a worker with custom configuration
+const worker = createWorker({
+  config: myConfig,
+  autoStart: true,
+  instanceId: "worker-1",
+});
+
+// Manual worker management
+const worker = new QueueWorker({
+  config: myConfig,
+  autoStart: false,
+});
+
+await worker.start();
+
+// Graceful shutdown
+await worker.stop(30000); // 30 second timeout
+
+// Force stop
+worker.forceStop();
+
+// Check worker health
+if (worker.isHealthy()) {
+  console.log("Worker is healthy");
 }
 
-worker().catch(console.error)
+// Get worker status
+const status = worker.getStatus();
+console.log(`Worker ${status.instanceId} is ${status.status}`);
+```
+
+## 📊 Metrics and Monitoring
+
+### Collecting Metrics
+
+```typescript
+import { initializeMetrics, getMetricsCollector } from "@captable/queue";
+
+// Initialize metrics collection
+const metricsCollector = initializeMetrics(config);
+
+// Get current metrics
+const metrics = metricsCollector.getMetrics();
+console.log(`Processed: ${metrics.jobsProcessed}`);
+console.log(`Failed: ${metrics.jobsFailed}`);
+console.log(`Error Rate: ${metrics.errorRate}%`);
+console.log(`Average Processing Time: ${metrics.averageProcessingTime}ms`);
+
+// Get job type specific metrics
+const emailMetrics = metricsCollector.getJobTypeMetrics("send-email");
+console.log(`Email jobs: ${emailMetrics.count}, avg time: ${emailMetrics.averageTime}ms`);
+
+// Reset metrics
+metricsCollector.reset();
+```
+
+### Health Monitoring
+
+```typescript
+// Check queue statistics
+const stats = await getStats();
+console.log(`Pending: ${stats.pending}, Completed: ${stats.completed}`);
+
+// Monitor processing jobs
+const processingJobs = metricsCollector.getProcessingJobs();
+processingJobs.forEach(job => {
+  console.log(`Job ${job.jobId} (${job.type}) running for ${Date.now() - job.startTime}ms`);
+});
+```
+
+## 🚨 Error Handling
+
+### Custom Error Types
+
+```typescript
+import {
+  RetryableError,
+  PermanentError,
+  TimeoutError,
+  RateLimitError,
+  InvalidPayloadError,
+} from "@captable/queue";
+
+register({
+  type: "api-call",
+  process: async (payload) => {
+    try {
+      await makeApiCall(payload);
+    } catch (error) {
+      if (error.status === 429) {
+        // Rate limited - retry after delay
+        throw new RateLimitError("API rate limit exceeded", 60000);
+      }
+      
+      if (error.status === 400) {
+        // Bad request - don't retry
+        throw new PermanentError("Invalid API request");
+      }
+      
+      if (error.code === "TIMEOUT") {
+        // Timeout - retry with custom delay
+        throw new RetryableError("API timeout", 30000);
+      }
+      
+      // Unknown error - let the system decide
+      throw error;
+    }
+  },
+});
+```
+
+### Error Classification
+
+The system automatically classifies unknown errors:
+
+```typescript
+import { classifyError } from "@captable/queue";
+
+try {
+  await riskyOperation();
+} catch (error) {
+  const queueError = classifyError(error);
+  
+  if (queueError.retryable) {
+    console.log("Error is retryable");
+  } else {
+    console.log("Error is permanent");
+  }
+}
+```
+
+## 🧪 Testing
+
+### Test Utilities
+
+```typescript
+import { QueueTestHelper } from "@captable/queue/testing";
+
+describe("Job Processing", () => {
+  beforeEach(async () => {
+    // Clear all jobs and processors
+    await QueueTestHelper.resetTestEnvironment();
+  });
+
+  it("should process email jobs", async () => {
+    // Create a tracking processor
+    const tracker = QueueTestHelper.trackingProcessor("send-email");
+    tracker.processor();
+
+    // Add test jobs
+    const jobIds = await QueueTestHelper.createTestJobs(3, "send-email");
+
+    // Wait for jobs to complete
+    for (const jobId of jobIds) {
+      await QueueTestHelper.waitForJobCompletion(jobId, 5000);
+    }
+
+    // Assert results
+    expect(tracker.calls).toHaveLength(3);
+    await QueueTestHelper.assertJobCount(3, "completed");
+  });
+
+  it("should handle job failures", async () => {
+    // Create a failing processor
+    QueueTestHelper.failingProcessor("failing-job", "Test error");
+
+    const jobId = await addJob("failing-job", { test: true });
+    
+    // Wait and assert failure
+    await QueueTestHelper.waitForJobCompletion(jobId, 5000);
+    await QueueTestHelper.assertJobStatus(jobId, "failed");
+  });
+});
+```
+
+### Mock Processors
+
+```typescript
+// Simple mock
+QueueTestHelper.mockProcessor("test-job", async (payload) => {
+  console.log("Processing:", payload);
+});
+
+// Delayed processor
+QueueTestHelper.delayedProcessor("slow-job", 2000, async (payload) => {
+  // This will be delayed by 2 seconds
+  console.log("Slow processing:", payload);
+});
+
+// Conditional failing processor
+QueueTestHelper.failingProcessor("conditional-job", "Failed", (payload) => {
+  return payload.shouldFail === true;
+});
+```
+
+## 🔧 Advanced Usage
+
+### Custom Retry Strategies
+
+```typescript
+const config = createConfig({
+  retryBackoff: {
+    type: "exponential", // or "linear" or "fixed"
+    base: 1000,          // Base delay in ms
+    max: 30000,          // Maximum delay in ms
+    multiplier: 2,       // Exponential multiplier
+  },
+});
+```
+
+### Job Cleanup
+
+```typescript
+import { cleanupJobs } from "@captable/queue";
+
+// Clean up completed jobs older than 7 days
+const cleanedCount = await cleanupJobs(7);
+console.log(`Cleaned up ${cleanedCount} old jobs`);
+
+// Clean up with custom retention period (30 days)
+await cleanupJobs(30);
+```
+
+### Processing Jobs Manually
+
+```typescript
+import { processJobs } from "@captable/queue";
+
+// Process up to 10 jobs
+const processedCount = await processJobs(10);
+console.log(`Processed ${processedCount} jobs`);
+```
+
+## 📈 Performance Considerations
+
+### Concurrency Settings
+
+- **Low concurrency (1-3)**: Better for CPU-intensive jobs
+- **Medium concurrency (3-10)**: Good for mixed workloads
+- **High concurrency (10+)**: Best for I/O-intensive jobs
+
+### Memory Management
+
+- Use job cleanup to prevent database bloat
+- Monitor metrics to identify memory leaks
+- Configure appropriate batch sizes for bulk operations
+
+### Database Optimization
+
+- Ensure proper indexing on job status and scheduled_for columns
+- Use connection pooling for high-throughput scenarios
+- Consider partitioning for very large job tables
+
+## 🔒 Production Deployment
+
+### Health Checks
+
+```typescript
+// Kubernetes health check endpoint
+app.get("/health/queue", (req, res) => {
+  const worker = getWorkerInstance();
+  const metrics = getMetricsCollector()?.getMetrics();
+  
+  if (worker.isHealthy() && metrics.errorRate < 10) {
+    res.status(200).json({ status: "healthy", metrics });
+  } else {
+    res.status(503).json({ status: "unhealthy", metrics });
+  }
+});
 ```
 
 ### Graceful Shutdown
 
 ```typescript
-process.on('SIGTERM', async () => {
-  console.log('Graceful shutdown initiated...')
-  // Stop accepting new jobs
-  // Wait for current jobs to complete
-  process.exit(0)
-})
+process.on("SIGTERM", async () => {
+  console.log("Received SIGTERM, shutting down gracefully...");
+  await worker.stop(30000); // 30 second timeout
+  process.exit(0);
+});
 ```
 
-## API Reference
-
-### Core Functions
-
-- `register<T>(processor: JobProcessor<T>)` - Register a job processor
-- `addJob<T>(type: string, payload: T, options?: JobOptions)` - Add single job
-- `addJobs<T>(jobs: BulkJobInput<T>[])` - Add multiple jobs
-- `processJobs(limit?: number)` - Process pending jobs
-- `getStats()` - Get queue statistics
-- `cleanupJobs(olderThanDays?: number)` - Clean up old jobs
-- `getRegisteredProcessors()` - Get registered processor types
-- `clearProcessors()` - Clear all processors (testing)
-
-### BaseJob Methods
-
-- `register()` - Register the job processor
-- `work(payload: T)` - Abstract method to implement job logic
-- `emit(payload: T, options?: JobOptions)` - Emit single job
-- `bulkEmit(payloads: T[], options?: JobOptions)` - Emit multiple jobs
-- `emitDelayed(payload: T, delayInSeconds: number, options?: JobOptions)` - Emit delayed job
-- `emitPriority(payload: T, priority: number, options?: JobOptions)` - Emit priority job
-
-## TypeScript Support
-
-Full TypeScript support with proper generic typing:
+### Monitoring Integration
 
 ```typescript
-interface MyJobPayload {
-  userId: string
-  action: string
-}
-
-// Type-safe job registration
-register<MyJobPayload>({
-  type: "my-job",
-  process: async (payload) => {
-    // payload is properly typed as MyJobPayload
-    console.log(payload.userId, payload.action)
-  }
-})
-
-// Type-safe job emission
-await addJob<MyJobPayload>("my-job", {
-  userId: "123",
-  action: "update"
-})
+// Prometheus metrics
+const metrics = metricsCollector.getMetrics();
+prometheusRegistry.gauge("queue_jobs_processed_total").set(metrics.jobsProcessed);
+prometheusRegistry.gauge("queue_error_rate").set(metrics.errorRate);
+prometheusRegistry.gauge("queue_depth").set(metrics.queueDepth);
 ```
 
-## Contributing
+## 🤝 Contributing
 
-This package follows the Captable monorepo patterns:
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure all tests pass
+5. Submit a pull request
 
-- Use TypeScript with strict typing
-- Follow the established file organization
-- Use Drizzle ORM for database operations
-- Use Pino for structured logging
-- Write comprehensive tests
-- Update documentation
+## 📄 License
 
-## License
-
-MIT 
-
-## Development
-
-### Quick Development Setup
+[MIT](./LICENSE)
 
 
-Start everything including job processing:
+## 🔗 Related Packages
 
-```bash
-# From monorepo root
-bun run dx
-```
-
-This starts:
-- Next.js development server (port 3000)
-- Database studio
-- Email development server (port 3001)
-- **Job processor in watch mode** (with quiet logging)
-
-### Manual Job Management
-
-From the `apps/captable` directory:
-
-```bash
-# Process all pending jobs once
-bun run jobs
-
-# Process jobs continuously (watch mode)
-bun run jobs:dev
-
-# Queue sample jobs for testing
-bun run test-jobs
-
-# Show queue statistics
-bun run jobs stats
-
-# Clean up old completed jobs
-bun run jobs cleanup
-```
-
-### Development Scripts
-
-Job management scripts are located in `apps/captable/scripts/dev/`:
-
-- **`jobs.ts`** - Main job processor with watch mode
-- **`test-jobs.ts`** - Queue sample jobs for testing
-- **`README.md`** - Detailed documentation
-
-### Watch Mode Features
-
-The watch mode (`bun run jobs:dev`) includes:
-
-- 🔇 **Quiet operation** - Only logs when jobs are found
-- 💓 **Heartbeat logging** - Status every 60 seconds when idle
-- 🛑 **Graceful shutdown** - Ctrl+C stops cleanly
-- ⚡ **Fast processing** - 1s intervals when jobs found, 5s when idle
-
-### Development Workflow
-
-1. **Start full development environment:**
-   ```bash
-   bun run dx
-   ```
-
-2. **Queue test jobs (in another terminal):**
-   ```bash
-   cd apps/captable
-   bun run test-jobs
-   ```
-
-3. **Monitor queue status:**
-   ```bash
-   bun run jobs stats
-   ```
-
-4. **Manual processing (if needed):**
-   ```bash
-   bun run jobs
-   ```
-
-### Testing Individual Job Types
-
-```bash
-# Test specific email jobs
-bun run test-jobs password-reset
-bun run test-jobs member-invite  
-bun run test-jobs auth-verification
-
-# Test all jobs at once
-bun run test-jobs all
-```
-
-### Production vs Development
-
-| Environment | Trigger | Frequency | Logging |
-|-------------|---------|-----------|----------|
-| **Development** | Watch mode | Every 5s | Quiet + heartbeat |
-| **Production** |Cron | Every minute | Event-driven |
-
-### Available Job Types
-
-Current job implementations:
-
-- `email.password-reset` - Password reset emails
-- `email.member-invite` - Member invitation emails  
-- `email.auth-verify` - Account verification emails
-- `email.share-update` - Share update notifications
-- `email.share-data-room` - Data room sharing emails
-- `email.esign` - E-signature request emails
-- `email.esign-confirmation` - E-signature confirmation emails
-- `generate.esign-pdf` - PDF generation for e-signatures
-
-See `apps/captable/jobs/` for complete implementations.
+- `@captable/db` - Database layer with Drizzle ORM
+- `@captable/logger` - Structured logging with Pino
+- `@captable/config` - Shared configuration utilities

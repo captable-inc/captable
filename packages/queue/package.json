@@ -19,17 +19,34 @@
     "./core": {
       "import": "./src/core/queue.ts",
       "types": "./src/core/queue.ts"
+    },
+    "./worker": {
+      "import": "./src/worker/index.ts",
+      "types": "./src/worker/index.ts"
+    },
+    "./config": {
+      "import": "./src/config/index.ts",
+      "types": "./src/config/index.ts"
+    },
+    "./testing": {
+      "import": "./src/testing/index.ts",
+      "types": "./src/testing/index.ts"
     }
   },
   "sideEffects": false,
   "scripts": {
     "lint": "biome check",
     "format": "biome format --write",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@vitest/coverage-v8": "3.1.4",
+    "vitest": "^3.1.4"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
