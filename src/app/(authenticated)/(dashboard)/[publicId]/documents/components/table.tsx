@@ -3,7 +3,6 @@
 import { dayjsExt } from "@/common/dayjs";
 import FileIcon from "@/components/common/file-icon";
 import { Card } from "@/components/ui/card";
-import { getPresignedGetUrl } from "@/server/file-uploads";
 import { RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 
@@ -34,10 +33,6 @@ type DocumentTableProps = {
 
 const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
   const router = useRouter();
-  const openFileOnTab = async (key: string) => {
-    const fileUrl = await getPresignedGetUrl(key);
-    window.open(fileUrl.url, "_blank");
-  };
 
   return (
     <>
@@ -113,13 +108,6 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                           }}
                         >
                           View
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            await openFileOnTab(document.bucket.key);
-                          }}
-                        >
-                          Download
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

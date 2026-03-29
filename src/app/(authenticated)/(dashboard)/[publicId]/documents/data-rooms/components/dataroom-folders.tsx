@@ -1,14 +1,25 @@
+"use client";
+
 import { PageLayout } from "@/components/dashboard/page-layout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { api } from "@/trpc/react";
 import type { DataRoom } from "@prisma/client";
 import {
   RiFolder3Fill as FolderIcon,
   RiMore2Fill as MoreIcon,
   RiAddFill,
+  RiDeleteBinLine,
 } from "@remixicon/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import DataRoomPopover from "./data-room-popover";
 
 interface DataRoomProps extends DataRoom {
@@ -23,6 +34,35 @@ type FolderProps = {
 };
 
 const Folders = ({ companyPublicId, folders }: FolderProps) => {
+  const router = useRouter();
+  const { mutateAsync: deleteDataRoomMutation } =
+    api.dataRoom.deleteDataRoom.useMutation();
+
+  const handleDeleteDataRoom = async (
+    e: React.MouseEvent,
+    dataRoomPublicId: string,
+    dataRoomName: string,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (
+      !confirm(
+        `Are you sure you want to delete "${dataRoomName}"? This will permanently delete all documents in this data room.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteDataRoomMutation({ dataRoomPublicId });
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to delete data room:", error);
+      alert("Failed to delete data room. Please try again.");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-y-3">
       <PageLayout
@@ -72,13 +112,33 @@ const Folders = ({ companyPublicId, folders }: FolderProps) => {
                     </p>
                   </div>
                   <div className="flex-shrink-0 pr-2">
-                    <button
-                      type="button"
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-transparent focus:ring-offset-2"
-                    >
-                      <span className="sr-only">Open options</span>
-                      <MoreIcon className="h-5 w-5" aria-hidden="true" />
-                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-gray-400 hover:text-gray-500 focus:outline-none"
+                          onClick={(e) => e.preventDefault()}
+                        >
+                          <span className="sr-only">Open options</span>
+                          <MoreIcon className="h-5 w-5" aria-hidden="true" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={(e) =>
+                            handleDeleteDataRoom(
+                              e,
+                              folder.publicId,
+                              folder.name,
+                            )
+                          }
+                        >
+                          <RiDeleteBinLine className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </Link>

@@ -7,6 +7,7 @@ import {
 import { encode } from "@/lib/jwt";
 import { ShareRecipientSchema } from "@/schema/contacts";
 import { checkMembership } from "@/server/auth";
+import { deleteBucketFile } from "@/server/file-uploads";
 import { createTRPCRouter, withAuth } from "@/trpc/api/trpc";
 import type { DataRoom } from "@prisma/client";
 import { z } from "zod";
@@ -306,6 +307,116 @@ export const dataRoomRouter = createTRPCRouter({
       return {
         success: true,
         message: "Successfully removed access to data room!",
+      };
+    }),
+
+  deleteDocument: withAuth
+    .input(
+      z.object({
+        dataRoomPublicId: z.string(),
+        bucketId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { session, db } = ctx;
+      const { dataRoomPublicId, bucketId } = input;
+      const companyId = session.user.companyId;
+
+      const dataRoom = await db.dataRoom.findUniqueOrThrow({
+        where: {
+          publicId: dataRoomPublicId,
+          companyId,
+        },
+      });
+
+      // Find the document via its bucket
+      const document = await db.document.findFirst({
+        where: {
+          bucketId,
+          companyId,
+        },
+        include: { bucket: true },
+      });
+
+      if (!document || !document.bucket) {
+        throw new Error("Document not found");
+      }
+
+      // Remove the data room <-> document link
+      await db.dataRoomDocument.deleteMany({
+        where: {
+          dataRoomId: dataRoom.id,
+          documentId: document.id,
+        },
+      });
+
+      // Delete from MinIO
+      try {
+        await deleteBucketFile(document.bucket.key);
+      } catch (e) {
+        console.error("Failed to delete file from storage:", e);
+      }
+
+      // Delete the document and bucket records
+      await db.document.delete({ where: { id: document.id } });
+      await db.bucket.delete({ where: { id: document.bucket.id } });
+
+      return {
+        success: true,
+        message: "Document deleted successfully.",
+      };
+    }),
+
+  deleteDataRoom: withAuth
+    .input(
+      z.object({
+        dataRoomPublicId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { session, db } = ctx;
+      const { dataRoomPublicId } = input;
+      const companyId = session.user.companyId;
+
+      const dataRoom = await db.dataRoom.findUniqueOrThrow({
+        where: {
+          publicId: dataRoomPublicId,
+          companyId,
+        },
+        include: {
+          documents: {
+            include: {
+              document: {
+                include: { bucket: true },
+              },
+            },
+          },
+        },
+      });
+
+      // Delete all files from MinIO
+      for (const drDoc of dataRoom.documents) {
+        try {
+          await deleteBucketFile(drDoc.document.bucket.key);
+        } catch (e) {
+          console.error("Failed to delete file from storage:", e);
+        }
+
+        // Delete document and bucket records
+        await db.document.delete({ where: { id: drDoc.document.id } });
+        await db.bucket.delete({ where: { id: drDoc.document.bucket.id } });
+      }
+
+      // Delete the data room (cascades to DataRoomDocument and DataRoomRecipient)
+      await db.dataRoom.delete({
+        where: {
+          id: dataRoom.id,
+        },
+      });
+
+      return {
+        success: true,
+        message: "Data room deleted successfully.",
       };
     }),
 });
