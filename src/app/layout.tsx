@@ -1,4 +1,3 @@
-import logo from "@/assets/logo.svg";
 import { PublicEnvScript } from "@/components/public-env-script";
 import ScreenSize from "@/components/screen-size";
 import { constants } from "@/lib/constants";
@@ -19,7 +18,11 @@ export const metadata: Metadata = {
     default: constants.title,
   },
   description: constants.description,
-  icons: [{ rel: "icon", url: logo.src }],
+  icons: [
+    { rel: "icon", url: "/favicon.ico", sizes: "any" },
+    { rel: "icon", url: "/favicon.png", type: "image/png" },
+    { rel: "apple-touch-icon", url: "/apple-touch-icon.png" },
+  ],
   metadataBase: new URL(constants.url),
 };
 

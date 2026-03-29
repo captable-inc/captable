@@ -5,81 +5,185 @@ import { NextResponse } from "next/server";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { confirmPhrase } = body;
+  let body: { confirmPhrase?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
 
-  if (confirmPhrase !== "CLEAN_SLATE") {
+  if (body.confirmPhrase !== "CLEAN_SLATE") {
     return NextResponse.json(
       { error: "Invalid confirmation phrase" },
       { status: 403 },
     );
   }
 
-  const session = await withServerSession();
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  let session;
+  try {
+    session = await withServerSession();
+  } catch {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  if (!session?.user?.companyId) {
+    return NextResponse.json({ error: "No company found" }, { status: 401 });
   }
 
   const companyId = session.user.companyId;
+  const deleted: string[] = [];
 
   try {
-    // Delete in dependency order (children first)
-    // Skip MinIO file cleanup to avoid timeout — orphaned files are harmless
+    // Use raw SQL for reliable cascade-aware deletion
+    // This handles all foreign key dependencies in one go
 
-    // Esign & audit
-    await db.esignAudit.deleteMany({ where: { companyId } });
-    await db.audit.deleteMany({ where: { companyId } });
+    // 1. Template-related (deepest children first)
+    await db.$executeRawUnsafe(
+      `DELETE FROM "TemplateField" WHERE "templateId" IN (SELECT id FROM "Template" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("TemplateField");
 
-    // Templates & fields
-    await db.templateField.deleteMany();
-    await db.esignRecipient.deleteMany();
-    await db.template.deleteMany({ where: { companyId } });
+    await db.$executeRawUnsafe(
+      `DELETE FROM "EsignRecipient" WHERE "templateId" IN (SELECT id FROM "Template" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("EsignRecipient");
 
-    // Data rooms
-    await db.dataRoomRecipient.deleteMany();
-    await db.dataRoomDocument.deleteMany();
-    await db.dataRoom.deleteMany({ where: { companyId } });
+    await db.$executeRawUnsafe(
+      `DELETE FROM "EsignAudit" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("EsignAudit");
 
-    // Document shares
-    await db.documentShare.deleteMany();
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Template" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Template");
 
-    // Documents & buckets
-    await db.document.deleteMany({ where: { companyId } });
-    await db.bucket.deleteMany();
+    // 2. Audit
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Audit" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Audit");
 
-    // Updates
-    await db.updateRecipient.deleteMany();
-    await db.update.deleteMany({ where: { companyId } });
+    // 3. Data rooms
+    await db.$executeRawUnsafe(
+      `DELETE FROM "DataRoomRecipient" WHERE "dataRoomId" IN (SELECT id FROM "DataRoom" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("DataRoomRecipient");
 
-    // Securities - Options
-    await db.option.deleteMany({ where: { companyId } });
+    await db.$executeRawUnsafe(
+      `DELETE FROM "DataRoomDocument" WHERE "dataRoomId" IN (SELECT id FROM "DataRoom" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("DataRoomDocument");
 
-    // Securities - Shares
-    await db.share.deleteMany({ where: { companyId } });
+    await db.$executeRawUnsafe(
+      `DELETE FROM "DataRoom" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("DataRoom");
 
-    // Fundraise
-    await db.safe.deleteMany({ where: { companyId } });
-    await db.convertibleNote.deleteMany({ where: { companyId } });
-    await db.investment.deleteMany({ where: { companyId } });
+    // 4. Document shares
+    await db.$executeRawUnsafe(
+      `DELETE FROM "DocumentShare" WHERE "documentId" IN (SELECT id FROM "Document" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("DocumentShare");
 
-    // Equity plans
-    await db.equityPlan.deleteMany({ where: { companyId } });
+    // 5. Documents & buckets
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Document" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Document");
 
-    // Share classes
-    await db.shareClass.deleteMany({ where: { companyId } });
+    await db.$executeRawUnsafe(`DELETE FROM "Bucket"`);
+    deleted.push("Bucket");
 
-    // Stakeholders
-    await db.stakeholder.deleteMany({ where: { companyId } });
+    // 6. Updates
+    await db.$executeRawUnsafe(
+      `DELETE FROM "UpdateRecipient" WHERE "updateId" IN (SELECT id FROM "Update" WHERE "companyId" = $1)`,
+      companyId,
+    );
+    deleted.push("UpdateRecipient");
+
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Update" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Update");
+
+    // 7. Securities
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Option" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Option");
+
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Share" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Share");
+
+    // 8. Fundraise
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Safe" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Safe");
+
+    await db.$executeRawUnsafe(
+      `DELETE FROM "ConvertibleNote" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("ConvertibleNote");
+
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Investment" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Investment");
+
+    // 9. Equity plans
+    await db.$executeRawUnsafe(
+      `DELETE FROM "EquityPlan" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("EquityPlan");
+
+    // 10. Share classes
+    await db.$executeRawUnsafe(
+      `DELETE FROM "ShareClass" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("ShareClass");
+
+    // 11. Stakeholders
+    await db.$executeRawUnsafe(
+      `DELETE FROM "Stakeholder" WHERE "companyId" = $1`,
+      companyId,
+    );
+    deleted.push("Stakeholder");
 
     return NextResponse.json({
       success: true,
-      message:
-        "All cap table data has been cleared. Your account and company profile are preserved.",
+      message: "All cap table data cleared. Account and company preserved.",
+      deleted,
     });
   } catch (error) {
     console.error("Cleanup error:", error);
     return NextResponse.json(
-      { error: "Cleanup failed", details: String(error) },
+      {
+        error: "Cleanup failed",
+        details: String(error),
+        completedSteps: deleted,
+      },
       { status: 500 },
     );
   }
