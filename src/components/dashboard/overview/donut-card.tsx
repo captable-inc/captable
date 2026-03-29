@@ -12,62 +12,18 @@ type DonutTooltipProps = {
   value: number;
 };
 
-const DonutCard = () => {
+type DonutCardProps = {
+  stakeholders: { key: string; value: number }[];
+  shareClasses: { key: string; value: number }[];
+};
+
+const DonutCard = ({ stakeholders, shareClasses }: DonutCardProps) => {
   const [isClient, setIsClient] = useState(false);
   const [selected, setSelected] = useState("stakeholder");
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  const shareClasses = [
-    {
-      key: "Common shares",
-      value: 53,
-    },
-
-    {
-      key: "Preferred (Series A)",
-      value: 15,
-    },
-
-    {
-      key: "Preferred (Convertible note)",
-      value: 7,
-    },
-
-    {
-      key: "Stock Plan",
-      value: 15,
-    },
-  ];
-
-  const stakeholders = [
-    {
-      key: "Dennis Shelton",
-      value: 27,
-    },
-
-    {
-      key: "Camila Murphy",
-      value: 25,
-    },
-
-    {
-      key: "Others",
-      value: 18,
-    },
-
-    {
-      key: "Equity Plan",
-      value: 15,
-    },
-
-    {
-      key: "Acme Ventures",
-      value: 10,
-    },
-  ];
 
   return (
     <Fragment>
