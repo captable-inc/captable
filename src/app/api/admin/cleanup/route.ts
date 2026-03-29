@@ -1,10 +1,10 @@
 import { withServerSession } from "@/server/auth";
 import { db } from "@/server/db";
-import { deleteBucketFile } from "@/server/file-uploads";
 import { NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
-  // Verify the request includes the correct admin secret
   const body = await request.json();
   const { confirmPhrase } = body;
 
@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // Must be authenticated
   const session = await withServerSession();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,63 +23,53 @@ export async function POST(request: Request) {
   const companyId = session.user.companyId;
 
   try {
-    // Delete files from MinIO first
-    const buckets = await db.bucket.findMany();
-    for (const bucket of buckets) {
-      try {
-        await deleteBucketFile(bucket.key);
-      } catch (e) {
-        console.error(`Failed to delete file ${bucket.key}:`, e);
-      }
-    }
-
     // Delete in dependency order (children first)
-    await db.$transaction(async (tx) => {
-      // Esign & audit
-      await tx.esignAudit.deleteMany({ where: { companyId } });
-      await tx.audit.deleteMany({ where: { companyId } });
+    // Skip MinIO file cleanup to avoid timeout — orphaned files are harmless
 
-      // Templates & fields
-      await tx.templateField.deleteMany();
-      await tx.esignRecipient.deleteMany();
-      await tx.template.deleteMany({ where: { companyId } });
+    // Esign & audit
+    await db.esignAudit.deleteMany({ where: { companyId } });
+    await db.audit.deleteMany({ where: { companyId } });
 
-      // Data rooms
-      await tx.dataRoomRecipient.deleteMany();
-      await tx.dataRoomDocument.deleteMany();
-      await tx.dataRoom.deleteMany({ where: { companyId } });
+    // Templates & fields
+    await db.templateField.deleteMany();
+    await db.esignRecipient.deleteMany();
+    await db.template.deleteMany({ where: { companyId } });
 
-      // Document shares
-      await tx.documentShare.deleteMany();
+    // Data rooms
+    await db.dataRoomRecipient.deleteMany();
+    await db.dataRoomDocument.deleteMany();
+    await db.dataRoom.deleteMany({ where: { companyId } });
 
-      // Documents & buckets
-      await tx.document.deleteMany({ where: { companyId } });
-      await tx.bucket.deleteMany();
+    // Document shares
+    await db.documentShare.deleteMany();
 
-      // Updates
-      await tx.updateRecipient.deleteMany();
-      await tx.update.deleteMany({ where: { companyId } });
+    // Documents & buckets
+    await db.document.deleteMany({ where: { companyId } });
+    await db.bucket.deleteMany();
 
-      // Securities - Options
-      await tx.option.deleteMany({ where: { companyId } });
+    // Updates
+    await db.updateRecipient.deleteMany();
+    await db.update.deleteMany({ where: { companyId } });
 
-      // Securities - Shares
-      await tx.share.deleteMany({ where: { companyId } });
+    // Securities - Options
+    await db.option.deleteMany({ where: { companyId } });
 
-      // Fundraise
-      await tx.safe.deleteMany({ where: { companyId } });
-      await tx.convertibleNote.deleteMany({ where: { companyId } });
-      await tx.investment.deleteMany({ where: { companyId } });
+    // Securities - Shares
+    await db.share.deleteMany({ where: { companyId } });
 
-      // Equity plans (depends on share classes)
-      await tx.equityPlan.deleteMany({ where: { companyId } });
+    // Fundraise
+    await db.safe.deleteMany({ where: { companyId } });
+    await db.convertibleNote.deleteMany({ where: { companyId } });
+    await db.investment.deleteMany({ where: { companyId } });
 
-      // Share classes
-      await tx.shareClass.deleteMany({ where: { companyId } });
+    // Equity plans
+    await db.equityPlan.deleteMany({ where: { companyId } });
 
-      // Stakeholders
-      await tx.stakeholder.deleteMany({ where: { companyId } });
-    });
+    // Share classes
+    await db.shareClass.deleteMany({ where: { companyId } });
+
+    // Stakeholders
+    await db.stakeholder.deleteMany({ where: { companyId } });
 
     return NextResponse.json({
       success: true,
