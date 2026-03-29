@@ -97,12 +97,28 @@ export const getPresignedPutUrl = async ({
   return { url, key: Key, bucketUrl: bucketUrl.toString() };
 };
 
-export const getPresignedGetUrl = async (key: string) => {
+export const getPresignedGetUrl = async (key: string, mimeType?: string) => {
+  // Determine content type: use provided mimeType, or infer from file extension
+  let responseContentType = mimeType;
+  if (!responseContentType) {
+    const ext = path.extname(key).toLowerCase();
+    const extMap: Record<string, string> = {
+      ".pdf": "application/pdf",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".gif": "image/gif",
+      ".webp": "image/webp",
+      ".svg": "image/svg+xml",
+    };
+    responseContentType = extMap[ext];
+  }
+
   const getObjectCommand = new GetObjectCommand({
     Bucket: PrivateBucket,
     Key: key,
-    // ResponseContentDisposition: `attachment; filename="${key}"`,
     ResponseContentDisposition: "inline",
+    ...(responseContentType ? { ResponseContentType: responseContentType } : {}),
   });
 
   const url = await getSignedUrl(S3, getObjectCommand, {

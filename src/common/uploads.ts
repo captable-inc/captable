@@ -37,7 +37,7 @@ export const uploadFile = async (
   const res = await fetch(url, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/octet-stream",
+      "Content-Type": file.type || "application/octet-stream",
     },
     body,
   });

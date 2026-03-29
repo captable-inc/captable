@@ -82,7 +82,7 @@ const DataRoomPage = async ({
   }
 
   const company = dataRoom.company;
-  const remoteFile = await getPresignedGetUrl(file.key);
+  const remoteFile = await getPresignedGetUrl(file.key, file.mimeType);
 
   return (
     <SharePageLayout

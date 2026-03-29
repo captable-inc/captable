@@ -1,6 +1,7 @@
+"use client";
+
 import EmptyState from "@/components/common/empty-state";
 import { OfficeViewer } from "@/components/file/office-viewer";
-import { Button } from "@/components/ui/button";
 import { PdfViewer } from "@/components/ui/pdf-viewer";
 import { fileType } from "@/lib/mime";
 import { RiFileUnknowFill as UnknownFileIcon } from "@remixicon/react";
@@ -12,13 +13,25 @@ type FilePreviewProps = {
 };
 
 const ImagePreview = ({ url, name }: FilePreviewProps) => {
-  return <img className="rounded" src={url} alt={name} />;
+  return (
+    <div
+      onContextMenu={(e) => e.preventDefault()}
+      className="select-none"
+    >
+      <img
+        className="rounded pointer-events-none"
+        src={url}
+        alt={name}
+        draggable={false}
+      />
+    </div>
+  );
 };
 
 const AuditPreview = ({ url, name, mimeType }: FilePreviewProps) => {
   return (
     // biome-ignore lint/a11y/useMediaCaption: <explanation>
-    <audio controls className="w-full">
+    <audio controls controlsList="nodownload" className="w-full">
       <source src={url} type={mimeType} />
       Your browser does not support the audio element.
     </audio>
@@ -28,24 +41,20 @@ const AuditPreview = ({ url, name, mimeType }: FilePreviewProps) => {
 const VideoPreview = ({ url, name, mimeType }: FilePreviewProps) => {
   return (
     // biome-ignore lint/a11y/useMediaCaption: <explanation>
-    <video controls className="w-full rounded">
+    <video controls controlsList="nodownload" className="w-full rounded">
       <source src={url} type={mimeType} />
       Your browser does not support the video type.
     </video>
   );
 };
 
-const UnknownPreview = ({ url, name, mimeType }: FilePreviewProps) => {
+const UnknownPreview = ({ mimeType }: FilePreviewProps) => {
   return (
     <EmptyState
       title="Preview not available"
-      subtitle={`This file type - ${mimeType} is not yet supported by the previewer. You can download the file by clicking the button below.`}
+      subtitle={`This file type - ${mimeType} is not yet supported by the previewer.`}
       icon={<UnknownFileIcon />}
-    >
-      <a href={url} target="_blank" rel="noopener noreferrer">
-        <Button>Download {name}</Button>
-      </a>
-    </EmptyState>
+    />
   );
 };
 
@@ -55,7 +64,11 @@ const FilePreview = ({ url, name, mimeType }: FilePreviewProps) => {
 
   switch (type) {
     case "pdf":
-      return <PdfViewer file={url} />;
+      return (
+        <div onContextMenu={(e) => e.preventDefault()} className="select-none">
+          <PdfViewer file={url} />
+        </div>
+      );
     case "image":
       return <ImagePreview url={url} name={name} />;
     case "audio":
