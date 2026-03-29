@@ -25,7 +25,7 @@ const DashboardLayout = async ({
   return (
     <>
       <div className="flex min-h-screen">
-        <aside className="sticky top-0 hidden min-h-full w-64 flex-shrink-0 flex-col lg:flex lg:border-r border-border">
+        <aside className="sticky top-0 hidden min-h-full w-64 flex-shrink-0 flex-col lg:flex lg:border-r border-border" style={{ backgroundColor: 'hsl(228 12% 7%)' }}>
           <SideBar companies={companies} publicId={publicId} />
         </aside>
         <div className="flex h-full flex-grow flex-col">
