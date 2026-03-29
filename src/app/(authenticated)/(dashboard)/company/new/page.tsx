@@ -7,11 +7,11 @@ export const metadata: Metadata = {
 
 const OnboardingPage = async () => {
   return (
-    <div className="flex min-h-screen justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-100 px-5 pb-5 pt-20">
-      <div className="border-rounded w-full max-w-2xl border bg-white p-10 shadow">
+    <div className="flex min-h-screen justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 px-5 pb-5 pt-20">
+      <div className="border-rounded w-full max-w-2xl border border-border bg-card p-10 shadow">
         <div className="mb-5">
           <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome to Captable, Inc.!
+            Create a new company
           </h1>
           <p className="text-sm text-muted-foreground">
             You are almost there. Please complete the form below to continue

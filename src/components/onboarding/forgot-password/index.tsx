@@ -1,5 +1,4 @@
 "use client";
-import { CaptableLogo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -44,10 +43,9 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-100">
-      <div className="grid w-full max-w-md grid-cols-1 gap-5 rounded-xl border bg-white p-10 shadow">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
+      <div className="grid w-full max-w-md grid-cols-1 gap-5 rounded-xl border border-border bg-card p-10 shadow">
         <div className="flex flex-col gap-y-2 text-center">
-          <CaptableLogo className="mb-1 h-10 w-auto" />
           <h1 className="text-2xl font-semibold tracking-tight">
             Forgot your password?
           </h1>
@@ -91,7 +89,7 @@ const ForgotPassword = () => {
               </div>
             </form>
           </Form>
-          <span className="text-center text-sm text-gray-500">
+          <span className="text-center text-sm text-muted-foreground">
             Remembered your password?{" "}
             <Link
               href="/login"

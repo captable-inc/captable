@@ -70,10 +70,9 @@ export const ShareDataRoomEmail = ({
             </Text>
 
             <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
-            <Link href={constants.url} className="text-sm no-underline">
-              <span className="text-xs !text-gray-400">Powered by</span>
-              <span>{` ${constants.title}`}</span>
-            </Link>
+            <Text className="text-sm text-gray-400">
+              {constants.title}
+            </Text>
           </Container>
         </Body>
       </Tailwind>
@@ -84,9 +83,9 @@ export const ShareDataRoomEmail = ({
 ShareDataRoomEmail.PreviewProps = {
   senderName: "John Doe",
   recipientName: "Will Smith",
-  companyName: "Captable, Inc.",
+  companyName: "Launch Legends",
   dataRoom: "Q1 2024 Financials",
-  link: "https://captable.inc/...",
+  link: "https://investors.launchlegends.io/...",
 } as ShareDataRoomEmailProps;
 
 export default ShareDataRoomEmail;

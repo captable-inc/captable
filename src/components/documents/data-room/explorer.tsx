@@ -77,12 +77,12 @@ const DataRoomFileExplorer = ({
               >
                 <FileIcon type={document.mimeType} />
               </div>
-              <div className="flex flex-1 items-center justify-between truncate rounded-r-md border-y border-r border-gray-200 bg-white">
+              <div className="flex flex-1 items-center justify-between truncate rounded-r-md border-y border-r border-border bg-card">
                 <div className="text-md flex-1 truncate px-4 py-2">
-                  <span className="font-medium text-gray-900 hover:text-gray-600">
+                  <span className="font-medium text-foreground hover:text-muted-foreground">
                     {document.name}
                   </span>
-                  <p className="text-xs text-gray-500">{`${
+                  <p className="text-xs text-muted-foreground">{`${
                     document.mimeType
                   } - ${(document.size / 1024 / 1024).toFixed(2)} MB`}</p>
                 </div>

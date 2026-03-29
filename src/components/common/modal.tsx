@@ -9,7 +9,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { CaptableLogo } from "@/components/common/logo";
 import { cn } from "@/lib/utils";
 import type { DialogProps } from "@radix-ui/react-dialog";
 
@@ -47,7 +46,7 @@ const Modal = ({
     <Dialog {...dialogProps}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
-        className={cn("mb-10 mt-10 gap-0 bg-white p-0", sizes[size])}
+        className={cn("mb-10 mt-10 gap-0 bg-card p-0", sizes[size])}
       >
         <div
           className={cn(
@@ -55,12 +54,9 @@ const Modal = ({
             scrollable ? "overflow-scroll" : "",
           )}
         >
-          <header className="border-b border-gray-200 p-5">
+          <header className="border-b border-border p-5">
             <div className="">
               <DialogHeader>
-                <div className="flex justify-center">
-                  <CaptableLogo className="mb-3 h-10 w-10 rounded" />
-                </div>
                 <DialogTitle className="mb-4 text-center">{title}</DialogTitle>
                 {subtitle && (
                   <DialogDescription className="text-center">
@@ -71,7 +67,7 @@ const Modal = ({
             </div>
           </header>
 
-          <section className=" bg-gray-100 px-8 py-5">
+          <section className=" bg-secondary px-8 py-5">
             <div className="">{children}</div>
           </section>
         </div>

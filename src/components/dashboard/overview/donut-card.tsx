@@ -74,7 +74,7 @@ const DonutCard = () => {
       {isClient && (
         <Card className="h-[365px]">
           <CardHeader>
-            <div className="text-sm text-gray-700">
+            <div className="text-sm text-foreground/70">
               <div className="flex">
                 <span>Ownership by</span>
                 <DonutSelector selected={selected} onChange={setSelected} />
@@ -120,7 +120,7 @@ const DonutCard = () => {
                     const data = payload[0] as DonutTooltipProps;
 
                     return (
-                      <div className="rounded bg-white p-2 shadow-md">
+                      <div className="rounded bg-popover p-2 shadow-md">
                         <p className="text-xs text-primary/80">
                           <span className="font-semibold">{data.name}</span>:{" "}
                           {data.value}%

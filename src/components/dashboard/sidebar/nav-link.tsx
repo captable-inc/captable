@@ -23,9 +23,9 @@ export function NavLink({ active, href, icon, name, className }: NavLinkProps) {
           className={cn(
             className,
             active
-              ? "bg-gray-50 font-semibold text-primary"
-              : "text-gray-700 hover:bg-gray-50 hover:text-primary",
-            "group flex gap-x-3 rounded-md p-1 text-sm leading-6",
+              ? "bg-secondary font-semibold text-primary"
+              : "text-foreground/70 hover:bg-secondary hover:text-primary",
+            "group flex gap-x-3 rounded-md p-1 text-sm leading-6 transition-colors",
           )}
         >
           {Icon && (
@@ -33,7 +33,7 @@ export function NavLink({ active, href, icon, name, className }: NavLinkProps) {
               className={cn(
                 active
                   ? "text-primary"
-                  : "text-gray-400 group-hover:text-primary",
+                  : "text-muted-foreground group-hover:text-primary",
                 "h-6 w-6 shrink-0",
               )}
               aria-hidden="true"
@@ -46,9 +46,9 @@ export function NavLink({ active, href, icon, name, className }: NavLinkProps) {
           className={cn(
             className,
             active
-              ? "bg-gray-50 font-semibold text-primary"
-              : "text-gray-700 hover:bg-gray-50 hover:text-primary",
-            "group flex gap-x-3 rounded-md p-2 text-sm leading-6",
+              ? "bg-secondary font-semibold text-primary"
+              : "text-foreground/70 hover:bg-secondary hover:text-primary",
+            "group flex gap-x-3 rounded-md p-2 text-sm leading-6 transition-colors",
           )}
         >
           {Icon && (
@@ -56,7 +56,7 @@ export function NavLink({ active, href, icon, name, className }: NavLinkProps) {
               className={cn(
                 active
                   ? "text-primary"
-                  : "text-gray-400 group-hover:text-primary",
+                  : "text-muted-foreground group-hover:text-primary",
                 "h-6 w-6 shrink-0",
               )}
               aria-hidden="true"

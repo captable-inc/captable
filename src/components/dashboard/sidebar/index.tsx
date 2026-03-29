@@ -34,7 +34,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { CaptableLogo } from "@/components/common/logo";
 import { usePathname } from "next/navigation";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -206,6 +205,9 @@ interface SideBarProps {
 
 export function SideBar({ className, publicId, companies }: SideBarProps) {
   const currentPath = usePathname();
+  const currentCompany = companies.find(
+    (c) => c.company.publicId === publicId,
+  )?.company;
 
   const basePath = `/${publicId}`;
 
@@ -214,7 +216,17 @@ export function SideBar({ className, publicId, companies }: SideBarProps) {
       <div className={cn("pb-12", className)}>
         <div className="fixed gap-y-4 py-4">
           <div className="flex items-center px-1 py-2">
-            <CaptableLogo className="h-7 w-auto" />
+            {currentCompany?.logo ? (
+              <img
+                src={currentCompany.logo}
+                alt={currentCompany.name}
+                className="h-8 w-8 rounded object-cover"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded bg-teal-600 text-sm font-bold text-white">
+                {currentCompany?.name?.charAt(0) || "L"}
+              </div>
+            )}
 
             <CompanySwitcher companies={companies} publicId={publicId} />
           </div>
@@ -247,7 +259,7 @@ export function SideBar({ className, publicId, companies }: SideBarProps) {
                               <item.icon
                                 className={cn(
                                   "ml-1 mr-1 mt-1 inline-block",
-                                  "text-gray-400 group-hover:text-primary",
+                                  "text-muted-foreground group-hover:text-primary",
                                   "h-6 w-6 shrink-0",
                                 )}
                                 aria-hidden="true"
@@ -257,8 +269,8 @@ export function SideBar({ className, publicId, companies }: SideBarProps) {
                             <AccordionTrigger
                               className={cn(
                                 isActive
-                                  ? "bg-gray-50 font-semibold text-primary"
-                                  : "text-gray-700 hover:bg-gray-50 hover:text-primary",
+                                  ? "bg-secondary font-semibold text-primary"
+                                  : "text-foreground/70 hover:bg-secondary hover:text-primary",
                                 "group flex gap-x-3 rounded-md px-2 py-1 text-sm leading-6 hover:no-underline",
                               )}
                             >
@@ -307,7 +319,7 @@ export function SideBar({ className, publicId, companies }: SideBarProps) {
             </ul>
 
             <div className="py-3">
-              <div className="text-xs font-semibold leading-6 text-gray-400">
+              <div className="text-xs font-semibold leading-6 text-muted-foreground">
                 Company
               </div>
               <ul className="space-y-1">

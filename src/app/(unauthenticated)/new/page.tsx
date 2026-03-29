@@ -18,10 +18,10 @@ export default async function CapPage() {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-cyan-100">
-      <div className="grid w-full max-w-lg grid-cols-1 gap-5 rounded-xl border bg-white/10 p-10 shadow-sm hover:shadow-md">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
+      <div className="grid w-full max-w-lg grid-cols-1 gap-5 rounded-xl border border-border bg-card/10 p-10 shadow-sm hover:shadow-md">
         <h3 className="-mt-5">
-          cap.<span className="text-2xl text-gray-600">new</span>
+          cap.<span className="text-2xl text-muted-foreground">new</span>
         </h3>
         <ul>
           <li className="mb-1">

@@ -43,7 +43,8 @@ export const MemberInviteEmail = ({
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
               <strong>{invitedBy}</strong> has invited you to join{" "}
-              <strong>{companyName}</strong> on <strong>Captable, Inc.</strong>.
+              <strong>{companyName}</strong> on{" "}
+              <strong>{constants.title}</strong>.
             </Text>
 
             <Section className="mb-[32px] mt-[32px]">
@@ -65,12 +66,9 @@ export const MemberInviteEmail = ({
             </Text>
 
             <Hr className="mx-0 my-[26px] w-full border border-solid border-neutral-200" />
-            <Link
-              href={constants.url}
-              className="text-sm !text-gray-400 no-underline"
-            >
+            <Text className="text-sm text-gray-400">
               {constants.title}
-            </Link>
+            </Text>
           </Container>
         </Body>
       </Tailwind>
@@ -80,8 +78,8 @@ export const MemberInviteEmail = ({
 
 MemberInviteEmail.PreviewProps = {
   invitedBy: "joker",
-  companyName: "Batmobile",
-  inviteLink: "https://captable.inc/...",
+  companyName: "Launch Legends",
+  inviteLink: "https://investors.launchlegends.io/...",
 } as MemberInviteEmailProps;
 
 export default MemberInviteEmail;
