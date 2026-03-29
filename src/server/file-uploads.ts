@@ -20,16 +20,26 @@ const hasCredentials = accessKeyId && secretAccessKey;
 const PrivateBucket = env.UPLOAD_BUCKET_PRIVATE;
 const PublicBucket = env.UPLOAD_BUCKET_PUBLIC;
 
+const s3Credentials = hasCredentials
+  ? { secretAccessKey, accessKeyId }
+  : undefined;
+
+// Internal client for server-side operations (delete, direct reads)
+// Uses internal Docker network hostname for fast, reliable access
+const S3Internal = new S3Client({
+  region,
+  endpoint: "http://minio:9000",
+  forcePathStyle: true,
+  credentials: s3Credentials,
+});
+
+// Public client for generating presigned URLs that browsers will use
+// Uses the public SSL domain so URLs are accessible from the internet
 const S3 = new S3Client({
   region,
   endpoint,
   forcePathStyle: true,
-  credentials: hasCredentials
-    ? {
-        secretAccessKey,
-        accessKeyId,
-      }
-    : undefined,
+  credentials: s3Credentials,
 });
 
 export type TypeKeyPrefixes =
@@ -102,8 +112,24 @@ export const getPresignedGetUrl = async (key: string) => {
   return { key, url };
 };
 
+// Internal presigned URL for server-side file access (e.g., e-sign PDF processing)
+// Uses internal Docker hostname so the app container can reach MinIO directly
+export const getInternalPresignedGetUrl = async (key: string) => {
+  const getObjectCommand = new GetObjectCommand({
+    Bucket: PrivateBucket,
+    Key: key,
+    ResponseContentDisposition: "inline",
+  });
+
+  const url = await getSignedUrl(S3Internal, getObjectCommand, {
+    expiresIn: TEN_MINUTES_IN_SECONDS,
+  });
+
+  return { key, url };
+};
+
 export const deleteBucketFile = (key: string) => {
-  return S3.send(
+  return S3Internal.send(
     new DeleteObjectCommand({
       Bucket: process.env.UPLOAD_BUCKET_PRIVATE,
       Key: key,

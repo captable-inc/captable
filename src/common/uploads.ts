@@ -1,6 +1,6 @@
 import { env } from "@/env";
 import {
-  getPresignedGetUrl,
+  getInternalPresignedGetUrl,
   getPresignedPutUrl,
   type getPresignedUrlOptions,
 } from "@/server/file-uploads";
@@ -67,7 +67,7 @@ export const uploadFile = async (
 export type TUploadFile = Awaited<ReturnType<typeof uploadFile>>;
 
 export const getFileFromS3 = async (key: string) => {
-  const { url } = await getPresignedGetUrl(key);
+  const { url } = await getInternalPresignedGetUrl(key);
 
   const response = await fetch(url, {
     method: "GET",
