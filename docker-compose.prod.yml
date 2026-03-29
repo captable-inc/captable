@@ -1,0 +1,107 @@
+##############################################
+# Captable.inc - Production Docker Compose
+# For Coolify deployment on Hostinger VPS
+##############################################
+
+name: captable-prod
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: captable/captable:custom
+    container_name: captable-app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      pg:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    networks:
+      - captable-net
+
+  pg:
+    image: postgres:15-alpine
+    container_name: captable-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-captable}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-captable}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-captable}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - captable-net
+
+  minio:
+    image: minio/minio
+    container_name: captable-minio
+    restart: always
+    # No host ports needed - Traefik handles external access
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: ${UPLOAD_ACCESS_KEY_ID}
+      MINIO_ROOT_PASSWORD: ${UPLOAD_SECRET_ACCESS_KEY}
+      MINIO_SERVER_URL: https://files.launchlegends.io
+      MINIO_BROWSER_REDIRECT_URL: https://minio-console.launchlegends.io
+    command: server /data --console-address ":9001" --address ":9000"
+    labels:
+      # Traefik labels for MinIO API (S3) on files.launchlegends.io
+      - traefik.enable=true
+      - "traefik.http.routers.minio-api-https.rule=Host(`files.launchlegends.io`) && PathPrefix(`/`)"
+      - traefik.http.routers.minio-api-https.entryPoints=https
+      - traefik.http.routers.minio-api-https.tls=true
+      - traefik.http.routers.minio-api-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.minio-api-https.service=minio-api
+      - traefik.http.services.minio-api.loadbalancer.server.port=9000
+      # HTTP to HTTPS redirect
+      - "traefik.http.routers.minio-api-http.rule=Host(`files.launchlegends.io`) && PathPrefix(`/`)"
+      - traefik.http.routers.minio-api-http.entryPoints=http
+      - traefik.http.routers.minio-api-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+    networks:
+      - captable-net
+      - coolify
+
+  # Runs once to create MinIO buckets, then exits
+  mc:
+    image: minio/mc
+    container_name: captable-mc
+    depends_on:
+      - minio
+    entrypoint: sh
+    command: |
+      -c "
+        sleep 10;
+        mc alias set myminio http://minio:9000 $${UPLOAD_ACCESS_KEY_ID} $${UPLOAD_SECRET_ACCESS_KEY};
+        mc mb --ignore-existing myminio/$${UPLOAD_BUCKET_PUBLIC};
+        mc mb --ignore-existing myminio/$${UPLOAD_BUCKET_PRIVATE};
+        mc anonymous set public myminio/$${UPLOAD_BUCKET_PUBLIC};
+        exit 0;
+      "
+    env_file:
+      - .env.production
+    networks:
+      - captable-net
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  captable-net:
+    driver: bridge
+  coolify:
+    external: true
