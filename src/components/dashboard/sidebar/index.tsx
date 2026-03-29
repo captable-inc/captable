@@ -346,6 +346,17 @@ export function SideBar({ className, publicId, companies }: SideBarProps) {
                 })}
               </ul>
             </div>
+
+            <div className="mt-6 border-t border-border pt-4">
+              <a
+                href="/about"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              >
+                About this software
+              </a>
+            </div>
           </div>
         </div>
       </div>
