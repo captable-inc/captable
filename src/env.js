@@ -56,6 +56,9 @@ export const env = createEnv({
     // sentry
     SENTRY_ORG: z.string().optional(),
     SENTRY_PROJECT: z.string().optional(),
+
+    // anthropic
+    ANTHROPIC_API_KEY: z.string().optional(),
   },
 
   /**
@@ -98,6 +101,7 @@ export const env = createEnv({
 
     STRIPE_API_KEY: process.env.STRIPE_API_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: readRuntimePublicEnvVariable(
       "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     ),

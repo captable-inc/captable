@@ -132,6 +132,10 @@ const navigation = [
         href: "/esign",
       },
       {
+        name: "Agreements",
+        href: "/agreements",
+      },
+      {
         name: "All documents",
         href: "/",
       },

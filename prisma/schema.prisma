@@ -155,6 +155,7 @@ model Company {
   dataRooms        DataRoom[]
   eSignAudits      EsignAudit[]
   billingCustomers BillingCustomer[]
+  agreements       Agreement[]
 
   @@unique([publicId])
 }
@@ -240,6 +241,8 @@ model Stakeholder {
   convertibleNotes ConvertibleNote[]
   updates          UpdateRecipient[]
   dataRooms        DataRoomRecipient[]
+
+  agreements   Agreement[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -353,6 +356,7 @@ model Bucket {
 
   documents Document[]
   templates Template[]
+  agreement Agreement?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1062,4 +1066,65 @@ model BillingCustomer {
   subscriptions BillingSubscription[]
 
   @@index([companyId])
+}
+
+enum AgreementType {
+  CONTRACTOR
+  INVESTOR
+}
+
+enum AgreementStatus {
+  PENDING_REVIEW
+  REVIEWED
+  COMMITTED
+  FLAGGED
+  REJECTED
+}
+
+model Agreement {
+  id        String          @id @default(cuid())
+  type      AgreementType
+  status    AgreementStatus @default(PENDING_REVIEW)
+
+  // Extracted fields
+  partyName           String?
+  partyEmail          String?
+  role                String?
+  effectiveDate       DateTime?
+  startDate           DateTime?
+  quantity            Int?
+  unitsPerPeriod      Int?
+  vestingPeriods      Int?
+  shareClassName      String?
+  pricePerShare       Float?
+  totalAmount         Float?
+  vestingCliffDays    Int?     @default(90)
+  vestingPeriodMonths Int?     @default(24)
+
+  // Raw data for audit
+  rawText    String? @db.Text
+  aiResponse String? @db.Text
+
+  // Match info
+  matchConfidence Float?
+  discrepancies   String? @db.Text
+
+  // Relationships
+  stakeholderId String?
+  stakeholder   Stakeholder? @relation(fields: [stakeholderId], references: [id], onDelete: SetNull)
+
+  bucketId String @unique
+  bucket   Bucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+
+  shareId String?
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([stakeholderId])
+  @@index([status])
 }
