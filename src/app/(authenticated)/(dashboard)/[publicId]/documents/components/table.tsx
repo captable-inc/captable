@@ -3,7 +3,8 @@
 import { dayjsExt } from "@/common/dayjs";
 import FileIcon from "@/components/common/file-icon";
 import { Card } from "@/components/ui/card";
-import { RiMore2Fill } from "@remixicon/react";
+import { api } from "@/trpc/react";
+import { RiDeleteBinLine, RiMore2Fill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -33,6 +34,7 @@ type DocumentTableProps = {
 
 const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
   const router = useRouter();
+  const { mutateAsync: deleteDocument } = api.document.delete.useMutation();
 
   return (
     <>
@@ -108,6 +110,23 @@ const DocumentsTable = ({ documents, companyPublicId }: DocumentTableProps) => {
                           }}
                         >
                           View
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!confirm("Are you sure you want to delete this document?")) return;
+                            try {
+                              await deleteDocument({ documentId: document.id });
+                              router.refresh();
+                            } catch {
+                              alert("Failed to delete document.");
+                            }
+                          }}
+                        >
+                          <RiDeleteBinLine className="mr-2 h-4 w-4" />
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
