@@ -37,7 +37,7 @@ const nextConfig = {
   },
   experimental: {
     instrumentationHook: true,
-    serverComponentsExternalPackages: ["pino", "pino-pretty"],
+    serverComponentsExternalPackages: ["pino", "pino-pretty", "pdf-parse", "@anthropic-ai/sdk"],
   },
   eslint: {
     ignoreDuringBuilds: true,
