@@ -1,7 +1,8 @@
-import { PDFParse } from "pdf-parse";
+// Import the internal lib directly to avoid pdf-parse's test file check in index.js
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  const parser = new PDFParse({ data: buffer });
-  const result = await parser.getText();
-  return result.text;
+  const data = await pdfParse(buffer);
+  return data.text;
 }
