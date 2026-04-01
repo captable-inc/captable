@@ -13,8 +13,9 @@ WORKDIR /app
 COPY prisma ./prisma
 
 ENV HUSKY 0
+ENV NODE_ENV development
 
-# Install dependencies
+# Install dependencies (NODE_ENV=development to include devDependencies)
 COPY package.json pnpm-lock.yaml* ./
 RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
